@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+body {
+  font-family: 'Manrope', sans-serif;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme (default) */
+body,
+body.dark {
+  background-color: rgb(17 24 39);
+  color: rgb(243 244 246);
+}
+
+/* Light theme */
+body.light {
+  background-color: rgb(249 250 251);
+  color: rgb(17 24 39);
+}
+
+/* Light theme overrides for common elements */
+body.light .bg-gray-900 {
+  background-color: rgb(249 250 251) !important;
+}
+
+body.light .bg-gray-800 {
+  background-color: rgb(255 255 255) !important;
+}
+
+body.light .text-gray-100 {
+  color: rgb(17 24 39) !important;
+}
+
+body.light .text-gray-400 {
+  color: rgb(107 114 128) !important;
+}
+
+body.light .text-gray-300 {
+  color: rgb(55 65 81) !important;
+}
+
+body.light .border-gray-700 {
+  border-color: rgb(229 231 235) !important;
+}
+
+body.light .border-gray-600 {
+  border-color: rgb(209 213 219) !important;
+}
+
+/* Input components in light theme */
+body.light input,
+body.light textarea {
+  background-color: rgb(255 255 255) !important;
+  color: rgb(17 24 39) !important;
+  border-color: rgb(209 213 219) !important;
+}
+
+/* Card components in light theme */
+body.light .bg-gray-800\/50 {
+  background-color: rgb(255 255 255) !important;
+}
+
+/* Hover states in light theme */
+body.light .hover\:bg-gray-700:hover {
+  background-color: rgb(243 244 246) !important;
+}
+
+body.light .hover\:bg-gray-600:hover {
+  background-color: rgb(229 231 235) !important;
+}
+
+body.light .hover\:bg-gray-800:hover {
+  background-color: rgb(243 244 246) !important;
+}
+
+/* Button hover states in light theme */
+body.light button:hover {
+  filter: brightness(0.95);
+}
+
+body.light .bg-opj-blue:hover {
+  background-color: #15294a !important;
+}
+
+body.light .bg-opj-orange:hover {
+  background-color: #d67707 !important;
+}
+
+/* Card hover in light theme */
+body.light .bg-gray-800:hover,
+body.light .bg-white:hover {
+  background-color: rgb(249 250 251) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Input hover in light theme */
+body.light input:hover,
+body.light textarea:hover {
+  border-color: rgb(156 163 175) !important;
+}
+
+/* Menu item hover in light theme */
+body.light .hover\:bg-gray-700:hover {
+  background-color: rgb(243 244 246) !important;
+  color: rgb(17 24 39) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+}
+
+.font-alumni {
+  font-family: 'Manrope', sans-serif;
+}
+
+.font-alumni-bold {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+}
+
+.font-alumni-regular {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+}
