@@ -97,6 +97,29 @@ npm run build
 npm run preview
 ```
 
+## 🧪 Testes E2E (Cucumber + Playwright)
+
+### Instalar navegadores do Playwright
+```bash
+npx playwright install
+```
+
+### Executar testes
+1. Inicie o app em um terminal:
+```bash
+npm run dev
+```
+2. Rode os testes em outro terminal:
+```bash
+npm run test:e2e
+```
+
+Se precisar alterar a URL base, use a variavel `BASE_URL`.
+Exemplo:
+```bash
+BASE_URL=http://localhost:5173 npm run test:e2e
+```
+
 ## 📊 Arquitetura
 
 ### Serviços
