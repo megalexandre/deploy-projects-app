@@ -6,6 +6,9 @@ import { ProjetoDetailPage } from './pages/ProjetoDetailPage';
 import { NovoProjetoPage } from './pages/NovoProjetoPage';
 import { ServicosPage } from './pages/ServicosPage';
 import { FinanceiroPage } from './pages/FinanceiroPage';
+import { PagamentosPage } from './pages/PagamentosPage';
+import { RecebimentosPage } from './pages/RecebimentosPage';
+import { FaturasPage } from './pages/FaturasPage';
 import { CalendarioPage } from './pages/CalendarioPage';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
@@ -62,6 +65,36 @@ function App() {
           element={
             localStorage.getItem('user') ? (
               <MainLayout><FinanceiroPage /></MainLayout>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/financeiro/pagamentos"
+          element={
+            localStorage.getItem('user') ? (
+              <MainLayout><PagamentosPage /></MainLayout>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/financeiro/recebimentos"
+          element={
+            localStorage.getItem('user') ? (
+              <MainLayout><RecebimentosPage /></MainLayout>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/financeiro/faturas"
+          element={
+            localStorage.getItem('user') ? (
+              <MainLayout><FaturasPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
             )
