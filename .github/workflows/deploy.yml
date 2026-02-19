@@ -2,11 +2,6 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-<<<<<<< HEAD
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-=======
     branches: [main]
   workflow_dispatch:
 
@@ -18,35 +13,10 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: true
->>>>>>> 7f34892c10b60a411caba18208f4f014c0509db3
 
 jobs:
   build:
     runs-on: ubuntu-latest
-<<<<<<< HEAD
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Build
-      run: npm run build
-
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './dist'
-=======
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,26 +42,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
->>>>>>> 7f34892c10b60a411caba18208f4f014c0509db3
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-<<<<<<< HEAD
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-=======
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -99,4 +53,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
->>>>>>> 7f34892c10b60a411caba18208f4f014c0509db3
+
+
+        
