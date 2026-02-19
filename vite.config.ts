@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/deploy-projects-app/',
   plugins: [react()],
-  base: '/opj-engenharia/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
