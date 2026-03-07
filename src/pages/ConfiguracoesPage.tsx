@@ -1,3 +1,4 @@
+/** Pagina 'ConfiguracoesPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState } from 'react';
 import { Gear, FloppyDisk, Bell, Shield, Database, EnvelopeSimple, Phone, Buildings } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
@@ -52,7 +53,7 @@ export const ConfiguracoesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -84,13 +85,14 @@ export const ConfiguracoesPage: React.FC = () => {
           </button>
         ))}
       </div>
+      
 
       {/* Tab Content */}
       <Card>
         <CardContent className="p-6">
           {/* Geral */}
           {activeTab === 'geral' && (
-            <div className="space-y-6">
+            <div className="space-y-6 page-enter">
               <h3 className="text-lg font-medium text-gray-100 mb-4">Informações da Empresa</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -138,7 +140,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {/* Notificações */}
           {activeTab === 'notificacoes' && (
-            <div className="space-y-6">
+            <div className="space-y-6 page-enter">
               <h3 className="text-lg font-medium text-gray-100 mb-4">Preferências de Notificação</h3>
               
               <div className="space-y-4">
@@ -212,7 +214,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {/* Sistema */}
           {activeTab === 'sistema' && (
-            <div className="space-y-6">
+            <div className="space-y-6 page-enter">
               <h3 className="text-lg font-medium text-gray-100 mb-4">Configurações do Sistema</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -273,7 +275,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {/* Segurança */}
           {activeTab === 'seguranca' && (
-            <div className="space-y-6">
+            <div className="space-y-6 page-enter">
               <h3 className="text-lg font-medium text-gray-100 mb-4">Configurações de Segurança</h3>
               
               <div className="space-y-4">
@@ -314,7 +316,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {/* Backup */}
           {activeTab === 'backup' && (
-            <div className="space-y-6">
+            <div className="space-y-6 page-enter">
               <h3 className="text-lg font-medium text-gray-100 mb-4">Configurações de Backup</h3>
               
               <div className="space-y-4">
@@ -365,4 +367,5 @@ export const ConfiguracoesPage: React.FC = () => {
     </div>
   );
 };
+
 

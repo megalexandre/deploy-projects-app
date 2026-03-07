@@ -1,3 +1,4 @@
+/** Componente reutilizavel 'Card': encapsula estrutura visual e comportamento isolado da UI. */
 import React from 'react';
 
 interface CardProps {
@@ -11,7 +12,8 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   padding = 'md'
 }) => {
-  const baseClasses = 'bg-gray-800 rounded-lg border border-gray-700 shadow-lg';
+  const baseClasses =
+    'rounded-2xl border border-white/10 bg-slate-900/55 backdrop-blur-xl shadow-[0_24px_50px_-30px_rgba(15,23,42,0.95)]';
   
   const paddingClasses = {
     none: '',
@@ -39,7 +41,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`mb-4 ${className}`}>
+    <div className={`mb-4 border-b border-white/10 pb-4 ${className}`}>
       {children}
     </div>
   );
@@ -55,7 +57,7 @@ export const CardTitle: React.FC<CardTitleProps> = ({
   className = ''
 }) => {
   return (
-    <h3 className={`text-lg font-semibold text-gray-100 ${className}`}>
+    <h3 className={`text-lg font-semibold tracking-tight text-slate-100 ${className}`}>
       {children}
     </h3>
   );

@@ -1,3 +1,4 @@
+/** Camada de acesso a dados para 'usuariosService': concentra chamadas HTTP e transformacao basica de payloads. */
 import type { Usuario } from '../types';
 import { createCrudService } from './crudService';
 

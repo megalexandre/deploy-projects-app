@@ -1,3 +1,4 @@
+/** Configuracao do Cucumber para execucao dos testes end-to-end. */
 module.exports = {
   default: {
     paths: ['tests/e2e/features/**/*.feature'],

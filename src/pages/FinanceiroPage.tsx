@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+/** Pagina 'FinanceiroPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrencyDollar, TrendUp, TrendDown, Plus, DownloadSimple, Calendar } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
+import { projectsService } from '../services';
 import { formatCurrencyBRL } from '../utils/masks';
 
 interface Transacao {
@@ -17,35 +19,8 @@ interface Transacao {
 }
 
 export const FinanceiroPage: React.FC = () => {
-  const [transacoes, setTransacoes] = useState<Transacao[]>([
-    {
-      id: '1',
-      descricao: 'Pagamento Projeto Solar',
-      tipo: 'receita',
-      valor: 15000.0,
-      data: '2024-01-15',
-      categoria: 'Projetos',
-      status: 'pago'
-    },
-    {
-      id: '2',
-      descricao: 'Compra de Paineis',
-      tipo: 'despesa',
-      valor: 8000.0,
-      data: '2024-01-10',
-      categoria: 'Materiais',
-      status: 'pago'
-    },
-    {
-      id: '3',
-      descricao: 'Manutencao Sistema',
-      tipo: 'receita',
-      valor: 500.0,
-      data: '2024-01-20',
-      categoria: 'Servicos',
-      status: 'pendente'
-    }
-  ]);
+  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [loadingProjetos, setLoadingProjetos] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
@@ -58,6 +33,35 @@ export const FinanceiroPage: React.FC = () => {
     valor: '',
     data: new Date().toISOString().split('T')[0]
   });
+
+  useEffect(() => {
+    const loadTransacoesFromProjetos = async () => {
+      setLoadingProjetos(true);
+
+      try {
+        const projetos = await projectsService.getProjetos();
+        const transacoesProjetos: Transacao[] = projetos
+          .filter((projeto) => projeto.valor > 0)
+          .map((projeto) => ({
+            id: `projeto-${projeto.id}`,
+            descricao: `Projeto ${projeto.protocolo} - ${projeto.cliente.nome}`,
+            tipo: 'receita',
+            valor: projeto.valor,
+            data: (projeto.dataCriacao || new Date().toISOString()).split('T')[0],
+            categoria: 'Projetos',
+            status: projeto.status === 'concluido' || projeto.status === 'aprovado' ? 'pago' : 'pendente'
+          }));
+
+        setTransacoes(transacoesProjetos);
+      } catch (error) {
+        console.error('Erro ao carregar transacoes de projetos:', error);
+      } finally {
+        setLoadingProjetos(false);
+      }
+    };
+
+    void loadTransacoesFromProjetos();
+  }, []);
 
   const filteredTransacoes = transacoes.filter((transacao) =>
     transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,11 +118,12 @@ export const FinanceiroPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Financeiro</h1>
           <p className="text-gray-400 mt-1">Controle financeiro da OPJ Engenharia</p>
+          {loadingProjetos && <p className="text-xs text-gray-500 mt-1">Carregando dados de projetos...</p>}
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
           <Button variant="outline">
@@ -341,6 +346,13 @@ export const FinanceiroPage: React.FC = () => {
                     </td>
                   </tr>
                 ))}
+                {filteredTransacoes.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-6 px-4 text-center text-gray-400">
+                      Nenhuma transacao de projeto encontrada.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -349,3 +361,4 @@ export const FinanceiroPage: React.FC = () => {
     </div>
   );
 };
+

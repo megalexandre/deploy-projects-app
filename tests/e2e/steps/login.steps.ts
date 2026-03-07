@@ -1,3 +1,4 @@
+/** Arquivo de suporte 'login.steps' do projeto. */
 import { Given, When, Then } from '@cucumber/cucumber';
 import type { CustomWorld } from '../support/world';
 

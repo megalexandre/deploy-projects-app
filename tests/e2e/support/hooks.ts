@@ -1,3 +1,4 @@
+/** Arquivo de suporte 'hooks' do projeto. */
 import { After, AfterAll, Before, BeforeAll, setDefaultTimeout } from '@cucumber/cucumber';
 import { chromium, type Browser } from 'playwright';
 import type { CustomWorld } from './world';

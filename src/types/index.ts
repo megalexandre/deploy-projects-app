@@ -1,3 +1,4 @@
+/** Tipos centrais do dominio: contratos TypeScript usados na aplicacao. */
 export interface User {
   id: string;
   name: string;
@@ -31,6 +32,8 @@ export interface Cliente {
   cpfCnpj: string;
   telefone: string;
   email: string;
+  enderecoCompleto?: string;
+  endereco?: Endereco;
 }
 
 export interface Endereco {
@@ -103,6 +106,19 @@ export interface Documento {
 }
 
 export const StatusProjeto = {
+  EM_ANALISE_DOCUMENTACAO: 'em_analise_documentacao',
+  ELABORACAO_DOCUMENTACAO_TECNICA: 'elaboracao_documentacao_tecnica',
+  AGUARDANDO_ASSINATURA_CLIENTE: 'aguardando_assinatura_cliente',
+  PROJETO_ENVIADO_AGUARDANDO_PROTOCOLO_CONCESSIONARIA: 'projeto_enviado_aguardando_protocolo_concessionaria',
+  EM_ANALISE_CONCESSIONARIA: 'em_analise_concessionaria',
+  RESSALVAS_PROJETOS: 'ressalvas_projetos',
+  OBRAS_CONCESSIONARIA: 'obras_concessionaria',
+  PROJETO_APROVADO: 'projeto_aprovado',
+  VISTORIA_SOLICITADA: 'vistoria_solicitada',
+  VISTORIA_REPROVADA: 'vistoria_reprovada',
+  AGUARDANDO_PAGAMENTO: 'aguardando_pagamento',
+  PROJETO_ENCERRADO: 'projeto_encerrado',
+  // Compatibilidade com dados legados.
   PENDENTE: 'pendente',
   EM_ANDAMENTO: 'em_andamento',
   AGUARDANDO_APROVACAO: 'aguardando_aprovacao',
@@ -127,6 +143,7 @@ export interface Projeto {
   timeline: TimelineItem[];
   documentos: Documento[];
   status: StatusProjeto;
+  valor: number;
   dataCriacao: string;
   dataAtualizacao: string;
 }

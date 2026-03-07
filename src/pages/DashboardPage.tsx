@@ -1,3 +1,4 @@
+/** Pagina 'DashboardPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -10,7 +11,7 @@ import {
 } from '@phosphor-icons/react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
 import { Button } from '../components/Button';
-import { projetoService } from '../services/projetoService';
+import { projectsService } from '../services';
 import type { DashboardStats, Projeto } from '../types';
 
 export const DashboardPage: React.FC = () => {
@@ -22,8 +23,8 @@ export const DashboardPage: React.FC = () => {
     const loadData = async () => {
       try {
         const [statsData, projectsData] = await Promise.all([
-          projetoService.getDashboardStats(),
-          projetoService.getProjetos()
+          projectsService.getDashboardStats(),
+          projectsService.getProjetos()
         ]);
         
         setStats(statsData);
@@ -75,7 +76,7 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -226,4 +227,7 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
+
+
+
 

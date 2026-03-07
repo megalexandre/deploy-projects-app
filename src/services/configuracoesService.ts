@@ -1,3 +1,4 @@
+/** Camada de acesso a dados para 'configuracoesService': concentra chamadas HTTP e transformacao basica de payloads. */
 import type { ConfiguracoesSistema } from '../types';
 import { apiClient } from './apiClient';
 

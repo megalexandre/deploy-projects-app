@@ -1,3 +1,4 @@
+/** Pagina 'UsuariosPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState } from 'react';
 import { Users, Plus, MagnifyingGlass, PencilSimple, Trash, Shield, User, EnvelopeSimple } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
@@ -92,7 +93,7 @@ export const UsuariosPage: React.FC = () => {
   const inactiveUsers = usuarios.filter(u => u.status === 'inativo').length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -252,5 +253,6 @@ export const UsuariosPage: React.FC = () => {
     </div>
   );
 };
+
 
 

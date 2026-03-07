@@ -1,3 +1,4 @@
+/** Arquivo de suporte 'world' do projeto. */
 import { setWorldConstructor, type IWorldOptions } from '@cucumber/cucumber';
 import type { Page } from 'playwright';
 
@@ -6,6 +7,7 @@ export class CustomWorld {
   baseUrl: string;
 
   constructor(options: IWorldOptions) {
+    void options;
     this.baseUrl = process.env.BASE_URL ?? 'http://localhost:5173';
   }
 }

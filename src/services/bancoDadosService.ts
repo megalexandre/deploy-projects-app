@@ -1,3 +1,4 @@
+/** Camada de acesso a dados para 'bancoDadosService': concentra chamadas HTTP e transformacao basica de payloads. */
 import type { Backup, DatabaseTable } from '../types';
 import { apiClient } from './apiClient';
 

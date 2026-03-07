@@ -1,26 +1,47 @@
-import React, { useMemo, useState } from 'react';
-import { ArrowLeft, Calendar, UploadSimple, Plus } from '@phosphor-icons/react';
+﻿/** Pagina 'NovoProjetoPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Calendar, MagnifyingGlass, UploadSimple, Plus } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { projetoService } from '../services/projetoService';
-import { StatusProjeto } from '../types';
-import { maskCnpj, maskCpf, maskCurrencyBRL, maskNumeric, maskPhoneBR, onlyDigits } from '../utils/masks';
+import { ApiError, customersService, projectsService, type CreateProjectData } from '../services';
+import { maskCep, maskCnpj, maskCpf, maskCurrencyBRL, maskNumeric, maskPhoneBR, onlyDigits } from '../utils/masks';
 
-type Passo = 1 | 2;
+type Passo = 1 | 2 | 3;
 type TipoDocumento = 'cpf' | 'cnpj';
+type ModoCliente = 'novo' | 'existente';
 
 interface DadosBasicosForm {
   dataAbertura: string;
-  nomeCliente: string;
   concessionaria: string;
   numeroUc: string;
-  cpfCnpj: string;
   enderecoCompleto: string;
-  email: string;
-  telefone: string;
   tipoServico: string;
   integrador: string;
+}
+
+interface ClienteForm {
+  nome: string;
+  cpfCnpj: string;
+  telefone: string;
+  email: string;
+  endereco: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+  };
+}
+
+interface ClienteResumo {
+  id: string;
+  nome: string;
+  cpfCnpj: string;
+  telefone: string;
+  email: string;
 }
 
 interface DadosDetalhesForm {
@@ -62,25 +83,51 @@ const buildItemVazio = (): ItemEquipamentoForm => ({
 });
 
 const dataAtualIso = new Date().toISOString().split('T')[0];
+const parseCurrencyToNumber = (value: string): number => {
+  if (!value.trim()) {
+    return 0;
+  }
+
+  const normalized = value.replace(/\s/g, '').replace('R$', '').replace(/\./g, '').replace(',', '.');
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
 export const NovoProjetoPage: React.FC = () => {
   const navigate = useNavigate();
   const [passoAtual, setPassoAtual] = useState<Passo>(1);
   const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('cpf');
+  const [modoCliente, setModoCliente] = useState<ModoCliente | null>(null);
+  const [clientes, setClientes] = useState<ClienteResumo[]>([]);
+  const [clientesLoading, setClientesLoading] = useState(false);
+  const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
+  const [buscaCliente, setBuscaCliente] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   const [dadosBasicos, setDadosBasicos] = useState<DadosBasicosForm>({
     dataAbertura: dataAtualIso,
-    nomeCliente: '',
     concessionaria: '',
     numeroUc: '',
-    cpfCnpj: '',
     enderecoCompleto: '',
-    email: '',
-    telefone: '',
     tipoServico: 'projetos_solares',
     integrador: ''
+  });
+
+  const [clienteForm, setClienteForm] = useState<ClienteForm>({
+    nome: '',
+    cpfCnpj: '',
+    telefone: '',
+    email: '',
+    endereco: {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    }
   });
 
   const [detalhesProjeto, setDetalhesProjeto] = useState<DadosDetalhesForm>({
@@ -109,6 +156,48 @@ export const NovoProjetoPage: React.FC = () => {
     [modulos]
   );
 
+  const clientesFiltrados = useMemo(() => {
+    const query = buscaCliente.trim().toLowerCase();
+    if (!query) {
+      return clientes;
+    }
+
+    return clientes.filter((cliente) => {
+      return (
+        cliente.nome.toLowerCase().includes(query) ||
+        onlyDigits(cliente.cpfCnpj).includes(onlyDigits(query)) ||
+        cliente.email.toLowerCase().includes(query) ||
+        onlyDigits(cliente.telefone).includes(onlyDigits(query))
+      );
+    });
+  }, [buscaCliente, clientes]);
+
+  const clienteSelecionado = useMemo(
+    () => clientes.find((cliente) => cliente.id === clienteSelecionadoId) ?? null,
+    [clienteSelecionadoId, clientes]
+  );
+
+  useEffect(() => {
+    if (modoCliente !== 'existente') {
+      return;
+    }
+
+    const loadClientes = async () => {
+      setClientesLoading(true);
+      try {
+        const response = await customersService.getAll();
+        setClientes(response);
+      } catch (loadError) {
+        console.error('Erro ao carregar clientes:', loadError);
+        setErro('Nao foi possivel carregar os clientes cadastrados.');
+      } finally {
+        setClientesLoading(false);
+      }
+    };
+
+    void loadClientes();
+  }, [modoCliente]);
+
   const handleModuloChange = (id: string, field: keyof ItemEquipamentoForm, value: string) => {
     setModulos((prev) =>
       prev.map((modulo) => (modulo.id === id ? { ...modulo, [field]: value } : modulo))
@@ -122,33 +211,46 @@ export const NovoProjetoPage: React.FC = () => {
   };
 
   const validarPasso1 = () => {
-    const documentoLimpo = onlyDigits(dadosBasicos.cpfCnpj);
-    const tamanhoDocumentoValido = tipoDocumento === 'cpf' ? 11 : 14;
-    const telefoneValido = onlyDigits(dadosBasicos.telefone).length >= 10;
+    if (!modoCliente) {
+      return false;
+    }
 
+    if (modoCliente === 'existente') {
+      return Boolean(clienteSelecionadoId);
+    }
+
+    const documentoLimpo = onlyDigits(clienteForm.cpfCnpj);
+    const tamanhoDocumentoValido = tipoDocumento === 'cpf' ? 11 : 14;
+    const telefoneValido = onlyDigits(clienteForm.telefone).length >= 10;
+    const nomeValido = clienteForm.nome.trim().length >= 2;
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteForm.email.trim());
+    const enderecoValido =
+      onlyDigits(clienteForm.endereco.cep).length === 8 &&
+      clienteForm.endereco.logradouro.trim().length >= 3 &&
+      clienteForm.endereco.numero.trim().length >= 1 &&
+      clienteForm.endereco.bairro.trim().length >= 2 &&
+      clienteForm.endereco.cidade.trim().length >= 2 &&
+      clienteForm.endereco.estado.trim().length === 2;
+
+    return nomeValido && emailValido && documentoLimpo.length === tamanhoDocumentoValido && telefoneValido && enderecoValido;
+  };
+
+  const validarPasso2 = () => {
     const camposObrigatorios = [
       dadosBasicos.dataAbertura,
-      dadosBasicos.nomeCliente,
       dadosBasicos.concessionaria,
       dadosBasicos.numeroUc,
-      dadosBasicos.cpfCnpj,
       dadosBasicos.enderecoCompleto,
-      dadosBasicos.email,
-      dadosBasicos.telefone,
       dadosBasicos.integrador
     ];
 
-    return (
-      camposObrigatorios.every((campo) => campo.trim() !== '') &&
-      documentoLimpo.length === tamanhoDocumentoValido &&
-      telefoneValido
-    );
+    return camposObrigatorios.every((campo) => campo.trim() !== '');
   };
 
   const gerarProtocolo = () => {
     const ano = new Date().getFullYear();
     const sufixo = String(Date.now()).slice(-4);
-    return `PROJ-${ano}-${sufixo}`;
+    return `PROT-${ano}-${sufixo}`;
   };
 
   const handleCriarProjeto = async () => {
@@ -158,114 +260,109 @@ export const NovoProjetoPage: React.FC = () => {
       return;
     }
 
+    if (!validarPasso2()) {
+      setErro('Preencha os campos obrigatorios do Passo 2 antes de criar o projeto.');
+      setPassoAtual(2);
+      return;
+    }
+
+    if (!modoCliente) {
+      setErro('Selecione se o cliente e novo ou ja cadastrado no Passo 1.');
+      setPassoAtual(1);
+      return;
+    }
+
+    const potenciaSistemaKw = Number((potenciaTotalSistemaW / 1000).toFixed(2));
+    if (potenciaSistemaKw <= 0) {
+      setErro('Informe ao menos um modulo com quantidade e potencia para calcular a potencia do sistema.');
+      setPassoAtual(3);
+      return;
+    }
+
     setErro(null);
     setSalvando(true);
 
     try {
-      const modulosValidos = modulos
-        .filter((item) => item.quantidade || item.potencia || item.marca || item.modelo)
-        .map((item) => {
-          const quantidade = Number(item.quantidade) || 0;
-          const potencia = Number(item.potencia) || 0;
-          return {
-            id: item.id,
-            fabricante: item.marca || 'Nao informado',
-            modelo: item.modelo || 'Nao informado',
-            potencia,
-            quantidade,
-            potenciaPico: Number(((quantidade * potencia) / 1000).toFixed(2))
-          };
-        });
-
-      const inversoresValidos = inversores
-        .filter((item) => item.quantidade || item.potencia || item.marca || item.modelo)
-        .map((item) => {
-          const quantidade = Number(item.quantidade) || 0;
-          const potencia = Number(item.potencia) || 0;
-          return {
-            id: item.id,
-            fabricante: item.marca || 'Nao informado',
-            modelo: item.modelo || 'Nao informado',
-            potencia,
-            quantidade,
-            potenciaTotal: Number(((quantidade * potencia) / 1000).toFixed(2))
-          };
-        });
-
-      const documentosUpload = Object.entries(documentos)
-        .filter(([, file]) => Boolean(file))
-        .map(([key, file]) => ({
-          id: key,
-          nome: file?.name ?? key,
-          tipo: key,
-          dataUpload: new Date().toISOString(),
-          tamanho: file?.size ?? 0
-        }));
-
-      await projetoService.createProjeto({
-        protocolo: gerarProtocolo(),
-        cliente: {
-          id: crypto.randomUUID(),
-          nome: dadosBasicos.nomeCliente,
-          cpfCnpj: dadosBasicos.cpfCnpj,
-          telefone: dadosBasicos.telefone,
-          email: dadosBasicos.email
-        },
-        endereco: {
-          cep: '00000-000',
-          logradouro: dadosBasicos.enderecoCompleto,
-          numero: 'S/N',
-          complemento: '',
-          bairro: 'Nao informado',
-          cidade: 'Nao informado',
-          estado: 'NA'
-        },
-        dadosProjeto: {
-          concessionaria: dadosBasicos.concessionaria,
-          classe: dadosBasicos.tipoServico === 'projetos_solares' ? 'Projeto Solar' : 'Nao informado',
-          integrador: dadosBasicos.integrador,
-          modalidade:
-            detalhesProjeto.modalidadeGeracao === 'geracao_compartilhada'
-              ? 'geracao_compartilhada'
-              : 'autoconsumo',
-          enquadramento: detalhesProjeto.projetoFastTrack === 'sim' ? 'Fast Track' : 'Padrao',
-          potenciaSistema: Number((potenciaTotalSistemaW / 1000).toFixed(2)),
-          protecaoCC: detalhesProjeto.coordenadas || 'Nao informado'
-        },
-        dadosTecnicos: {
-          tensao: 0,
-          numeroFases: 0,
-          ramal: 'Nao informado',
-          disjuntor: 'Nao informado',
-          cargaInstalada: potenciaTotalSistemaW
-        },
-        modulos: modulosValidos,
-        inversores: inversoresValidos,
-        divisaoCreditos: [
-          {
-            percentual: 100,
-            uc: dadosBasicos.numeroUc,
-            classe: dadosBasicos.tipoServico,
-            endereco: dadosBasicos.enderecoCompleto
+      let clienteId = clienteSelecionadoId;
+      if (modoCliente === 'novo') {
+        const novoCliente = await customersService.create({
+          nome: clienteForm.nome.trim(),
+          cpfCnpj: onlyDigits(clienteForm.cpfCnpj),
+          telefone: onlyDigits(clienteForm.telefone),
+          email: clienteForm.email.trim(),
+          endereco: {
+            cep: onlyDigits(clienteForm.endereco.cep),
+            logradouro: clienteForm.endereco.logradouro.trim(),
+            numero: clienteForm.endereco.numero.trim(),
+            complemento: clienteForm.endereco.complemento.trim(),
+            bairro: clienteForm.endereco.bairro.trim(),
+            cidade: clienteForm.endereco.cidade.trim(),
+            estado: clienteForm.endereco.estado.trim().toUpperCase()
           }
-        ],
-        timeline: [
-          {
-            id: crypto.randomUUID(),
-            etapa: 'Cadastro inicial',
-            data: dadosBasicos.dataAbertura,
-            status: 'concluido',
-            descricao: 'Projeto criado via formulario de novo projeto'
-          }
-        ],
-        documentos: documentosUpload,
-        status: StatusProjeto.PENDENTE
+        });
+        clienteId = novoCliente.id;
+      }
+
+      if (!clienteId) {
+        setErro('Selecione um cliente cadastrado para continuar.');
+        setPassoAtual(1);
+        return;
+      }
+
+      const documentoCliente =
+        modoCliente === 'novo' ? onlyDigits(clienteForm.cpfCnpj) : onlyDigits(clienteSelecionado?.cpfCnpj ?? '');
+      const classe = documentoCliente.length === 14 ? 'Comercial' : 'Residencial';
+      const modalidade =
+        detalhesProjeto.modalidadeGeracao === 'autoconsumo'
+          ? 'Geração Distribuída'
+          : 'Geração Compartilhada';
+      const enquadramento = potenciaSistemaKw <= 75 ? 'Microgeração' : 'Minigeração';
+
+      const projectData: CreateProjectData = {
+        id: crypto.randomUUID(),
+        clienteId,
+        nomeCliente: modoCliente === 'novo' ? clienteForm.nome.trim() : (clienteSelecionado?.nome ?? ''),
+        concessionaria: dadosBasicos.concessionaria,
+        protocoloConcessionaria: gerarProtocolo(),
+        classe,
+        integrator: dadosBasicos.integrador,
+        modalidade,
+        enquadramento,
+        protecaoCC: 'Disjuntor CC 20A',
+        potenciaSistema: potenciaSistemaKw,
+        status: 'Em Análise',
+        valor: parseCurrencyToNumber(detalhesProjeto.custoProjeto)
+      };
+
+      console.log('Dados do formulario:', {
+        modoCliente,
+        concessionaria: dadosBasicos.concessionaria,
+        integrador: dadosBasicos.integrador,
+        clienteId,
+        nomeCliente: modoCliente === 'novo' ? clienteForm.nome : clienteSelecionado?.nome,
+        numeroUc: dadosBasicos.numeroUc,
+        modalidadeGeracao: detalhesProjeto.modalidadeGeracao,
+        projetoFastTrack: detalhesProjeto.projetoFastTrack,
+        potenciaSistemaKw
       });
+      console.log('Enviando dados para API:', projectData);
+      await projectsService.create(projectData);
 
       navigate('/projetos');
     } catch (creationError) {
       console.error('Erro ao criar projeto:', creationError);
-      setErro('Nao foi possivel criar o projeto agora. Tente novamente.');
+      if (creationError instanceof ApiError) {
+        console.error('Detalhes do erro:', creationError.payload);
+        if (creationError.status === 401 || creationError.status === 403) {
+          setErro('Sua sessao nao esta autorizada para criar projetos. Faca login novamente e tente de novo.');
+        } else if (typeof creationError.payload === 'string' && creationError.payload.trim()) {
+          setErro(creationError.payload);
+        } else {
+          setErro(creationError.message || 'Nao foi possivel criar o projeto agora. Tente novamente.');
+        }
+      } else {
+        setErro('Nao foi possivel criar o projeto agora. Tente novamente.');
+      }
     } finally {
       setSalvando(false);
     }
@@ -286,7 +383,7 @@ export const NovoProjetoPage: React.FC = () => {
             </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-100">Novo Projeto</h1>
-              <p className="text-gray-400 text-xl">Passo {passoAtual} de 2</p>
+              <p className="text-gray-400 text-xl">Passo {passoAtual} de 3</p>
             </div>
           </div>
 
@@ -305,6 +402,13 @@ export const NovoProjetoPage: React.FC = () => {
             >
               2
             </div>
+            <div
+              className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold ${
+                passoAtual >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
+              }`}
+            >
+              3
+            </div>
           </div>
         </div>
 
@@ -316,8 +420,288 @@ export const NovoProjetoPage: React.FC = () => {
           )}
 
           {passoAtual === 1 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-100">Informacoes Basicas</h2>
+            <div className="space-y-6 page-enter">
+              <h2 className="text-2xl font-bold text-gray-100">Cliente do Projeto</h2>
+
+              <div className="rounded-lg border border-gray-700 p-4 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-100">Tipo de cliente</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModoCliente('novo');
+                      setClienteSelecionadoId(null);
+                      setBuscaCliente('');
+                      setErro(null);
+                    }}
+                    className={`rounded border px-4 py-4 text-left transition-colors ${
+                      modoCliente === 'novo'
+                        ? 'border-blue-500 bg-blue-900/25 text-blue-100'
+                        : 'border-gray-600 bg-gray-800 text-gray-200 hover:border-gray-500'
+                    }`}
+                  >
+                    <p className="text-base font-semibold">Novo cliente</p>
+                    <p className="text-sm opacity-80">Cadastrar cliente e criar projeto em seguida.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModoCliente('existente');
+                      setErro(null);
+                    }}
+                    className={`rounded border px-4 py-4 text-left transition-colors ${
+                      modoCliente === 'existente'
+                        ? 'border-blue-500 bg-blue-900/25 text-blue-100'
+                        : 'border-gray-600 bg-gray-800 text-gray-200 hover:border-gray-500'
+                    }`}
+                  >
+                    <p className="text-base font-semibold">Cliente ja cadastrado</p>
+                    <p className="text-sm opacity-80">Selecionar um cliente existente da base.</p>
+                  </button>
+                </div>
+              </div>
+
+              {modoCliente === 'novo' && (
+                <div className="rounded-lg border border-gray-700 p-4 space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-100">Dados do novo cliente</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-300 mb-2">Nome Completo</label>
+                      <input
+                        value={clienteForm.nome}
+                        onChange={(e) => setClienteForm((prev) => ({ ...prev, nome: e.target.value }))}
+                        className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-2">Documento</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <select
+                          value={tipoDocumento}
+                          onChange={(e) => {
+                            const novoTipo = e.target.value as TipoDocumento;
+                            setTipoDocumento(novoTipo);
+                            setClienteForm((prev) => ({ ...prev, cpfCnpj: '' }));
+                          }}
+                          className="col-span-1 rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                        >
+                          <option value="cpf">CPF</option>
+                          <option value="cnpj">CNPJ</option>
+                        </select>
+                        <input
+                          value={clienteForm.cpfCnpj}
+                          onChange={(e) =>
+                            setClienteForm((prev) => ({
+                              ...prev,
+                              cpfCnpj: tipoDocumento === 'cpf' ? maskCpf(e.target.value) : maskCnpj(e.target.value)
+                            }))
+                          }
+                          placeholder={tipoDocumento === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
+                          inputMode="numeric"
+                          className="col-span-2 rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-2">Telefone</label>
+                      <input
+                        value={clienteForm.telefone}
+                        onChange={(e) =>
+                          setClienteForm((prev) => ({ ...prev, telefone: maskPhoneBR(e.target.value) }))
+                        }
+                        inputMode="numeric"
+                        placeholder="(00) 00000-0000"
+                        className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-300 mb-2">E-mail</label>
+                      <input
+                        type="email"
+                        value={clienteForm.email}
+                        onChange={(e) => setClienteForm((prev) => ({ ...prev, email: e.target.value }))}
+                        className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                      />
+                    </div>
+
+
+                    <div className="md:col-span-2 border-t border-gray-700 pt-4">
+                      <h4 className="mb-3 text-base font-semibold text-gray-100">Endereco do cliente</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm text-gray-300 mb-2">CEP</label>
+                          <input
+                            value={clienteForm.endereco.cep}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, cep: maskCep(e.target.value) }
+                              }))
+                            }
+                            inputMode="numeric"
+                            placeholder="00000-000"
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-gray-300 mb-2">Numero</label>
+                          <input
+                            value={clienteForm.endereco.numero}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, numero: e.target.value }
+                              }))
+                            }
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm text-gray-300 mb-2">Logradouro</label>
+                          <input
+                            value={clienteForm.endereco.logradouro}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, logradouro: e.target.value }
+                              }))
+                            }
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm text-gray-300 mb-2">Complemento</label>
+                          <input
+                            value={clienteForm.endereco.complemento}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, complemento: e.target.value }
+                              }))
+                            }
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-gray-300 mb-2">Bairro</label>
+                          <input
+                            value={clienteForm.endereco.bairro}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, bairro: e.target.value }
+                              }))
+                            }
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-gray-300 mb-2">Cidade</label>
+                          <input
+                            value={clienteForm.endereco.cidade}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, cidade: e.target.value }
+                              }))
+                            }
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm text-gray-300 mb-2">UF</label>
+                          <input
+                            maxLength={2}
+                            value={clienteForm.endereco.estado}
+                            onChange={(e) =>
+                              setClienteForm((prev) => ({
+                                ...prev,
+                                endereco: { ...prev.endereco, estado: e.target.value.toUpperCase() }
+                              }))
+                            }
+                            className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {modoCliente === 'existente' && (
+                <div className="rounded-lg border border-gray-700 p-4 space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-100">Selecionar cliente cadastrado</h3>
+
+                  <div className="relative">
+                    <input
+                      value={buscaCliente}
+                      onChange={(e) => setBuscaCliente(e.target.value)}
+                      placeholder="Pesquisar por nome, CPF/CNPJ, telefone ou email"
+                      className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-10 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                    />
+                    <MagnifyingGlass className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+
+                  {clientesLoading && (
+                    <p className="text-sm text-gray-300">Carregando clientes...</p>
+                  )}
+
+                  {!clientesLoading && (
+                    <div className="max-h-64 overflow-auto space-y-2">
+                      {clientesFiltrados.map((cliente) => (
+                        <button
+                          type="button"
+                          key={cliente.id}
+                          onClick={() => setClienteSelecionadoId(cliente.id)}
+                          className={`w-full rounded border px-3 py-3 text-left transition-colors ${
+                            clienteSelecionadoId === cliente.id
+                              ? 'border-blue-500 bg-blue-900/25 text-blue-100'
+                              : 'border-gray-700 bg-gray-800 text-gray-200 hover:border-gray-500'
+                          }`}
+                        >
+                          <p className="font-semibold">{cliente.nome}</p>
+                          <p className="text-sm text-gray-300">{cliente.cpfCnpj}</p>
+                          <p className="text-sm text-gray-300">{cliente.telefone}</p>
+                          <p className="text-sm text-gray-300">{cliente.email}</p>
+                        </button>
+                      ))}
+                      {clientesFiltrados.length === 0 && (
+                        <p className="text-sm text-gray-300">Nenhum cliente encontrado para o filtro informado.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    if (!validarPasso1()) {
+                      setErro('Preencha os campos obrigatorios do cliente para avancar ao Passo 2.');
+                      return;
+                    }
+                    setErro(null);
+                    setPassoAtual(2);
+                  }}
+                >
+                  Proximo Passo
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {passoAtual === 2 && (
+            <div className="space-y-6 page-enter">
+              <h2 className="text-2xl font-bold text-gray-100">Informacoes Basicas do Projeto</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -333,17 +717,6 @@ export const NovoProjetoPage: React.FC = () => {
                     />
                     <Calendar className="h-4 w-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-300 mb-2">Nome Completo do Cliente</label>
-                  <input
-                    value={dadosBasicos.nomeCliente}
-                    onChange={(e) =>
-                      setDadosBasicos((prev) => ({ ...prev, nomeCliente: e.target.value }))
-                    }
-                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                  />
                 </div>
 
                 <div>
@@ -366,75 +739,11 @@ export const NovoProjetoPage: React.FC = () => {
                 <div>
                   <label className="block text-sm text-gray-300 mb-2">Numero da UC</label>
                   <input
-                      value={dadosBasicos.numeroUc}
-                      onChange={(e) =>
+                    value={dadosBasicos.numeroUc}
+                    onChange={(e) =>
                       setDadosBasicos((prev) => ({ ...prev, numeroUc: maskNumeric(e.target.value, 20) }))
-                      }
-                    inputMode="numeric"
-                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-300 mb-2">Documento</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <select
-                      value={tipoDocumento}
-                      onChange={(e) => {
-                        const novoTipo = e.target.value as TipoDocumento;
-                        setTipoDocumento(novoTipo);
-                        setDadosBasicos((prev) => ({ ...prev, cpfCnpj: '' }));
-                      }}
-                      className="col-span-1 rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                    >
-                      <option value="cpf">CPF</option>
-                      <option value="cnpj">CNPJ</option>
-                    </select>
-                    <input
-                      value={dadosBasicos.cpfCnpj}
-                      onChange={(e) =>
-                        setDadosBasicos((prev) => ({
-                          ...prev,
-                          cpfCnpj: tipoDocumento === 'cpf' ? maskCpf(e.target.value) : maskCnpj(e.target.value)
-                        }))
-                      }
-                      placeholder={tipoDocumento === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
-                      inputMode="numeric"
-                      className="col-span-2 rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                    />
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-300 mb-2">Endereco Completo</label>
-                  <input
-                    value={dadosBasicos.enderecoCompleto}
-                    onChange={(e) =>
-                      setDadosBasicos((prev) => ({ ...prev, enderecoCompleto: e.target.value }))
-                    }
-                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-300 mb-2">E-mail</label>
-                  <input
-                    type="email"
-                    value={dadosBasicos.email}
-                    onChange={(e) => setDadosBasicos((prev) => ({ ...prev, email: e.target.value }))}
-                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-300 mb-2">Telefone</label>
-                  <input
-                    value={dadosBasicos.telefone}
-                    onChange={(e) =>
-                      setDadosBasicos((prev) => ({ ...prev, telefone: maskPhoneBR(e.target.value) }))
                     }
                     inputMode="numeric"
-                    placeholder="(00) 00000-0000"
                     className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                   />
                 </div>
@@ -450,6 +759,31 @@ export const NovoProjetoPage: React.FC = () => {
                   >
                     <option value="projetos_solares">Projetos Solares</option>
                   </select>
+                </div>
+
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-300 mb-2">Endereco Completo</label>
+                  <input
+                    value={dadosBasicos.enderecoCompleto}
+                    onChange={(e) =>
+                      setDadosBasicos((prev) => ({ ...prev, enderecoCompleto: e.target.value }))
+                    }
+                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                  />
+                </div>
+
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-300 mb-2">Coordenadas Geograficas</label>
+                  <input
+                    value={detalhesProjeto.coordenadas}
+                    onChange={(e) =>
+                      setDetalhesProjeto((prev) => ({ ...prev, coordenadas: e.target.value }))
+                    }
+                    placeholder="Link do Google Maps ou coordenadas"
+                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                  />
                 </div>
 
                 <div>
@@ -468,15 +802,18 @@ export const NovoProjetoPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex items-center justify-between">
+                <Button variant="outline" onClick={() => setPassoAtual(1)}>
+                  Voltar
+                </Button>
                 <Button
                   onClick={() => {
-                    if (!validarPasso1()) {
-                      setErro('Preencha todos os campos obrigatorios para avancar ao Passo 2.');
+                    if (!validarPasso2()) {
+                      setErro('Preencha os campos obrigatorios para avancar ao Passo 3.');
                       return;
                     }
                     setErro(null);
-                    setPassoAtual(2);
+                    setPassoAtual(3);
                   }}
                 >
                   Proximo Passo
@@ -485,7 +822,7 @@ export const NovoProjetoPage: React.FC = () => {
             </div>
           )}
 
-          {passoAtual === 2 && (
+          {passoAtual === 3 && (
             <div className="space-y-8">
               <h2 className="text-2xl font-bold text-gray-100">Detalhes do Projeto Solar</h2>
 
@@ -524,17 +861,6 @@ export const NovoProjetoPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-300 mb-2">Coordenadas Geograficas</label>
-                  <input
-                    value={detalhesProjeto.coordenadas}
-                    onChange={(e) =>
-                      setDetalhesProjeto((prev) => ({ ...prev, coordenadas: e.target.value }))
-                    }
-                    placeholder="Link do Google Maps ou coordenadas"
-                    className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                  />
-                </div>
               </div>
 
               <div className="space-y-4">
@@ -676,7 +1002,7 @@ export const NovoProjetoPage: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <Button variant="outline" onClick={() => setPassoAtual(1)} disabled={salvando}>
+                <Button variant="outline" onClick={() => setPassoAtual(2)} disabled={salvando}>
                   Voltar
                 </Button>
                 <Button onClick={handleCriarProjeto} loading={salvando}>
@@ -690,4 +1016,8 @@ export const NovoProjetoPage: React.FC = () => {
     </div>
   );
 };
+
+
+
+
 

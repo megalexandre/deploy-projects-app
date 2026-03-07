@@ -1,3 +1,4 @@
+/** Pagina 'PagamentosPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, CurrencyDollar, WarningCircle } from '@phosphor-icons/react';
@@ -39,7 +40,7 @@ export const PagamentosPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Pagamentos</h1>
@@ -124,3 +125,4 @@ export const PagamentosPage: React.FC = () => {
     </div>
   );
 };
+

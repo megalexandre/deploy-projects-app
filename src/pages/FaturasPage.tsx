@@ -1,3 +1,4 @@
+/** Pagina 'FaturasPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileText, FilePdf, FunnelSimple } from '@phosphor-icons/react';
@@ -36,7 +37,7 @@ export const FaturasPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Faturas</h1>
@@ -114,3 +115,4 @@ export const FaturasPage: React.FC = () => {
     </div>
   );
 };
+

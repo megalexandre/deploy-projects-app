@@ -1,6 +1,8 @@
+/** Componente raiz da aplicacao: define rotas e composicao principal da interface. */
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ClientesPage } from './pages/ClientesPage';
 import { ProjetosPage } from './pages/ProjetosPage';
 import { ProjetoDetailPage } from './pages/ProjetoDetailPage';
 import { NovoProjetoPage } from './pages/NovoProjetoPage';
@@ -16,6 +18,9 @@ import { BancoDeDadosPage } from './pages/BancoDeDadosPage';
 import { MainLayout } from './layouts/MainLayout';
 
 function App() {
+  const tokenKey = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
+  const isAuthenticated = Boolean(localStorage.getItem('user') && localStorage.getItem(tokenKey));
+
   return (
     <Router>
       <Routes>
@@ -23,8 +28,18 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><DashboardPage /></MainLayout>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/clientes"
+          element={
+            isAuthenticated ? (
+              <MainLayout><ClientesPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
             )
@@ -33,7 +48,7 @@ function App() {
         <Route
           path="/projetos"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><ProjetosPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -43,7 +58,7 @@ function App() {
         <Route
           path="/projetos/:id"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><ProjetoDetailPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -53,7 +68,7 @@ function App() {
         <Route
           path="/servicos"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><ServicosPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -63,7 +78,7 @@ function App() {
         <Route
           path="/financeiro"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><FinanceiroPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -73,7 +88,7 @@ function App() {
         <Route
           path="/financeiro/pagamentos"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><PagamentosPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -83,7 +98,7 @@ function App() {
         <Route
           path="/financeiro/recebimentos"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><RecebimentosPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -93,7 +108,7 @@ function App() {
         <Route
           path="/financeiro/faturas"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><FaturasPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -103,7 +118,7 @@ function App() {
         <Route
           path="/calendario"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><CalendarioPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -113,7 +128,7 @@ function App() {
         <Route
           path="/usuarios"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><UsuariosPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -123,7 +138,7 @@ function App() {
         <Route
           path="/configuracoes"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><ConfiguracoesPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -133,7 +148,7 @@ function App() {
         <Route
           path="/banco-de-dados"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><BancoDeDadosPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />
@@ -143,7 +158,7 @@ function App() {
         <Route
           path="/projetos/novo"
           element={
-            localStorage.getItem('user') ? (
+            isAuthenticated ? (
               <MainLayout><NovoProjetoPage /></MainLayout>
             ) : (
               <Navigate to="/login" replace />

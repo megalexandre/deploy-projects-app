@@ -1,3 +1,4 @@
+/** Pagina 'BancoDeDadosPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState } from 'react';
 import { Database, DownloadSimple, UploadSimple, ArrowsClockwise, MagnifyingGlass, Funnel, Trash, FileText, HardDrives, Pulse } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
@@ -131,7 +132,7 @@ export const BancoDeDadosPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -352,5 +353,6 @@ export const BancoDeDadosPage: React.FC = () => {
     </div>
   );
 };
+
 
 

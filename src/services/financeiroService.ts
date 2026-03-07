@@ -1,3 +1,4 @@
+/** Camada de acesso a dados para 'financeiroService': concentra chamadas HTTP e transformacao basica de payloads. */
 import type { Transacao } from '../types';
 import { apiClient } from './apiClient';
 import { createCrudService } from './crudService';

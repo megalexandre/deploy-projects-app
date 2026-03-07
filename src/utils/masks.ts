@@ -1,3 +1,4 @@
+/** Utilitarios de 'masks': funcoes puras de apoio usadas em diferentes modulos. */
 export const onlyDigits = (value: string) => value.replace(/\D/g, '');
 
 export const maskNumeric = (value: string, maxDigits?: number) => {
@@ -38,6 +39,11 @@ export const maskPhoneBR = (value: string) => {
   return digits
     .replace(/^(\d{2})(\d)/, '($1) $2')
     .replace(/(\d{5})(\d)/, '$1-$2');
+};
+
+export const maskCep = (value: string) => {
+  const digits = onlyDigits(value).slice(0, 8);
+  return digits.replace(/^(\d{5})(\d)/, '$1-$2');
 };
 
 export const maskCurrencyBRL = (value: string) => {

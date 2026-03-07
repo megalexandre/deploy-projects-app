@@ -1,3 +1,4 @@
+/** Camada de acesso a dados para 'calendarioService': concentra chamadas HTTP e transformacao basica de payloads. */
 import type { Evento } from '../types';
 import { createCrudService } from './crudService';
 

@@ -1,8 +1,11 @@
-import React, { useMemo, useState } from 'react';
+/** Pagina 'CalendarioPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
+import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CaretLeft, CaretRight, Folder, Wrench } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
+import type { Projeto } from '../types';
+import { projectsService } from '../services';
 
 type TipoEventoManual = 'instalacao' | 'manutencao' | 'reuniao' | 'vistoria';
 type OrigemAgenda = 'evento' | 'projeto' | 'servico';
@@ -16,16 +19,6 @@ interface EventoManual {
   tipo: TipoEventoManual;
   local: string;
   participantes: string[];
-  descricao: string;
-}
-
-interface ProjetoMock {
-  id: string;
-  protocolo: string;
-  cliente: string;
-  data: string;
-  hora: string;
-  local: string;
   descricao: string;
 }
 
@@ -56,36 +49,6 @@ const CURRENT_YEAR = now.getFullYear();
 const CURRENT_MONTH = now.getMonth() + 1;
 
 const dayToDate = (day: number) => `${CURRENT_YEAR}-${String(CURRENT_MONTH).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-const projetosMock: ProjetoMock[] = [
-  {
-    id: 'p1',
-    protocolo: 'PRJ-2401',
-    cliente: 'Condominio Vale Verde',
-    data: dayToDate(6),
-    hora: '10:00',
-    local: 'Campinas - SP',
-    descricao: 'Entrega de documentacao para aprovacao'
-  },
-  {
-    id: 'p2',
-    protocolo: 'PRJ-2407',
-    cliente: 'Mercado Nova Era',
-    data: dayToDate(13),
-    hora: '14:30',
-    local: 'Sorocaba - SP',
-    descricao: 'Inicio da fase de instalacao dos modulos'
-  },
-  {
-    id: 'p3',
-    protocolo: 'PRJ-2415',
-    cliente: 'Carlos Santos',
-    data: dayToDate(21),
-    hora: '09:00',
-    local: 'Jundiai - SP',
-    descricao: 'Vistoria tecnica final do projeto'
-  }
-];
 
 const servicosMock: ServicoMock[] = [
   {
@@ -118,6 +81,9 @@ const servicosMock: ServicoMock[] = [
 ];
 
 export const CalendarioPage: React.FC = () => {
+  const [projetos, setProjetos] = useState<Projeto[]>([]);
+  const [loadingProjetos, setLoadingProjetos] = useState(false);
+  const [erroProjetos, setErroProjetos] = useState<string | null>(null);
   const [eventosManuais, setEventosManuais] = useState<EventoManual[]>([
     {
       id: 'e1',
@@ -156,6 +122,53 @@ export const CalendarioPage: React.FC = () => {
     descricao: ''
   });
 
+  useEffect(() => {
+    const loadProjetos = async () => {
+      setLoadingProjetos(true);
+      try {
+        const data = await projectsService.getProjetos();
+        setProjetos(data);
+        setErroProjetos(null);
+      } catch (error) {
+        console.error('Erro ao carregar projetos para o calendario:', error);
+        setErroProjetos('Nao foi possivel carregar as datas dos projetos.');
+      } finally {
+        setLoadingProjetos(false);
+      }
+    };
+
+    void loadProjetos();
+  }, []);
+
+  const extractDateAndTime = (value: string): { data: string; hora: string } | null => {
+    if (!value) {
+      return null;
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    const data = parsed.toISOString().slice(0, 10);
+    const hasTime = value.includes('T');
+    const hora = hasTime ? parsed.toISOString().slice(11, 16) : '09:00';
+    return { data, hora };
+  };
+
+  const getLocalProjeto = (projeto: Projeto) => {
+    const cidadeEstado = [projeto.endereco.cidade, projeto.endereco.estado].filter(Boolean).join(' - ');
+    if (cidadeEstado) {
+      return cidadeEstado;
+    }
+
+    if (projeto.endereco.logradouro) {
+      return projeto.endereco.logradouro;
+    }
+
+    return 'Local nao informado';
+  };
+
   const agendaItems = useMemo<AgendaItem[]>(() => {
     const eventos = eventosManuais.map((item) => ({
       id: item.id,
@@ -169,16 +182,53 @@ export const CalendarioPage: React.FC = () => {
       participantes: item.participantes
     }));
 
-    const projetos = projetosMock.map((item) => ({
-      id: item.id,
-      origem: 'projeto' as const,
-      titulo: `Projeto ${item.protocolo} - ${item.cliente}`,
-      data: item.data,
-      hora: item.hora,
-      local: item.local,
-      descricao: item.descricao,
-      participantes: ['Equipe de Projetos']
-    }));
+    const projetosAgenda = projetos.flatMap((projeto) => {
+      const baseTitulo = `Projeto ${projeto.protocolo} - ${projeto.cliente.nome}`;
+      const local = getLocalProjeto(projeto);
+      const timeline = Array.isArray(projeto.timeline) ? projeto.timeline : [];
+
+      const itensTimeline: AgendaItem[] = timeline
+        .map<AgendaItem | null>((item) => {
+          const parsed = extractDateAndTime(item.data);
+          if (!parsed) {
+            return null;
+          }
+
+          return {
+            id: `projeto-${projeto.id}-timeline-${item.id}`,
+            origem: 'projeto' as const,
+            titulo: `${baseTitulo} - ${item.etapa}`,
+            data: parsed.data,
+            hora: parsed.hora,
+            local,
+            descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
+            participantes: ['Equipe de Projetos']
+          };
+        })
+        .filter((item): item is AgendaItem => item !== null);
+
+      if (itensTimeline.length > 0) {
+        return itensTimeline;
+      }
+
+      const parsedCriacao = extractDateAndTime(projeto.dataCriacao);
+      if (!parsedCriacao) {
+        return [];
+      }
+
+      return [
+        {
+          id: `projeto-${projeto.id}-criacao`,
+          origem: 'projeto' as const,
+          titulo: `${baseTitulo} - Cadastro do projeto`,
+          data: parsedCriacao.data,
+          hora: parsedCriacao.hora,
+          local,
+          descricao: 'Projeto cadastrado no sistema.',
+          participantes: ['Equipe de Projetos']
+        }
+      ];
+    });
 
     const servicos = servicosMock.map((item) => ({
       id: item.id,
@@ -191,8 +241,8 @@ export const CalendarioPage: React.FC = () => {
       participantes: ['Equipe de Campo']
     }));
 
-    return [...eventos, ...projetos, ...servicos];
-  }, [eventosManuais]);
+    return [...eventos, ...projetosAgenda, ...servicos];
+  }, [eventosManuais, projetos]);
 
   const getTipoColor = (item: AgendaItem) => {
     if (item.origem === 'projeto') return 'bg-blue-900/50 text-blue-300 border-blue-700';
@@ -296,11 +346,13 @@ export const CalendarioPage: React.FC = () => {
   const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Calendario</h1>
-          <p className="text-gray-400 mt-1">Agenda com eventos, projetos e servicos do mes atual (mock).</p>
+          <p className="text-gray-400 mt-1">Agenda com eventos, projetos e servicos do mes atual.</p>
+          {loadingProjetos && <p className="text-xs text-gray-500 mt-1">Carregando datas dos projetos...</p>}
+          {erroProjetos && <p className="text-xs text-red-400 mt-1">{erroProjetos}</p>}
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
           <select
@@ -518,3 +570,4 @@ export const CalendarioPage: React.FC = () => {
     </div>
   );
 };
+

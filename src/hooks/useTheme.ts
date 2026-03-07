@@ -1,3 +1,4 @@
+/** Hook personalizado 'useTheme': concentra logica reutilizavel de estado e efeitos. */
 import { useState, useEffect } from 'react';
 
 type Theme = 'dark' | 'light';
@@ -10,7 +11,6 @@ export const useTheme = () => {
 
   useEffect(() => {
     const body = document.body;
-    console.log('Theme changed to:', theme);
     
     if (theme === 'dark') {
       body.classList.remove('light');
@@ -23,7 +23,6 @@ export const useTheme = () => {
   }, [theme]);
 
   const toggleTheme = () => {
-    console.log('Toggle theme called, current:', theme);
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 

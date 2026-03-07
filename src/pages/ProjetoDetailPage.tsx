@@ -1,9 +1,10 @@
+/** Pagina 'ProjetoDetailPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, FileText, Clock, CheckCircle } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import { projetoService } from '../services/projetoService';
+import { projectsService } from '../services';
 import type { Projeto } from '../types';
 
 export const ProjetoDetailPage: React.FC = () => {
@@ -20,7 +21,7 @@ export const ProjetoDetailPage: React.FC = () => {
 
   const loadProjeto = async (projetoId: string) => {
     try {
-      const data = await projetoService.getProjetoById(projetoId);
+      const data = await projectsService.getProjetoById(projetoId);
       setProjeto(data);
     } catch (error) {
       console.error('Erro ao carregar projeto:', error);
@@ -93,7 +94,7 @@ export const ProjetoDetailPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -137,7 +138,7 @@ export const ProjetoDetailPage: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="space-y-6">
+      <div className="space-y-6 page-enter">
         {activeTab === 'dados' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
@@ -443,7 +444,7 @@ export const ProjetoDetailPage: React.FC = () => {
               <CardTitle>Linha do Tempo</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-6 page-enter">
                 {projeto.timeline.map((item) => (
                   <div key={item.id} className="flex items-start space-x-4">
                     <div className="flex-shrink-0 mt-1">
@@ -529,4 +530,7 @@ export const ProjetoDetailPage: React.FC = () => {
     </div>
   );
 };
+
+
+
 
