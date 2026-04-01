@@ -30,6 +30,9 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.
   (import.meta.env.DEV ? '/api' : 'https://project-deploy.shop');
 /** Chave do localStorage onde o token de autenticacao e salvo. */
 const STORAGE_TOKEN_KEY = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
+const STORAGE_USER_KEY = 'user';
+let unauthorizedHandler: ((error: ApiError) => void | Promise<void>) | null = null;
+let handlingUnauthorized = false;
 
 /** Monta URL final, incluindo endpoint e query params validos. */
 const buildUrl = (path: string, query?: ApiRequestOptions['query']) => {
@@ -68,6 +71,10 @@ const buildUrl = (path: string, query?: ApiRequestOptions['query']) => {
 
 /** Recupera token persistido da sessao atual. */
 const getStoredToken = () => localStorage.getItem(STORAGE_TOKEN_KEY);
+const clearStoredSession = () => {
+  localStorage.removeItem(STORAGE_TOKEN_KEY);
+  localStorage.removeItem(STORAGE_USER_KEY);
+};
 
 /** Escolhe a melhor mensagem de erro possivel a partir do payload devolvido. */
 const resolveErrorMessage = (payload: unknown, fallback: string) => {
@@ -118,11 +125,26 @@ const request = async <T>(method: HttpMethod, path: string, options: ApiRequestO
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    throw new ApiError(
+    const error = new ApiError(
       resolveErrorMessage(payload, 'Erro na comunicacao com o servidor'),
       response.status,
       payload
     );
+
+    if (error.status === 401 && unauthorizedHandler && !handlingUnauthorized) {
+      handlingUnauthorized = true;
+      clearStoredSession();
+
+      try {
+        await unauthorizedHandler(error);
+      } finally {
+        window.setTimeout(() => {
+          handlingUnauthorized = false;
+        }, 0);
+      }
+    }
+
+    throw error;
   }
 
   return payload as T;
@@ -153,6 +175,12 @@ export const apiClient = {
   },
   /** Leitura direta do token persistido. */
   getToken: getStoredToken,
+  /** Limpa token e usuario persistidos. */
+  clearSession: clearStoredSession,
+  /** Registra um handler global para respostas 401. */
+  setUnauthorizedHandler: (handler: ((error: ApiError) => void | Promise<void>) | null) => {
+    unauthorizedHandler = handler;
+  },
   /** Exposicao da URL base para diagnostico e logs. */
   baseUrl: API_BASE_URL
 };

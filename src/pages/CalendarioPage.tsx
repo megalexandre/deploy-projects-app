@@ -4,8 +4,8 @@ import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CaretLeft, CaretR
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import type { Projeto } from '../types';
-import { projectsService } from '../services';
+import type { Projeto, Servico } from '../types';
+import { projectsService, servicosService } from '../services';
 
 type TipoEventoManual = 'instalacao' | 'manutencao' | 'reuniao' | 'vistoria';
 type OrigemAgenda = 'evento' | 'projeto' | 'servico';
@@ -19,16 +19,6 @@ interface EventoManual {
   tipo: TipoEventoManual;
   local: string;
   participantes: string[];
-  descricao: string;
-}
-
-interface ServicoMock {
-  id: string;
-  nome: string;
-  cliente: string;
-  data: string;
-  hora: string;
-  local: string;
   descricao: string;
 }
 
@@ -50,62 +40,12 @@ const CURRENT_MONTH = now.getMonth() + 1;
 
 const dayToDate = (day: number) => `${CURRENT_YEAR}-${String(CURRENT_MONTH).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-const servicosMock: ServicoMock[] = [
-  {
-    id: 's1',
-    nome: 'Manutencao preventiva',
-    cliente: 'Residencial das Flores',
-    data: dayToDate(8),
-    hora: '08:30',
-    local: 'Sao Paulo - SP',
-    descricao: 'Inspecao e limpeza do arranjo fotovoltaico'
-  },
-  {
-    id: 's2',
-    nome: 'Visita tecnica',
-    cliente: 'Padaria Bom Dia',
-    data: dayToDate(16),
-    hora: '11:00',
-    local: 'Indaiatuba - SP',
-    descricao: 'Levantamento para ampliacao do sistema'
-  },
-  {
-    id: 's3',
-    nome: 'Correcao de inversor',
-    cliente: 'Escola Horizonte',
-    data: dayToDate(24),
-    hora: '15:30',
-    local: 'Americana - SP',
-    descricao: 'Troca de componente e teste de performance'
-  }
-];
-
 export const CalendarioPage: React.FC = () => {
   const [projetos, setProjetos] = useState<Projeto[]>([]);
+  const [servicos, setServicos] = useState<Servico[]>([]);
   const [loadingProjetos, setLoadingProjetos] = useState(false);
   const [erroProjetos, setErroProjetos] = useState<string | null>(null);
-  const [eventosManuais, setEventosManuais] = useState<EventoManual[]>([
-    {
-      id: 'e1',
-      titulo: 'Reuniao interna de planejamento',
-      data: dayToDate(5),
-      hora: '09:30',
-      tipo: 'reuniao',
-      local: 'Escritorio OPJ',
-      participantes: ['Operacoes', 'Engenharia'],
-      descricao: 'Ajuste de cronograma semanal'
-    },
-    {
-      id: 'e2',
-      titulo: 'Vistoria de seguranca',
-      data: dayToDate(19),
-      hora: '13:00',
-      tipo: 'vistoria',
-      local: 'Galpao de materiais',
-      participantes: ['Tecnico responsavel'],
-      descricao: 'Checklist de seguranca da equipe'
-    }
-  ]);
+  const [eventosManuais, setEventosManuais] = useState<EventoManual[]>([]);
 
   const [selectedDate, setSelectedDate] = useState(new Date(CURRENT_YEAR, CURRENT_MONTH - 1, 1));
   const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'dia'>('mes');
@@ -123,21 +63,25 @@ export const CalendarioPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const loadProjetos = async () => {
+    const loadAgenda = async () => {
       setLoadingProjetos(true);
       try {
-        const data = await projectsService.getProjetos();
-        setProjetos(data);
+        const [projectsData, servicesData] = await Promise.all([
+          projectsService.getProjetos(),
+          servicosService.list()
+        ]);
+        setProjetos(projectsData);
+        setServicos(servicesData);
         setErroProjetos(null);
       } catch (error) {
-        console.error('Erro ao carregar projetos para o calendario:', error);
-        setErroProjetos('Nao foi possivel carregar as datas dos projetos.');
+        console.error('Erro ao carregar agenda para o calendario:', error);
+        setErroProjetos('Nao foi possivel carregar projetos e servicos.');
       } finally {
         setLoadingProjetos(false);
       }
     };
 
-    void loadProjetos();
+    void loadAgenda();
   }, []);
 
   const extractDateAndTime = (value: string): { data: string; hora: string } | null => {
@@ -167,6 +111,20 @@ export const CalendarioPage: React.FC = () => {
     }
 
     return 'Local nao informado';
+  };
+
+  const getLocalServico = (servico: Servico) => {
+    const endereco = servico.enderecoObra ?? servico.enderecoGeradora;
+    const cidadeEstado = [endereco?.cidade, endereco?.estado].filter(Boolean).join(' - ');
+    if (cidadeEstado) {
+      return cidadeEstado;
+    }
+
+    if (endereco?.logradouro) {
+      return endereco.logradouro;
+    }
+
+    return servico.concessionaria || 'Local nao informado';
   };
 
   const agendaItems = useMemo<AgendaItem[]>(() => {
@@ -230,19 +188,56 @@ export const CalendarioPage: React.FC = () => {
       ];
     });
 
-    const servicos = servicosMock.map((item) => ({
-      id: item.id,
-      origem: 'servico' as const,
-      titulo: `${item.nome} - ${item.cliente}`,
-      data: item.data,
-      hora: item.hora,
-      local: item.local,
-      descricao: item.descricao,
-      participantes: ['Equipe de Campo']
-    }));
+    const servicosAgenda = servicos.flatMap((servico) => {
+      const baseTitulo = `${servico.nome} - ${servico.cliente}`;
+      const local = getLocalServico(servico);
+      const timeline = Array.isArray(servico.timeline) ? servico.timeline : [];
 
-    return [...eventos, ...projetosAgenda, ...servicos];
-  }, [eventosManuais, projetos]);
+      const itensTimeline: AgendaItem[] = timeline
+        .map<AgendaItem | null>((item) => {
+          const parsed = extractDateAndTime(item.data);
+          if (!parsed) {
+            return null;
+          }
+
+          return {
+            id: `servico-${servico.id}-timeline-${item.id}`,
+            origem: 'servico' as const,
+            titulo: `${baseTitulo} - ${item.etapa}`,
+            data: parsed.data,
+            hora: parsed.hora,
+            local,
+            descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
+            participantes: ['Equipe de Servicos']
+          };
+        })
+        .filter((item): item is AgendaItem => item !== null);
+
+      if (itensTimeline.length > 0) {
+        return itensTimeline;
+      }
+
+      const parsedAbertura = extractDateAndTime(servico.dataAbertura || servico.dataCriacao);
+      if (!parsedAbertura) {
+        return [];
+      }
+
+      return [
+        {
+          id: `servico-${servico.id}-abertura`,
+          origem: 'servico' as const,
+          titulo: `${baseTitulo} - Abertura do servico`,
+          data: parsedAbertura.data,
+          hora: parsedAbertura.hora,
+          local,
+          descricao: servico.observacoes || 'Servico cadastrado no sistema.',
+          participantes: ['Equipe de Servicos']
+        }
+      ];
+    });
+
+    return [...eventos, ...projetosAgenda, ...servicosAgenda];
+  }, [eventosManuais, projetos, servicos]);
 
   const getTipoColor = (item: AgendaItem) => {
     if (item.origem === 'projeto') return 'bg-blue-900/50 text-blue-300 border-blue-700';

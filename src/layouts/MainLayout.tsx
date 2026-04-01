@@ -11,6 +11,7 @@ import {
   Calendar,
   Users,
   Database,
+  Buildings,
   Sun,
   Moon,
   List,
@@ -18,16 +19,15 @@ import {
 } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { useTheme } from '../hooks/useTheme';
+import { authService } from '../services';
 
 export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
-    const tokenKey = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
-    localStorage.removeItem('user');
-    localStorage.removeItem(tokenKey);
+  const handleLogout = async () => {
+    await authService.logout();
     navigate('/login');
   };
 
@@ -35,6 +35,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
     { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
     { icon: Users, label: 'Clientes', path: '/clientes' },
     { icon: Folder, label: 'Projetos', path: '/projetos' },
+    { icon: Buildings, label: 'Concessionarias', path: '/concessionarias' },
     { icon: Wrench, label: 'Servicos', path: '/servicos' },
     { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
     { icon: Calendar, label: 'Calendario', path: '/calendario' },

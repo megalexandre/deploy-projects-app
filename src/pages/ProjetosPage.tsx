@@ -48,6 +48,19 @@ const normalizeEnquadramento = (value: unknown, potenciaSistema: number): 'Micro
   return potenciaSistema > 75 ? 'Minigeração' : 'Microgeração';
 };
 
+const pickValidString = (...values: Array<unknown>): string | undefined => {
+  for (const value of values) {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length >= 2) {
+        return trimmed;
+      }
+    }
+  }
+
+  return undefined;
+};
+
 const columns: Array<{ id: KanbanStatus; label: string; className: string }> = [
   { id: 'em_analise_documentacao', label: 'Em Análise da Documentação', className: 'border-amber-700/60 bg-amber-900/20' },
   { id: 'elaboracao_documentacao_tecnica', label: 'Elaboração da Documentação Técnica', className: 'border-orange-700/60 bg-orange-900/20' },
@@ -93,8 +106,23 @@ const toKanbanStatus = (status: Projeto['status']): KanbanStatus => {
   return kanbanStatusMap[normalized] ?? 'em_analise_documentacao';
 };
 
-const toApiProjectStatus = (status: KanbanStatus): string => {
-  return columns.find((column) => column.id === status)?.label ?? 'Em Análise da Documentação';
+const toTimelineStatus = (status: KanbanStatus): Projeto['timeline'][number]['status'] => {
+  if (status === 'projeto_encerrado' || status === 'projeto_aprovado') {
+    return 'concluido';
+  }
+
+  if (status === 'em_analise_documentacao' || status === 'aguardando_assinatura_cliente' || status === 'aguardando_pagamento') {
+    return 'pendente';
+  }
+
+  return 'em_andamento';
+};
+
+const getStatusLabel = (status: KanbanStatus): string => columns.find((column) => column.id === status)?.label ?? status;
+
+type PendingStatusChange = {
+  projectId: string;
+  nextStatus: KanbanStatus;
 };
 
 export const ProjetosPage: React.FC = () => {
@@ -104,6 +132,9 @@ export const ProjetosPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'todos' | KanbanStatus>('todos');
   const [error, setError] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
+  const [statusComment, setStatusComment] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     const loadProjetos = async () => {
@@ -191,14 +222,12 @@ export const ProjetosPage: React.FC = () => {
     [statusFilter]
   );
 
-  const updateProjetoStatus = async (id: string, nextStatus: KanbanStatus) => {
+  const updateProjetoStatus = async (id: string, nextStatus: KanbanStatus, comment: string) => {
     const previous = projetos;
     const projetoAtual = projetos.find((item) => item.id === id);
     if (!projetoAtual) {
       return;
     }
-
-    const statusApi = toApiProjectStatus(nextStatus);
 
     setProjetos((current) =>
       current.map((item) =>
@@ -212,43 +241,137 @@ export const ProjetosPage: React.FC = () => {
     );
 
     try {
+      setUpdatingStatus(true);
       const rawProjeto = await projectsService.getByIdRaw(id);
       const potenciaFromRaw =
-        typeof rawProjeto.potenciaSistema === 'number'
-          ? rawProjeto.potenciaSistema
+        typeof rawProjeto.systemPower === 'number'
+          ? rawProjeto.systemPower
+          : typeof rawProjeto.potenciaSistema === 'number'
+            ? rawProjeto.potenciaSistema
           : Number(projetoAtual.dadosProjeto.potenciaSistema || 0);
       const valorFromRaw =
-        typeof rawProjeto.valor === 'number'
-          ? rawProjeto.valor
-          : Number(projetoAtual.valor || 0);
-      const modalidade = normalizeModalidade(rawProjeto.modalidade);
-      const enquadramento = normalizeEnquadramento(rawProjeto.enquadramento, potenciaFromRaw);
+        typeof rawProjeto.amount === 'number'
+          ? rawProjeto.amount
+          : typeof rawProjeto.valor === 'number'
+            ? rawProjeto.valor
+            : Number(projetoAtual.valor || 0);
+      const utilityCompany = pickValidString(
+        rawProjeto.utilityCompany,
+        rawProjeto.concessionaria,
+        projetoAtual.dadosProjeto.concessionaria
+      );
+      const utilityProtocol = pickValidString(
+        rawProjeto.utilityProtocol,
+        rawProjeto.protocoloConcessionaria,
+        projetoAtual.protocolo
+      );
+      const customerClass = pickValidString(
+        rawProjeto.customerClass,
+        rawProjeto.classe,
+        projetoAtual.dadosProjeto.classe,
+        'Residencial'
+      );
+      const integrator = pickValidString(rawProjeto.integrator, projetoAtual.dadosProjeto.integrador);
+      const modalidade = normalizeModalidade(rawProjeto.modality ?? rawProjeto.modalidade);
+      const enquadramento = normalizeEnquadramento(rawProjeto.framework ?? rawProjeto.enquadramento, potenciaFromRaw);
+      const dcProtection = pickValidString(
+        rawProjeto.dcProtection,
+        rawProjeto.protecaoCC,
+        projetoAtual.dadosProjeto.protecaoCC
+      );
+      const projectType = pickValidString(
+        rawProjeto.projectType,
+        rawProjeto.tipoProjeto,
+        rawProjeto.tipo_projeto,
+        projetoAtual.tipoProjeto,
+        'standard'
+      );
+      const unitControl = pickValidString(
+        rawProjeto.unitControl,
+        rawProjeto.unidade_controladora,
+        rawProjeto.numeroUc,
+        projetoAtual.numeroUc,
+        'default'
+      );
+      const description = pickValidString(
+        rawProjeto.description,
+        rawProjeto.descricao,
+        rawProjeto['descrição'],
+        projetoAtual.observacoes
+      );
 
-      // Mantem exatamente o contrato validado no Postman.
       const payloadCompleto: Record<string, unknown> = {
         id: rawProjeto.id ?? projetoAtual.id,
-        clienteId: rawProjeto.clienteId ?? projetoAtual.cliente.id,
-        concessionaria: rawProjeto.concessionaria ?? projetoAtual.dadosProjeto.concessionaria,
-        protocoloConcessionaria: rawProjeto.protocoloConcessionaria ?? projetoAtual.protocolo,
-        classe: rawProjeto.classe ?? projetoAtual.dadosProjeto.classe ?? 'Residencial',
-        integrator: rawProjeto.integrator ?? projetoAtual.dadosProjeto.integrador,
-        modalidade,
-        enquadramento,
-        protecaoCC: rawProjeto.protecaoCC ?? projetoAtual.dadosProjeto.protecaoCC ?? 'Disjuntor CC 20A',
-        potenciaSistema: Number.isFinite(potenciaFromRaw) ? potenciaFromRaw : 0,
-        valor: Number.isFinite(valorFromRaw) ? valorFromRaw : 0,
-        status: statusApi
+        clientId: rawProjeto.clientId ?? rawProjeto.clienteId ?? projetoAtual.cliente.id,
+        utilityCompany,
+        utilityProtocol,
+        customerClass,
+        integrator,
+        modality: modalidade,
+        framework: enquadramento,
+        dcProtection,
+        systemPower: Number.isFinite(potenciaFromRaw) ? potenciaFromRaw : 0,
+        amount: Number.isFinite(valorFromRaw) ? String(valorFromRaw) : '0',
+        status: nextStatus,
+        addressId: rawProjeto.addressId ?? rawProjeto.enderecoId ?? undefined,
+        coordinates: rawProjeto.coordinates ?? rawProjeto.coordenadas ?? projetoAtual.coordenadas ?? undefined,
+        servicesNames: rawProjeto.servicesNames ?? rawProjeto.servicos ?? projetoAtual.servicos ?? [],
+        projectType,
+        fastTrack:
+          typeof rawProjeto.fastTrack === 'boolean'
+            ? rawProjeto.fastTrack
+            : projetoAtual.projetoFastTrack === 'sim',
+        unitControl,
+        description
       };
       await projectsService.update(id, payloadCompleto);
+      projectsService.saveStatusTimeline(
+        id,
+        {
+          id: crypto.randomUUID(),
+          etapa: getStatusLabel(nextStatus),
+          data: new Date().toISOString(),
+          status: toTimelineStatus(nextStatus),
+          descricao: comment.trim() || `Status alterado para ${getStatusLabel(nextStatus)}.`
+        },
+        comment.trim() || projetoAtual.observacoes
+      );
     } catch (updateError) {
       console.error('Erro ao atualizar status do projeto:', updateError);
       if (updateError instanceof Error && 'payload' in updateError) {
-        console.error('Payload de erro retornado pela API:', (updateError as { payload?: unknown }).payload);
+        const apiPayload = (updateError as { payload?: unknown }).payload;
+        console.error('Payload de erro retornado pela API:', apiPayload);
+        if (apiPayload && typeof apiPayload === 'object' && 'errors' in apiPayload) {
+          console.error('Campos rejeitados pela API:', (apiPayload as { errors?: unknown }).errors);
+        }
       }
-      console.error('Status enviado para update:', statusApi);
+      console.error('Status enviado para update:', nextStatus);
       setProjetos(previous);
       setError('Nao foi possivel atualizar o status do projeto.');
+    } finally {
+      setUpdatingStatus(false);
     }
+  };
+
+  const openStatusDialog = (projectId: string, nextStatus: KanbanStatus) => {
+    const projeto = projetos.find((item) => item.id === projectId);
+    if (!projeto || toKanbanStatus(projeto.status) === nextStatus) {
+      return;
+    }
+
+    setError(null);
+    setStatusComment('');
+    setPendingStatusChange({ projectId, nextStatus });
+  };
+
+  const confirmStatusChange = async () => {
+    if (!pendingStatusChange) {
+      return;
+    }
+
+    await updateProjetoStatus(pendingStatusChange.projectId, pendingStatusChange.nextStatus, statusComment);
+    setPendingStatusChange(null);
+    setStatusComment('');
   };
 
   if (loading) {
@@ -328,7 +451,7 @@ export const ProjetosPage: React.FC = () => {
                   }
 
                   setDraggedId(null);
-                  void updateProjetoStatus(id, column.id);
+                  openStatusDialog(id, column.id);
                 }}
               >
                 {groupedProjetos[column.id].map((projeto) => (
@@ -353,7 +476,7 @@ export const ProjetosPage: React.FC = () => {
                       <select
                         value={toKanbanStatus(projeto.status)}
                         onChange={(event) => {
-                          void updateProjetoStatus(projeto.id, event.target.value as KanbanStatus);
+                          openStatusDialog(projeto.id, event.target.value as KanbanStatus);
                         }}
                         className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200"
                       >
@@ -385,6 +508,46 @@ export const ProjetosPage: React.FC = () => {
         ))}
         </div>
       </div>
+
+      {pendingStatusChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+            <h2 className="text-xl font-semibold text-slate-100">Atualizar status</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Novo status: <span className="text-slate-200">{getStatusLabel(pendingStatusChange.nextStatus)}</span>
+            </p>
+
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-medium text-slate-300">Comentario</label>
+              <textarea
+                value={statusComment}
+                onChange={(event) => setStatusComment(event.target.value)}
+                rows={5}
+                placeholder="Escreva um comentario sobre esta alteracao de status..."
+                className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+              />
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => {
+                  if (!updatingStatus) {
+                    setPendingStatusChange(null);
+                    setStatusComment('');
+                  }
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button type="button" loading={updatingStatus} onClick={() => void confirmStatusChange()}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,11 +1,11 @@
 /** Pagina 'ClientesPage': lista clientes cadastrados e permite novo cadastro com endereco. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { MagnifyingGlass, PlusCircle } from '@phosphor-icons/react';
+import { MagnifyingGlass, PencilSimple, PlusCircle } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Input } from '../components/Input';
-import { customersService, type Customer } from '../services';
-import { maskCep, maskCnpj, maskCpf, maskPhoneBR, onlyDigits } from '../utils/masks';
+import { ApiError, addressService, customersService, viaCepService, type Customer } from '../services';
+import { maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '../utils/masks';
 
 type TipoDocumento = 'cpf' | 'cnpj';
 
@@ -41,6 +41,46 @@ const createEmptyForm = (): ClienteForm => ({
   }
 });
 
+const getTipoDocumento = (cpfCnpj: string): TipoDocumento =>
+  onlyDigits(cpfCnpj).length > 11 ? 'cnpj' : 'cpf';
+
+const formatDocumento = (cpfCnpj: string): string => {
+  return maskCpfOrCnpj(cpfCnpj);
+};
+
+const formatTelefone = (telefone: string): string => maskPhoneBR(onlyDigits(telefone));
+
+const extractApiErrorMessage = (payload: unknown, fallback: string) => {
+  if (!payload || typeof payload !== 'object') {
+    return fallback;
+  }
+
+  const response = payload as { errors?: Record<string, string | null>; message?: string };
+  const fieldErrors = response.errors ? Object.entries(response.errors).filter(([, value]) => Boolean(value)) : [];
+
+  if (fieldErrors.length > 0) {
+    return fieldErrors.map(([field, message]) => `${field}: ${message}`).join(' | ');
+  }
+
+  return response.message || fallback;
+};
+
+const createFormFromCustomer = (customer: Customer): ClienteForm => ({
+  nome: customer.nome,
+  cpfCnpj: formatDocumento(customer.cpfCnpj),
+  telefone: formatTelefone(customer.telefone),
+  email: customer.email,
+  endereco: {
+    cep: maskCep(customer.endereco?.cep ?? ''),
+    logradouro: customer.endereco?.logradouro ?? '',
+    numero: customer.endereco?.numero ?? '',
+    complemento: customer.endereco?.complemento ?? '',
+    bairro: customer.endereco?.bairro ?? '',
+    cidade: customer.endereco?.cidade ?? '',
+    estado: customer.endereco?.estado ?? ''
+  }
+});
+
 export const ClientesPage: React.FC = () => {
   const [clientes, setClientes] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,13 +89,24 @@ export const ClientesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('cpf');
   const [form, setForm] = useState<ClienteForm>(createEmptyForm());
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
 
   const loadClientes = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await customersService.getAll();
-      setClientes(response);
+      const detailedCustomers = await Promise.all(
+        response.map(async (customer) => {
+          try {
+            return await customersService.getById(customer.id);
+          } catch {
+            return customer;
+          }
+        })
+      );
+      setClientes(detailedCustomers);
     } catch (loadError) {
       console.error('Erro ao carregar clientes:', loadError);
       setError('Nao foi possivel carregar os clientes cadastrados.');
@@ -120,30 +171,108 @@ export const ClientesPage: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      await customersService.create({
+      const addressPayload = {
+        cep: onlyDigits(form.endereco.cep),
+        place: form.endereco.logradouro.trim(),
+        number: form.endereco.numero.trim(),
+        address: form.endereco.logradouro.trim(),
+        complement: form.endereco.complemento.trim(),
+        neighborhood: form.endereco.bairro.trim(),
+        city: form.endereco.cidade.trim(),
+        state: form.endereco.estado.trim().toLowerCase(),
+        link: ''
+      };
+
+      const address = editingAddressId
+        ? await addressService.update({ id: editingAddressId, ...addressPayload })
+        : await addressService.create(addressPayload);
+
+      const payload = {
         nome: form.nome.trim(),
+        addressId: address.id,
         cpfCnpj: onlyDigits(form.cpfCnpj),
         telefone: onlyDigits(form.telefone),
-        email: form.email.trim(),
-        endereco: {
-          cep: onlyDigits(form.endereco.cep),
-          logradouro: form.endereco.logradouro.trim(),
-          numero: form.endereco.numero.trim(),
-          complemento: form.endereco.complemento.trim(),
-          bairro: form.endereco.bairro.trim(),
-          cidade: form.endereco.cidade.trim(),
-          estado: form.endereco.estado.trim().toUpperCase()
-        }
-      });
+        email: form.email.trim()
+      };
+
+      if (editingCustomerId) {
+        await customersService.update(editingCustomerId, payload);
+      } else {
+        await customersService.create(payload);
+      }
 
       setForm(createEmptyForm());
       setTipoDocumento('cpf');
+      setEditingCustomerId(null);
+      setEditingAddressId(null);
       await loadClientes();
     } catch (saveError) {
-      console.error('Erro ao cadastrar cliente:', saveError);
-      setError('Nao foi possivel cadastrar o cliente.');
+      console.error('Erro ao salvar cliente:', saveError);
+      if (saveError instanceof ApiError) {
+        console.error('Detalhes da validacao:', saveError.payload);
+        setError(
+          extractApiErrorMessage(
+            saveError.payload,
+            editingCustomerId ? 'Nao foi possivel atualizar o cliente.' : 'Nao foi possivel cadastrar o cliente.'
+          )
+        );
+      } else {
+        setError(editingCustomerId ? 'Nao foi possivel atualizar o cliente.' : 'Nao foi possivel cadastrar o cliente.');
+      }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEditCustomer = async (customer: Customer) => {
+    setError(null);
+
+    try {
+      const detailedCustomer = await customersService.getById(customer.id);
+      setEditingCustomerId(detailedCustomer.id);
+      setEditingAddressId(detailedCustomer.addressId ?? null);
+      setTipoDocumento(getTipoDocumento(detailedCustomer.cpfCnpj));
+      setForm(createFormFromCustomer(detailedCustomer));
+    } catch (loadError) {
+      console.error('Erro ao carregar cliente para edicao:', loadError);
+      setError('Nao foi possivel carregar os dados completos do cliente.');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCustomerId(null);
+    setEditingAddressId(null);
+    setTipoDocumento('cpf');
+    setForm(createEmptyForm());
+    setError(null);
+  };
+
+  const handleEnderecoCepBlur = async () => {
+    const cep = onlyDigits(form.endereco.cep);
+    if (cep.length !== 8) {
+      return;
+    }
+
+    try {
+      const endereco = await viaCepService.lookup(cep);
+      if (!endereco) {
+        return;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        endereco: {
+          ...prev.endereco,
+          cep: maskCep(endereco.cep),
+          logradouro: endereco.logradouro || prev.endereco.logradouro,
+          complemento: prev.endereco.complemento || endereco.complemento,
+          bairro: endereco.bairro || prev.endereco.bairro,
+          cidade: endereco.cidade || prev.endereco.cidade,
+          estado: endereco.estado || prev.endereco.estado
+        }
+      }));
+    } catch (lookupError) {
+      console.error('Erro ao consultar CEP:', lookupError);
     }
   };
 
@@ -193,25 +322,32 @@ export const ClientesPage: React.FC = () => {
                   <th className="px-4 py-3">Telefone</th>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Endereco</th>
+                  <th className="px-4 py-3 text-right">Acoes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {clientesFiltrados.map((cliente) => (
                   <tr key={cliente.id} className="text-sm text-slate-200">
                     <td className="px-4 py-3">{cliente.nome}</td>
-                    <td className="px-4 py-3">{cliente.cpfCnpj}</td>
-                    <td className="px-4 py-3">{cliente.telefone}</td>
+                    <td className="px-4 py-3">{formatDocumento(cliente.cpfCnpj)}</td>
+                    <td className="px-4 py-3">{formatTelefone(cliente.telefone)}</td>
                     <td className="px-4 py-3">{cliente.email}</td>
                     <td className="px-4 py-3">
                       {cliente.endereco?.cidade
                         ? `${cliente.endereco.cidade}/${cliente.endereco.estado}`
                         : cliente.enderecoCompleto || '-'}
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button type="button" variant="outline" size="sm" onClick={() => handleEditCustomer(cliente)}>
+                        <PencilSimple className="mr-2 h-4 w-4" />
+                        Editar
+                      </Button>
+                    </td>
                   </tr>
                 ))}
                 {clientesFiltrados.length === 0 && (
                   <tr>
-                    <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={5}>
+                    <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={6}>
                       Nenhum cliente encontrado.
                     </td>
                   </tr>
@@ -224,7 +360,14 @@ export const ClientesPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Novo Cliente</CardTitle>
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle>{editingCustomerId ? 'Editar Cliente' : 'Novo Cliente'}</CardTitle>
+            {editingCustomerId && (
+              <Button type="button" variant="outline" size="sm" onClick={handleCancelEdit}>
+                Cancelar edicao
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -301,6 +444,7 @@ export const ClientesPage: React.FC = () => {
                         endereco: { ...prev.endereco, cep: maskCep(event.target.value) }
                       }))
                     }
+                    onBlur={() => void handleEnderecoCepBlur()}
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                   />
                 </div>
@@ -389,7 +533,7 @@ export const ClientesPage: React.FC = () => {
             <div className="flex justify-end">
               <Button type="submit" loading={saving}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Cadastrar Cliente
+                {editingCustomerId ? 'Salvar Alteracoes' : 'Cadastrar Cliente'}
               </Button>
             </div>
           </form>

@@ -1,6 +1,6 @@
 /** Pagina 'LoginPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState } from 'react';
-import { ArrowRight, EnvelopeSimple, Lightning, Lock, ShieldCheck, SunDim } from '@phosphor-icons/react';
+import { ArrowRight, EnvelopeSimple, Eye, EyeSlash, Lightning, Lock, ShieldCheck, SunDim } from '@phosphor-icons/react';
 import { authService } from '../services/authService';
 import type { LoginCredentials } from '../services';
 
@@ -11,6 +11,7 @@ export const LoginPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,8 +19,7 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(credentials);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      await authService.login(credentials);
       window.location.href = '/dashboard';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login');
@@ -116,13 +116,21 @@ export const LoginPage: React.FC = () => {
                   <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-300" />
                   <input
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="admin123"
                     value={credentials.password}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl border border-white/20 bg-slate-950/45 py-3 pl-11 pr-3 text-white placeholder:text-slate-300/70 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/30"
+                    className="w-full rounded-xl border border-white/20 bg-slate-950/45 py-3 pl-11 pr-12 text-white placeholder:text-slate-300/70 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/30"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 transition hover:text-white"
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? <EyeSlash className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
               </label>
 

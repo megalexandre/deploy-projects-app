@@ -7,7 +7,10 @@ export { authService } from './authService';
 export { usersService } from './usersService';
 export { projectsService } from './projectsService';
 export { customersService } from './customersService';
+export { addressService } from './addressService';
 export { auditService } from './auditService';
+export { concessionariasService } from './concessionariasService';
+export { viaCepService } from './viaCepService';
 
 // Export types for new services
 export type { 
@@ -30,13 +33,25 @@ export type {
 
 export type {
   Customer,
-  CreateCustomerData
+  CreateCustomerData,
+  UpdateCustomerData
 } from './customersService';
+
+export type {
+  Address,
+  CreateAddressData,
+  UpdateAddressData
+} from './addressService';
 
 export type { 
   AuditLog, 
   AuditFilters 
 } from './auditService';
+
+export type {
+  Concessionaria,
+  SaveConcessionariaData
+} from './concessionariasService';
 
 // Legacy services (keep if needed)
 export { createCrudService } from './crudService';

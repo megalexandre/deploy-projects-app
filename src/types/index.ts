@@ -44,13 +44,14 @@ export interface Endereco {
   bairro: string;
   cidade: string;
   estado: string;
+  link?: string;
 }
 
 export interface DadosProjeto {
   concessionaria: string;
   classe: string;
   integrador: string;
-  modalidade: 'geracao_compartilhada' | 'autoconsumo';
+  modalidade: 'autoconsumo_local' | 'autoconsumo_remoto' | 'geracao_compartilhada';
   enquadramento: string;
   potenciaSistema: number;
   protecaoCC: string;
@@ -62,6 +63,9 @@ export interface DadosTecnicos {
   ramal: string;
   disjuntor: string;
   cargaInstalada: number;
+  modulos: Modulo[];
+  inversores: Inversor[];
+  divisaoCreditos: DivisaoCreditos[];
 }
 
 export interface Modulo {
@@ -105,6 +109,14 @@ export interface Documento {
   tamanho: number;
 }
 
+export interface PadraoEntradaItem {
+  id: string;
+  tipoLigacao: string;
+  classificacao: string;
+  quantidade: number;
+  disjuntor: string;
+}
+
 export const StatusProjeto = {
   EM_ANALISE_DOCUMENTACAO: 'em_analise_documentacao',
   ELABORACAO_DOCUMENTACAO_TECNICA: 'elaboracao_documentacao_tecnica',
@@ -144,6 +156,22 @@ export interface Projeto {
   documentos: Documento[];
   status: StatusProjeto;
   valor: number;
+  tipoProjeto?: string;
+  servicos?: string[];
+  numeroUc?: string;
+  dataAbertura?: string;
+  coordenadas?: {
+    latitude: string;
+    longitude: string;
+  };
+  latitude?: string;
+  longitude?: string;
+  tensaoFornecimento?: string;
+  padraoEntradaItens?: PadraoEntradaItem[];
+  projetoFastTrack?: string;
+  projetoNovo?: string;
+  zeroGridControleExportacao?: string;
+  observacoes?: string;
   dataCriacao: string;
   dataAtualizacao: string;
 }
@@ -168,13 +196,61 @@ export interface Usuario {
   permissoes: string[];
 }
 
+export const TipoServico = {
+  LIGACAO_NOVA: 'ligacao_nova',
+  AUMENTO_CARGA: 'aumento_carga',
+  TROCA_TITULARIDADE: 'troca_titularidade',
+  ALTERACAO_COMPARTILHAMENTO_CREDITO: 'alteracao_compartilhamento_credito'
+} as const;
+
+export type TipoServico = (typeof TipoServico)[keyof typeof TipoServico];
+
+export const StatusServico = {
+  ABERTURA_SERVICO: 'abertura_servico',
+  ELABORACAO_DOCUMENTACAO: 'elaboracao_documentacao',
+  AGUARDANDO_ASSINATURA_CLIENTE: 'aguardando_assinatura_cliente',
+  AGUARDANDO_PROTOCOLO_CONCESSIONARIA: 'aguardando_protocolo_concessionaria',
+  EM_ANALISE_CONCESSIONARIA: 'em_analise_concessionaria',
+  RESSALVAS: 'ressalvas',
+  OBRAS_CONCESSIONARIA: 'obras_concessionaria',
+  SERVICO_APROVADO: 'servico_aprovado',
+  VISTORIA_SOLICITADA: 'vistoria_solicitada',
+  VISTORIA_REPROVADA: 'vistoria_reprovada',
+  SERVICO_ENCERRADO: 'servico_encerrado'
+} as const;
+
+export type StatusServico = (typeof StatusServico)[keyof typeof StatusServico];
+
 export interface Servico {
   id: string;
+  protocolo: string;
+  tipo: TipoServico;
   nome: string;
+  clienteId?: string;
   cliente: string;
-  status: 'pendente' | 'em_andamento' | 'concluido';
-  data: string;
+  concessionaria: string;
+  status: StatusServico;
+  dataAbertura: string;
   valor: number;
+  cupomDescontoPct: number;
+  valorFinal: number;
+  observacoes?: string;
+  tensaoFornecimento?: '127/220V' | '380/220V';
+  coordenadas?: {
+    latitude: string;
+    longitude: string;
+  };
+  pontoReferencia?: string;
+  padraoMaisDe30m?: 'sim' | 'nao';
+  enderecoObra?: Endereco;
+  ucGeradora?: string;
+  enderecoGeradora?: Endereco;
+  padraoEntradaItens?: PadraoEntradaItem[];
+  rateios?: DivisaoCreditos[];
+  documentos: Documento[];
+  timeline: TimelineItem[];
+  dataCriacao: string;
+  dataAtualizacao: string;
 }
 
 export interface Transacao {
@@ -198,6 +274,27 @@ export interface Evento {
   descricao: string;
 }
 
+export interface FaixaPrecoFotovoltaico {
+  id: string;
+  min: number;
+  max: number;
+  valor: number;
+}
+
+export interface PrecoPadraoEntrada {
+  id: string;
+  classificacao: string;
+  tipoLigacao: string;
+  valor: number;
+}
+
+export interface CupomDesconto {
+  id: string;
+  nome: string;
+  percentual: number;
+  ativo: boolean;
+}
+
 export interface ConfiguracoesSistema {
   nomeEmpresa: string;
   cnpj: string;
@@ -216,6 +313,9 @@ export interface ConfiguracoesSistema {
   backupAutomatico: boolean;
   frequenciaBackup: 'diario' | 'semanal' | 'mensal';
   retencaoBackup: string;
+  tabelaPrecoFotovoltaico: FaixaPrecoFotovoltaico[];
+  tabelaPrecoPadraoEntrada: PrecoPadraoEntrada[];
+  cuponsDesconto: CupomDesconto[];
 }
 
 export interface DatabaseTable {

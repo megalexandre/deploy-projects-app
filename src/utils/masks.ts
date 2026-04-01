@@ -60,3 +60,36 @@ export const formatCurrencyBRL = (value: number) => {
     currency: 'BRL'
   }).format(value);
 };
+
+export const maskCoordinate = (value: string, _maxIntegerDigits = 3, maxDecimalDigits = 8) => {
+  const trimmed = value.trim().replace(/\s+/g, '').replace(',', '.');
+  const signal = trimmed.startsWith('-') ? '-' : '';
+  const unsigned = trimmed.replace(/-/g, '');
+  const [integerPart = '', ...decimalParts] = unsigned.split('.');
+  const integerDigits = integerPart.replace(/\D/g, '');
+  const decimalDigits = decimalParts.join('').replace(/\D/g, '').slice(0, maxDecimalDigits);
+
+  if (!integerDigits && !decimalDigits) {
+    return '';
+  }
+
+  if (!integerDigits && decimalDigits) {
+    return `${signal}0.${decimalDigits}`;
+  }
+
+  return decimalDigits ? `${signal}${integerDigits}.${decimalDigits}` : `${signal}${integerDigits}`;
+};
+
+export const maskLatitude = (value: string, maxDecimalDigits = 8) => maskCoordinate(value, 2, maxDecimalDigits);
+
+export const maskLongitude = (value: string, maxDecimalDigits = 8) => maskCoordinate(value, 3, maxDecimalDigits);
+
+export const parseCoordinate = (value: string): number | null => {
+  const normalized = maskCoordinate(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+};

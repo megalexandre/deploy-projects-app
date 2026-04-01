@@ -1,4 +1,5 @@
 /** Componente raiz da aplicacao: define rotas e composicao principal da interface. */
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -6,7 +7,9 @@ import { ClientesPage } from './pages/ClientesPage';
 import { ProjetosPage } from './pages/ProjetosPage';
 import { ProjetoDetailPage } from './pages/ProjetoDetailPage';
 import { NovoProjetoPage } from './pages/NovoProjetoPage';
+import { NovoServicoPage } from './pages/NovoServicoPage';
 import { ServicosPage } from './pages/ServicosPage';
+import { ServicoDetailPage } from './pages/ServicoDetailPage';
 import { FinanceiroPage } from './pages/FinanceiroPage';
 import { PagamentosPage } from './pages/PagamentosPage';
 import { RecebimentosPage } from './pages/RecebimentosPage';
@@ -15,154 +18,165 @@ import { CalendarioPage } from './pages/CalendarioPage';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
 import { BancoDeDadosPage } from './pages/BancoDeDadosPage';
+import { ConcessionariasPage } from './pages/ConcessionariasPage';
 import { MainLayout } from './layouts/MainLayout';
+import { useAuthInterceptor } from './hooks/useAuthInterceptor';
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const tokenKey = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
+  const isAuthenticated = Boolean(localStorage.getItem(tokenKey));
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
+  useAuthInterceptor();
+
   const tokenKey = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
-  const isAuthenticated = Boolean(localStorage.getItem('user') && localStorage.getItem(tokenKey));
+  const isAuthenticated = Boolean(localStorage.getItem(tokenKey));
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route
           path="/dashboard"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><DashboardPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/clientes"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><ClientesPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/projetos"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><ProjetosPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/projetos/:id"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><ProjetoDetailPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/servicos"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><ServicosPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/servicos/novo"
+          element={
+            <ProtectedRoute>
+              <MainLayout><NovoServicoPage /></MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/servicos/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout><ServicoDetailPage /></MainLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/financeiro"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><FinanceiroPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/financeiro/pagamentos"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><PagamentosPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/financeiro/recebimentos"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><RecebimentosPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/financeiro/faturas"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><FaturasPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/calendario"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><CalendarioPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/usuarios"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><UsuariosPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/concessionarias"
+          element={
+            <ProtectedRoute>
+              <MainLayout><ConcessionariasPage /></MainLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/configuracoes"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><ConfiguracoesPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/banco-de-dados"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><BancoDeDadosPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route
           path="/projetos/novo"
           element={
-            isAuthenticated ? (
+            <ProtectedRoute>
               <MainLayout><NovoProjetoPage /></MainLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
