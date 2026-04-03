@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, FileText, Clock, CheckCircle } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import { projectsService } from '../services';
+import { filesService, projectsService } from '../services';
 import type { Projeto } from '../types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '../utils/masks';
 
@@ -44,6 +44,18 @@ export const ProjetoDetailPage: React.FC = () => {
         return 'text-yellow-300 bg-yellow-500/10';
       default:
         return 'text-gray-400 bg-gray-900/20';
+    }
+  };
+
+  const handleDownload = async (fileId?: string) => {
+    if (!fileId) {
+      return;
+    }
+
+    try {
+      await filesService.downloadFile(fileId);
+    } catch (error) {
+      console.error('Erro ao baixar documento do projeto:', error);
     }
   };
 
@@ -645,7 +657,12 @@ export const ProjetoDetailPage: React.FC = () => {
                             {(documento.tamanho / 1024 / 1024).toFixed(2)} MB
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => void handleDownload(documento.fileId)}
+                              disabled={!documento.fileId}
+                            >
                               Download
                             </Button>
                           </td>

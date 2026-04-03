@@ -9,6 +9,7 @@ import {
   addressService,
   concessionariasService,
   customersService,
+  filesService,
   projectsService,
   viaCepService,
   type Concessionaria,
@@ -76,6 +77,11 @@ interface DocumentoCategoria {
   key: string;
   label: string;
   maxFiles?: number;
+}
+
+interface DocumentoSelecionado {
+  categoria: string;
+  file: File;
 }
 
 interface PadraoEntradaItemForm {
@@ -531,14 +537,11 @@ export const NovoProjetoPage: React.FC = () => {
     }));
   };
 
-  const buildDocumentosPayload = () =>
+  const buildSelectedDocumentFiles = (): DocumentoSelecionado[] =>
     documentosTemplate.flatMap((categoria) =>
       (documentos[categoria.key] ?? []).map((file) => ({
-        id: crypto.randomUUID(),
-        nome: file.name,
-        tipo: categoria.label,
-        dataUpload: new Date().toISOString(),
-        tamanho: file.size
+        categoria: categoria.label,
+        file
       }))
     );
 
@@ -786,7 +789,7 @@ export const NovoProjetoPage: React.FC = () => {
               })),
         modulos: projetoFotovoltaico ? buildModulosPayload() : [],
         inversores: projetoFotovoltaico ? buildInversoresPayload() : [],
-        documentos: buildDocumentosPayload(),
+        documentos: [],
         enderecoCompleto: buildEnderecoCompleto(enderecoProjetoAtual),
         dataAbertura: dadosBasicos.dataAbertura,
         coordinates: {
@@ -818,7 +821,29 @@ export const NovoProjetoPage: React.FC = () => {
         potenciaSistemaKw
       });
       console.log('Enviando dados para API:', projectData);
-      await projectsService.create(projectData);
+      const projetoCriado = await projectsService.create(projectData);
+      const documentosSelecionados = buildSelectedDocumentFiles();
+
+      if (documentosSelecionados.length > 0) {
+        // O upload depende do id do projeto ja existir, por isso ele acontece depois da criacao.
+        const uploadedFiles = await filesService.uploadFiles(
+          projetoCriado.id,
+          documentosSelecionados.map((item) => item.file)
+        );
+
+        projectsService.saveDocuments(
+          projetoCriado.id,
+          uploadedFiles.map((uploadedFile, index) => ({
+            id: uploadedFile.id,
+            fileId: uploadedFile.id,
+            nome: uploadedFile.fileName,
+            tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
+            dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
+            tamanho: uploadedFile.size,
+            url: uploadedFile.urlS3
+          }))
+        );
+      }
 
       navigate('/projetos');
     } catch (creationError) {

@@ -378,6 +378,7 @@ const buildFallbackTimeline = (project: Pick<Projeto, 'id' | 'status' | 'dataAbe
   });
 
 const normalizeProjeto = (raw: unknown): Projeto => {
+  // Este adapter protege a UI contra variacoes de nomenclatura do backend e payloads parciais.
   const project = isRecord(raw) ? raw : {};
   const cliente = isRecord(project.cliente) ? project.cliente : {};
   const customer = isRecord(project.customer) ? project.customer : {};
@@ -723,6 +724,15 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
 };
 
 export const projectsService = {
+  saveDocuments(projectId: string, documentos: Documento[]) {
+    // Documentos enviados apos a criacao do projeto precisam ser persistidos no enhancement local
+    // porque o fluxo de upload e separado do POST principal de projeto.
+    updateProjectEnhancement(projectId, (current) => ({
+      ...current,
+      documentos
+    }));
+  },
+
   saveStatusTimeline(projectId: string, item: Projeto['timeline'][number], observacoes?: string) {
     updateProjectEnhancement(projectId, (current) => {
       const previousTimeline = current?.timeline ?? [];

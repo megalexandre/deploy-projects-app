@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, Clock, FileText, FloppyDisk } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { concessionariasService, customersService, servicosService, type Concessionaria, type Customer } from '../services';
+import { concessionariasService, customersService, filesService, servicosService, type Concessionaria, type Customer } from '../services';
 import type { Servico, StatusServico } from '../types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '../utils/masks';
@@ -38,6 +38,18 @@ const formatDate = (value?: string) => {
   if (!value) return '-';
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('pt-BR');
+};
+
+const handleDownload = async (fileId?: string) => {
+  if (!fileId) {
+    return;
+  }
+
+  try {
+    await filesService.downloadFile(fileId);
+  } catch (error) {
+    console.error('Erro ao baixar documento do servico:', error);
+  }
 };
 
 const getStatusLabel = (status: StatusServico) =>
@@ -215,7 +227,7 @@ export const ServicoDetailPage: React.FC = () => {
       {activeTab === 'documentos' && (
         <Card><CardHeader><CardTitle>Documentos</CardTitle></CardHeader><CardContent>
           {servico.documentos.length === 0 ? <p className="text-gray-400">Nenhum documento cadastrado.</p> : (
-            <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-700"><thead><tr><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Nome</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Tipo</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Data</th></tr></thead><tbody className="divide-y divide-gray-800">{servico.documentos.map((documento) => <tr key={documento.id}><td className="px-4 py-3 text-sm text-gray-300"><div className="flex items-center"><FileText className="mr-2 h-4 w-4 text-gray-400" />{documento.nome}</div></td><td className="px-4 py-3 text-sm text-gray-300">{documento.tipo}</td><td className="px-4 py-3 text-sm text-gray-300">{formatDate(documento.dataUpload)}</td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-700"><thead><tr><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Nome</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Tipo</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Data</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Acoes</th></tr></thead><tbody className="divide-y divide-gray-800">{servico.documentos.map((documento) => <tr key={documento.id}><td className="px-4 py-3 text-sm text-gray-300"><div className="flex items-center"><FileText className="mr-2 h-4 w-4 text-gray-400" />{documento.nome}</div></td><td className="px-4 py-3 text-sm text-gray-300">{documento.tipo}</td><td className="px-4 py-3 text-sm text-gray-300">{formatDate(documento.dataUpload)}</td><td className="px-4 py-3 text-sm text-gray-300"><Button variant="outline" size="sm" onClick={() => void handleDownload(documento.fileId)} disabled={!documento.fileId}>Download</Button></td></tr>)}</tbody></table></div>
           )}
         </CardContent></Card>
       )}

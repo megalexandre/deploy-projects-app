@@ -1,163 +1,71 @@
-# OPJ Engenharia - Sistema de Gestão de Projetos Fotovoltaicos
+# OPJ Engenharia
 
-Sistema interno da empresa OPJ Engenharia para gestão de projetos fotovoltaicos desenvolvido com React + TypeScript + Vite.
+Frontend interno da OPJ Engenharia para operacao de projetos fotovoltaicos, servicos tecnicos, clientes, financeiro e configuracoes.
 
-## 🚀 Tecnologias Utilizadas
+## Stack
 
-- **React 19** com TypeScript
-- **Vite** como bundler
-- **TailwindCSS** com tema escuro
-- **React Router** para navegação
-- **Lucide React** para ícones
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Tailwind CSS
 
-## 🎨 Identidade Visual
+## Scripts
 
-- **Azul institucional**: `#1A355D`
-- **Laranja de destaque**: `#EE8408`
-- **Tema escuro** como padrão
-- Layout responsivo e corporativo
-
-## 📁 Estrutura do Projeto
-
-```
-src/
-├── components/     # Componentes reutilizáveis
-├── layouts/        # Layouts da aplicação
-├── pages/          # Páginas da aplicação
-├── services/       # Serviços de API
-├── hooks/          # Hooks customizados
-├── mocks/          # Dados fictícios
-├── types/          # Tipos TypeScript
-└── App.tsx         # Componente principal
-```
-
-## 🔐 Acesso Demo
-
-- **E-mail**: `admin@opjengenharia.com.br`
-- **Senha**: `admin123`
-
-## 📋 Funcionalidades Implementadas
-
-### ✅ Login
-- Autenticação simulada com mock
-- Interface centralizada e profissional
-- Validação de credenciais
-
-### ✅ Dashboard
-- Cards de resumo com estatísticas
-- Lista de projetos recentes
-- Navegação rápida para outras seções
-
-### ✅ Listagem de Projetos
-- Tabela com todos os projetos
-- Busca e filtros
-- Status visual diferenciado
-- Ações de visualização
-
-### ✅ Detalhe do Projeto
-- **7 abas organizadas**:
-  1. Dados do Projeto
-  2. Dados Técnicos
-  3. Divisão de Créditos
-  4. Módulos
-  5. Inversores
-  6. Linha do Tempo
-  7. Documentos
-- Informações completas e organizadas
-
-### ✅ Layout Principal
-- Sidebar responsiva
-- Header com informações
-- Menu de navegação
-- Logout funcional
-
-## 🛠️ Como Executar
-
-### Pré-requisitos
-- Node.js 18+
-- npm ou yarn
-
-### Instalação
 ```bash
 npm install
-```
-
-### Desenvolvimento
-```bash
 npm run dev
-```
-
-### Build para Produção
-```bash
 npm run build
-```
-
-### Preview
-```bash
 npm run preview
-```
-
-## 🧪 Testes E2E (Cucumber + Playwright)
-
-### Instalar navegadores do Playwright
-```bash
-npx playwright install
-```
-
-### Executar testes
-1. Inicie o app em um terminal:
-```bash
-npm run dev
-```
-2. Rode os testes em outro terminal:
-```bash
+npm run lint
 npm run test:e2e
 ```
 
-Se precisar alterar a URL base, use a variavel `BASE_URL`.
-Exemplo:
-```bash
-BASE_URL=http://localhost:5173 npm run test:e2e
+## Variaveis de ambiente
+
+Use [.env.example](/a:/workspace/projeto%20orley/opj-engenharia/.env.example) como base:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000/api
+VITE_AUTH_TOKEN_STORAGE_KEY=auth_token
+VITE_USE_MOCK_API=false
 ```
 
-## 📊 Arquitetura
+## Estrutura principal
 
-### Serviços
-Os serviços em `src/services/` simulam chamadas assíncronas ao backend e podem ser facilmente substituídos por chamadas reais à API Kotlin quando disponível.
+```text
+src/
+  components/   Componentes reutilizaveis de UI
+  hooks/        Hooks de tema e autenticacao
+  layouts/      Estrutura compartilhada da aplicacao
+  pages/        Telas de negocio
+  services/     Integracao HTTP e persistencia local
+  types/        Contratos TypeScript do dominio
+  utils/        Mascaras, configuracoes e helpers
+docs/
+  SISTEMA.md
+  ARQUITETURA_FRONTEND.md
+```
 
-### Mocks
-Dados fictícios em `src/mocks/` para simular:
-- Projetos completos
-- Clientes
-- Timeline de etapas
-- Documentos
+## Fluxos principais
 
-### Componentes
-Componentes reutilizáveis em `src/components/`:
-- `Button` - Botões com variantes
-- `Input` - Campos de entrada
-- `Card` - Cards para conteúdo
+- `App.tsx` concentra as rotas e protege o acesso autenticado.
+- `MainLayout.tsx` define sidebar, cabecalho e shell visual.
+- `projectsService.ts` normaliza payloads do backend e complementa dados locais do frontend.
+- `servicosService.ts` persiste servicos em `localStorage` enquanto parte desse dominio ainda nao depende integralmente da API.
+- `filesService.ts` faz upload e download de arquivos vinculados ao `id` do item.
 
-## 🔄 Próximos Passos
+## Upload de arquivos
 
-- [ ] Implementar cadastro de projeto com stepper
-- [ ] Integração com API real Kotlin
-- [ ] Validações de formulários
-- [ ] Upload de arquivos
-- [ ] Relatórios e exportações
+O fluxo atual funciona assim:
 
-## 📱 Responsividade
+1. O frontend cria o projeto ou servico.
+2. O item retorna com `id`.
+3. Os arquivos sao enviados para `POST /api/v1/file/upload` com esse `id`.
+4. O backend devolve um `fileId` por arquivo.
+5. O frontend salva esse `fileId` dentro de `documentos` para download posterior.
 
-O sistema é totalmente responsivo e funciona em:
-- Desktop (1920px+)
-- Tablet (768px+)
-- Mobile (320px+)
+## Documentacao complementar
 
-## 🎯 Foco Corporativo
-
-Interface profissional e focada em produtividade, com:
-- Cores institucionais OPJ Engenharia
-- Tipografia clara e legível
-- Hierarquia visual bem definida
-- Transições suaves
-- Feedback visual claro
+- Visao funcional: [docs/SISTEMA.md](/a:/workspace/projeto%20orley/opj-engenharia/docs/SISTEMA.md)
+- Arquitetura tecnica: [docs/ARQUITETURA_FRONTEND.md](/a:/workspace/projeto%20orley/opj-engenharia/docs/ARQUITETURA_FRONTEND.md)

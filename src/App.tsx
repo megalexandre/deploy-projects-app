@@ -34,6 +34,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function App() {
+  // Mantem o comportamento global de sessao sincronizado com erros 401 do backend.
   useAuthInterceptor();
 
   const tokenKey = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
@@ -42,6 +43,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Todas as rotas autenticadas ficam encapsuladas pelo mesmo layout para manter navegacao e shell visual consistentes. */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route
           path="/dashboard"

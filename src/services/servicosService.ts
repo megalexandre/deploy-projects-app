@@ -121,7 +121,9 @@ const normalizeDocumentos = (documentos?: Documento[]) =>
     nome: normalizeText(item.nome),
     tipo: normalizeText(item.tipo),
     dataUpload: normalizeText(item.dataUpload) || new Date().toISOString(),
-    tamanho: toNumber(item.tamanho)
+    tamanho: toNumber(item.tamanho),
+    fileId: normalizeText(item.fileId) || undefined,
+    url: normalizeText(item.url) || undefined
   }));
 
 const normalizePadraoItens = (itens?: PadraoEntradaItem[]) =>
@@ -156,6 +158,8 @@ const normalizeTimeline = (serviceId: string, status: StatusServico, dataAbertur
 };
 
 const normalizeServico = (raw: Partial<Servico>): Servico => {
+  // Servicos ainda vivem majoritariamente no frontend; essa normalizacao garante consistencia
+  // mesmo quando os dados vierem de formularios, edicoes ou armazenamento local.
   const id = normalizeText(raw.id) || crypto.randomUUID();
   const dataCriacao = normalizeText(raw.dataCriacao) || new Date().toISOString();
   const dataAtualizacao = normalizeText(raw.dataAtualizacao) || dataCriacao;
@@ -243,6 +247,12 @@ const sortByDate = (items: Servico[]) =>
 export const servicosService = {
   statusFlow: SERVICE_STATUS_FLOW,
   typeLabels: SERVICE_TYPE_LABELS,
+
+  async saveDocuments(id: string, documentos: Documento[]): Promise<Servico> {
+    // Mantem o mesmo ponto de entrada para anexos independentemente de o servico ter sido criado
+    // pela tela nova ou pelo fluxo legado baseado em localStorage.
+    return servicosService.update(id, { documentos });
+  },
 
   async list(): Promise<Servico[]> {
     return sortByDate(readStorage());

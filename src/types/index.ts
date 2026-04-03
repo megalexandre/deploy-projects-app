@@ -107,6 +107,8 @@ export interface Documento {
   tipo: string;
   dataUpload: string;
   tamanho: number;
+  fileId?: string;
+  url?: string;
 }
 
 export interface PadraoEntradaItem {

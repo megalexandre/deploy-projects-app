@@ -64,6 +64,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
+          {/* Sidebar unica da aplicacao: qualquer nova secao autenticada deve entrar aqui e em App.tsx. */}
           <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
             <div className="flex items-center gap-3">
               <img src="/opj-padrao.png" alt="OPJ Engenharia" className="h-8 w-auto" />

@@ -3,7 +3,7 @@ import { ArrowLeft, FloppyDisk, PlusCircle } from '@phosphor-icons/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { concessionariasService, customersService, servicosService, viaCepService, type Concessionaria, type Customer } from '../services';
+import { concessionariasService, customersService, filesService, servicosService, viaCepService, type Concessionaria, type Customer } from '../services';
 import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, TipoServico } from '../types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
 import { formatCurrencyBRL, maskCep, maskLatitude, maskLongitude, maskNumeric, onlyDigits, parseCoordinate } from '../utils/masks';
@@ -40,6 +40,11 @@ interface DocumentoCategoria {
   key: string;
   label: string;
   maxFiles?: number;
+}
+
+interface DocumentoSelecionado {
+  categoria: string;
+  file: File;
 }
 
 interface ServicoForm {
@@ -127,7 +132,13 @@ const isTechnicalType = (tipo: TipoServico) =>
 const canUseRateioType = (tipo: TipoServico) => tipo === 'alteracao_compartilhamento_credito';
 const getPersonType = (customer?: Customer | null): PersonType => ((customer?.cpfCnpj.replace(/\D/g, '').length ?? 0) > 11 ? 'cnpj' : 'cpf');
 const buildDocumentCategories = (tipo: TipoServico, personType: PersonType): DocumentoCategoria[] => [...documentCategoriesByType[tipo].filter((item) => item.key !== 'outros'), ...personDocuments[personType], ...documentCategoriesByType[tipo].filter((item) => item.key === 'outros')];
-const buildDocumentPayload = (filesByCategory: Record<string, File[]>, categories: DocumentoCategoria[]): Documento[] => categories.flatMap((category) => (filesByCategory[category.key] ?? []).map((file) => ({ id: crypto.randomUUID(), nome: file.name, tipo: category.label, dataUpload: new Date().toISOString(), tamanho: file.size })));
+const buildSelectedDocumentFiles = (filesByCategory: Record<string, File[]>, categories: DocumentoCategoria[]): DocumentoSelecionado[] =>
+  categories.flatMap((category) =>
+    (filesByCategory[category.key] ?? []).map((file) => ({
+      categoria: category.label,
+      file
+    }))
+  );
 
 export const NovoServicoPage: React.FC = () => {
   const navigate = useNavigate();
@@ -219,7 +230,7 @@ export const NovoServicoPage: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      await servicosService.create({
+      const servicoCriado = await servicosService.create({
         tipo: form.tipo,
         clienteId: form.clienteId || undefined,
         cliente: form.clienteId ? (selectedCustomer?.nome ?? '') : form.clienteNomeManual.trim(),
@@ -237,8 +248,32 @@ export const NovoServicoPage: React.FC = () => {
         enderecoGeradora: canUseRateioType(form.tipo) ? toEnderecoPayload(form.enderecoGeradora) : undefined,
         padraoEntradaItens: isTechnicalType(form.tipo) ? form.padraoEntradaItens.filter((item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== '').map<PadraoEntradaItem>((item) => ({ id: item.id, tipoLigacao: item.tipoLigacao, classificacao: item.classificacao, quantidade: Number(item.quantidade) || 0, disjuntor: item.disjuntor.trim() })) : [],
         rateios: canUseRateioType(form.tipo) ? form.rateios.filter((item) => item.uc.trim() && item.endereco.trim() && Number(item.percentual) > 0).map<DivisaoCreditos>((item) => ({ uc: item.uc.trim(), endereco: item.endereco.trim(), classe: item.classe, percentual: Number(item.percentual) || 0 })) : [],
-        documentos: buildDocumentPayload(uploadedFiles, documentCategories)
+        documentos: []
       });
+
+      const documentosSelecionados = buildSelectedDocumentFiles(uploadedFiles, documentCategories);
+
+      if (documentosSelecionados.length > 0) {
+        // O backend gera um fileId por anexo e ele passa a ser a referencia oficial para download.
+        const uploadedDocuments = await filesService.uploadFiles(
+          servicoCriado.id,
+          documentosSelecionados.map((item) => item.file)
+        );
+
+        await servicosService.saveDocuments(
+          servicoCriado.id,
+          uploadedDocuments.map((uploadedDocument, index): Documento => ({
+            id: uploadedDocument.id,
+            fileId: uploadedDocument.id,
+            nome: uploadedDocument.fileName,
+            tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
+            dataUpload: uploadedDocument.createdAt ?? new Date().toISOString(),
+            tamanho: uploadedDocument.size,
+            url: uploadedDocument.urlS3
+          }))
+        );
+      }
+
       navigate('/servicos');
     } catch (saveError) {
       console.error('Erro ao criar servico:', saveError);

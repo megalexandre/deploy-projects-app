@@ -125,6 +125,7 @@ const request = async <T>(method: HttpMethod, path: string, options: ApiRequestO
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
+    // Todos os services recebem o mesmo formato de erro, evitando tratamento ad hoc em cada tela.
     const error = new ApiError(
       resolveErrorMessage(payload, 'Erro na comunicacao com o servidor'),
       response.status,

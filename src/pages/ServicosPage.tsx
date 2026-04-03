@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { concessionariasService, customersService, servicosService, viaCepService, type Concessionaria, type Customer } from '../services';
+import { concessionariasService, customersService, filesService, servicosService, viaCepService, type Concessionaria, type Customer } from '../services';
 import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, Servico, StatusServico, TipoServico } from '../types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
 import { formatCurrencyBRL, maskCep, maskLatitude, maskLongitude, maskNumeric, onlyDigits, parseCoordinate } from '../utils/masks';
@@ -63,6 +63,11 @@ interface DocumentoCategoria {
   key: string;
   label: string;
   maxFiles?: number;
+}
+
+interface DocumentoSelecionado {
+  categoria: string;
+  file: File;
 }
 
 const tipoServicoOptions: Array<{ value: TipoServico; label: string; description: string }> = [
@@ -217,14 +222,11 @@ const currencyTextToNumber = (value: string) => {
   const parsed = Number(value.replace(',', '.'));
   return Number.isFinite(parsed) ? parsed : 0;
 };
-const buildDocumentPayload = (filesByCategory: Record<string, File[]>, categories: DocumentoCategoria[]): Documento[] =>
+const buildSelectedDocumentFiles = (filesByCategory: Record<string, File[]>, categories: DocumentoCategoria[]): DocumentoSelecionado[] =>
   categories.flatMap((category) =>
     (filesByCategory[category.key] ?? []).map((file) => ({
-      id: crypto.randomUUID(),
-      nome: file.name,
-      tipo: category.label,
-      dataUpload: new Date().toISOString(),
-      tamanho: file.size
+      categoria: category.label,
+      file
     }))
   );
 const getTipoLabel = (tipo: TipoServico) => tipoServicoOptions.find((item) => item.value === tipo)?.label ?? tipo;
@@ -413,6 +415,9 @@ export const ServicosPage: React.FC = () => {
     setError(null);
 
     try {
+      const documentosExistentes = editingId
+        ? servicos.find((item) => item.id === editingId)?.documentos ?? []
+        : [];
       const payload = {
         tipo: form.tipo,
         clienteId: form.clienteId || undefined,
@@ -456,12 +461,39 @@ export const ServicosPage: React.FC = () => {
                 percentual: Number(item.percentual) || 0
               }))
           : [],
-        documentos: buildDocumentPayload(uploadedFiles, documentCategories)
+        documentos: documentosExistentes
       };
 
-      const service = editingId
+      let service = editingId
         ? await servicosService.update(editingId, payload)
         : await servicosService.create(payload);
+
+      const documentosSelecionados = buildSelectedDocumentFiles(uploadedFiles, documentCategories);
+
+      if (documentosSelecionados.length > 0) {
+        // O fluxo legado de servicos reaproveita a mesma regra de upload da tela dedicada
+        // para evitar divergencia de comportamento entre as duas entradas de cadastro.
+        const uploadedDocuments = await filesService.uploadFiles(
+          service.id,
+          documentosSelecionados.map((item) => item.file)
+        );
+
+        service = await servicosService.saveDocuments(
+          service.id,
+          [
+            ...documentosExistentes,
+            ...uploadedDocuments.map((uploadedDocument, index): Documento => ({
+              id: uploadedDocument.id,
+              fileId: uploadedDocument.id,
+              nome: uploadedDocument.fileName,
+              tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
+              dataUpload: uploadedDocument.createdAt ?? new Date().toISOString(),
+              tamanho: uploadedDocument.size,
+              url: uploadedDocument.urlS3
+            }))
+          ]
+        );
+      }
 
       setServicos((current) => {
         const exists = current.some((item) => item.id === service.id);

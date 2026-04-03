@@ -11,6 +11,7 @@ export { addressService } from './addressService';
 export { auditService } from './auditService';
 export { concessionariasService } from './concessionariasService';
 export { viaCepService } from './viaCepService';
+export { filesService } from './filesService';
 
 // Export types for new services
 export type { 
@@ -52,6 +53,7 @@ export type {
   Concessionaria,
   SaveConcessionariaData
 } from './concessionariasService';
+export type { UploadedFileResponse } from './filesService';
 
 // Legacy services (keep if needed)
 export { createCrudService } from './crudService';
