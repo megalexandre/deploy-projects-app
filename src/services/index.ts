@@ -63,4 +63,3 @@ export { servicosService } from './servicosService';
 export { financeiroService } from './financeiroService';
 export { calendarioService } from './calendarioService';
 export { configuracoesService } from './configuracoesService';
-export { bancoDadosService } from './bancoDadosService';

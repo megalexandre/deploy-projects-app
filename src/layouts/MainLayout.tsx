@@ -10,8 +10,8 @@ import {
   CurrencyDollar,
   Calendar,
   Users,
-  Database,
   Buildings,
+  CheckSquare,
   Sun,
   Moon,
   List,
@@ -40,8 +40,8 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
     { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
     { icon: Calendar, label: 'Calendario', path: '/calendario' },
     { icon: Users, label: 'Usuarios', path: '/usuarios' },
-    { icon: Gear, label: 'Configuracoes', path: '/configuracoes' },
-    { icon: Database, label: 'Banco de Dados', path: '/banco-de-dados' }
+    { icon: CheckSquare, label: 'Aprovacoes', path: '/aprovacoes' },
+    { icon: Gear, label: 'Configuracoes', path: '/configuracoes' }
   ];
 
   return (

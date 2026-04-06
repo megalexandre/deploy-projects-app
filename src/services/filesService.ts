@@ -16,7 +16,7 @@ const buildUrl = (path: string) => {
   const normalizedEndpoint = endpoint.startsWith('/api/') ? endpoint.slice(4) : endpoint;
 
   if (import.meta.env.DEV && baseUrl === '/api') {
-    return `/api${endpoint}`;
+    return endpoint.startsWith('/api/') ? endpoint : `/api${endpoint}`;
   }
 
   if (baseUrl.endsWith('/api')) {

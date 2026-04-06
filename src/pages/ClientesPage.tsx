@@ -1,10 +1,10 @@
 /** Pagina 'ClientesPage': lista clientes cadastrados e permite novo cadastro com endereco. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { MagnifyingGlass, PencilSimple, PlusCircle } from '@phosphor-icons/react';
+import { DownloadSimple, FileText, MagnifyingGlass, PencilSimple, PlusCircle, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Input } from '../components/Input';
-import { ApiError, addressService, customersService, viaCepService, type Customer } from '../services';
+import { ApiError, addressService, customersService, filesService, viaCepService, type Customer } from '../services';
 import { maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '../utils/masks';
 
 type TipoDocumento = 'cpf' | 'cnpj';
@@ -91,6 +91,7 @@ export const ClientesPage: React.FC = () => {
   const [form, setForm] = useState<ClienteForm>(createEmptyForm());
   const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [uploadingDocuments, setUploadingDocuments] = useState(false);
 
   const loadClientes = async () => {
     setLoading(true);
@@ -247,6 +248,61 @@ export const ClientesPage: React.FC = () => {
     setError(null);
   };
 
+  const clienteEmEdicao = useMemo(
+    () => clientes.find((cliente) => cliente.id === editingCustomerId) ?? null,
+    [clientes, editingCustomerId]
+  );
+
+  const handleDownload = async (fileId?: string) => {
+    if (!fileId) {
+      return;
+    }
+
+    try {
+      await filesService.downloadFile(fileId);
+    } catch (downloadError) {
+      console.error('Erro ao baixar documento do cliente:', downloadError);
+      setError('Nao foi possivel baixar o documento do cliente.');
+    }
+  };
+
+  const handleUploadDocuments = async (files: FileList | null) => {
+    if (!editingCustomerId) {
+      return;
+    }
+
+    const selectedFiles = Array.from(files ?? []);
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    setUploadingDocuments(true);
+    setError(null);
+
+    try {
+      const uploadedFiles = await filesService.uploadFiles(editingCustomerId, selectedFiles);
+      const documentosAtuais = clienteEmEdicao?.documentos ?? [];
+      customersService.saveDocuments(editingCustomerId, [
+        ...documentosAtuais,
+        ...uploadedFiles.map((uploadedFile) => ({
+          id: uploadedFile.id,
+          fileId: uploadedFile.id,
+          nome: uploadedFile.fileName,
+          tipo: 'Documento',
+          dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
+          tamanho: uploadedFile.size,
+          url: uploadedFile.urlS3
+        }))
+      ]);
+      await loadClientes();
+    } catch (uploadError) {
+      console.error('Erro ao enviar documentos do cliente:', uploadError);
+      setError('Nao foi possivel enviar os documentos do cliente.');
+    } finally {
+      setUploadingDocuments(false);
+    }
+  };
+
   const handleEnderecoCepBlur = async () => {
     const cep = onlyDigits(form.endereco.cep);
     if (cep.length !== 8) {
@@ -338,10 +394,16 @@ export const ClientesPage: React.FC = () => {
                         : cliente.enderecoCompleto || '-'}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button type="button" variant="outline" size="sm" onClick={() => handleEditCustomer(cliente)}>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => handleEditCustomer(cliente)}>
+                          <UploadSimple className="mr-2 h-4 w-4" />
+                          Documentos
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => handleEditCustomer(cliente)}>
                         <PencilSimple className="mr-2 h-4 w-4" />
                         Editar
-                      </Button>
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -539,6 +601,68 @@ export const ClientesPage: React.FC = () => {
           </form>
         </CardContent>
       </Card>
+
+      {editingCustomerId && clienteEmEdicao && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle>Documentos do Cliente</CardTitle>
+              <label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50">
+                <UploadSimple className="mr-2 h-4 w-4" />
+                {uploadingDocuments ? 'Enviando...' : 'Adicionar documentos'}
+                <input
+                  type="file"
+                  className="hidden"
+                  multiple
+                  disabled={uploadingDocuments}
+                  onChange={(event) => {
+                    void handleUploadDocuments(event.target.files);
+                    event.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {clienteEmEdicao.documentos.length === 0 ? (
+              <p className="text-sm text-slate-400">Nenhum documento cadastrado para este cliente.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="min-w-full divide-y divide-white/10">
+                  <thead className="bg-slate-950/50">
+                    <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
+                      <th className="px-4 py-3">Nome</th>
+                      <th className="px-4 py-3">Tipo</th>
+                      <th className="px-4 py-3">Data</th>
+                      <th className="px-4 py-3 text-right">Acoes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {clienteEmEdicao.documentos.map((documento) => (
+                      <tr key={documento.id} className="text-sm text-slate-200">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-slate-400" />
+                            {documento.nome}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">{documento.tipo}</td>
+                        <td className="px-4 py-3">{new Date(documento.dataUpload).toLocaleDateString('pt-BR')}</td>
+                        <td className="px-4 py-3 text-right">
+                          <Button type="button" variant="outline" size="sm" onClick={() => void handleDownload(documento.fileId)} disabled={!documento.fileId}>
+                            <DownloadSimple className="mr-2 h-4 w-4" />
+                            Download
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

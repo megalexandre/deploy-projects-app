@@ -41,9 +41,6 @@ export const getDefaultConfiguracoesSistema = (): ConfiguracoesSistema => ({
   idioma: 'pt-BR',
   fusoHorario: 'America/Sao_Paulo',
   formatoData: 'DD/MM/YYYY',
-  backupAutomatico: true,
-  frequenciaBackup: 'diario',
-  retencaoBackup: '30',
   tabelaPrecoFotovoltaico: defaultTabelaPrecoFotovoltaico,
   tabelaPrecoPadraoEntrada: defaultTabelaPrecoPadraoEntrada,
   cuponsDesconto: defaultCuponsDesconto

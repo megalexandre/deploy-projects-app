@@ -17,8 +17,8 @@ import { FaturasPage } from './pages/FaturasPage';
 import { CalendarioPage } from './pages/CalendarioPage';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
-import { BancoDeDadosPage } from './pages/BancoDeDadosPage';
 import { ConcessionariasPage } from './pages/ConcessionariasPage';
+import { AprovacoesPage } from './pages/AprovacoesPage';
 import { MainLayout } from './layouts/MainLayout';
 import { useAuthInterceptor } from './hooks/useAuthInterceptor';
 
@@ -166,10 +166,10 @@ function App() {
           }
         />
         <Route
-          path="/banco-de-dados"
+          path="/aprovacoes"
           element={
             <ProtectedRoute>
-              <MainLayout><BancoDeDadosPage /></MainLayout>
+              <MainLayout><AprovacoesPage /></MainLayout>
             </ProtectedRoute>
           }
         />

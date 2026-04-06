@@ -23,7 +23,7 @@ npm run test:e2e
 
 ## Variaveis de ambiente
 
-Use [.env.example](/a:/workspace/projeto%20orley/opj-engenharia/.env.example) como base:
+Configure o arquivo [.env](/a:/workspace/projeto%20orley/opj-engenharia/.env):
 
 ```env
 VITE_API_BASE_URL=http://localhost:3000/api

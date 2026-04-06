@@ -1,6 +1,7 @@
 ﻿/** Camada de acesso a dados para 'projectsService': concentra chamadas HTTP e transformacao basica de payloads. */
 import type { Documento, PadraoEntradaItem, Projeto, DashboardStats, PaginatedResponse, StatusProjeto } from '../types';
 import { apiClient } from './apiClient';
+import { approvalsService } from './approvalsService';
 import { customersService } from './customersService';
 
 export type Project = Projeto;
@@ -749,7 +750,14 @@ export const projectsService = {
     const response = await createRaw(projectData);
     const normalized = normalizeProjeto(response);
     saveProjectEnhancement(normalized.id, buildFrontendEnhancement(projectData));
-    return mergeProjectEnhancement(normalized);
+    const mergedProject = mergeProjectEnhancement(normalized);
+    approvalsService.createForNonAdmin({
+      entityType: 'projeto',
+      entityId: mergedProject.id,
+      entityLabel: mergedProject.protocolo,
+      clientName: mergedProject.cliente.nome
+    });
+    return mergedProject;
   },
 
   async getAll(): Promise<Project[]> {

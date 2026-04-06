@@ -1,12 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Clock, FileText, FloppyDisk } from '@phosphor-icons/react';
+import { ArrowLeft, CheckCircle, Clock, FileText, FloppyDisk, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { concessionariasService, customersService, filesService, servicosService, type Concessionaria, type Customer } from '../services';
-import type { Servico, StatusServico } from '../types';
+import type { Documento, Servico, StatusServico } from '../types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '../utils/masks';
+
+const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
+  const merged = new Map<string, Documento>();
+
+  [...current, ...incoming].forEach((documento) => {
+    merged.set(documento.fileId || documento.id, documento);
+  });
+
+  return Array.from(merged.values());
+};
 
 interface EditForm {
   clienteId: string;
@@ -81,6 +91,8 @@ export const ServicoDetailPage: React.FC = () => {
   const [form, setForm] = useState<EditForm | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingDocuments, setSavingDocuments] = useState(false);
+  const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [cupons] = useState(() => getCuponsDescontoAtivos(loadConfiguracoesSistema()));
 
@@ -113,6 +125,10 @@ export const ServicoDetailPage: React.FC = () => {
   const selectedCustomer = useMemo(
     () => clientes.find((item) => item.id === form?.clienteId) ?? null,
     [clientes, form?.clienteId]
+  );
+  const reusedDocuments = useMemo(
+    () => (selectedCustomer?.documentos ?? []).filter((documento) => selectedCustomerDocumentIds.includes(documento.id)),
+    [selectedCustomer?.documentos, selectedCustomerDocumentIds]
   );
 
   if (loading) {
@@ -155,6 +171,50 @@ export const ServicoDetailPage: React.FC = () => {
   };
 
   const valorFinal = Math.max((Number(form.valor.replace(',', '.')) || 0) * (1 - Number(form.cupomDescontoPct) / 100), 0);
+
+  const handleSaveDocuments = async (files: FileList | null) => {
+    if (!servico) {
+      return;
+    }
+
+    const selectedFiles = Array.from(files ?? []);
+    if (selectedFiles.length === 0 && reusedDocuments.length === 0) {
+      return;
+    }
+
+    setSavingDocuments(true);
+    setError(null);
+
+    try {
+      let nextDocuments = [...servico.documentos];
+
+      if (selectedFiles.length > 0) {
+        const uploadedDocuments = await filesService.uploadFiles(servico.id, selectedFiles);
+        nextDocuments = mergeDocuments(nextDocuments, uploadedDocuments.map((uploadedDocument): Documento => ({
+          id: uploadedDocument.id,
+          fileId: uploadedDocument.id,
+          nome: uploadedDocument.fileName,
+          tipo: 'Documento',
+          dataUpload: uploadedDocument.createdAt ?? new Date().toISOString(),
+          tamanho: uploadedDocument.size,
+          url: uploadedDocument.urlS3
+        })));
+      }
+
+      if (reusedDocuments.length > 0) {
+        nextDocuments = mergeDocuments(nextDocuments, reusedDocuments);
+      }
+
+      const updated = await servicosService.saveDocuments(servico.id, nextDocuments);
+      setServico(updated);
+      setSelectedCustomerDocumentIds([]);
+    } catch (saveError) {
+      console.error('Erro ao salvar documentos do servico:', saveError);
+      setError('Nao foi possivel salvar os documentos do servico.');
+    } finally {
+      setSavingDocuments(false);
+    }
+  };
 
   return (
     <div className="space-y-6 page-enter">
@@ -225,7 +285,8 @@ export const ServicoDetailPage: React.FC = () => {
       )}
 
       {activeTab === 'documentos' && (
-        <Card><CardHeader><CardTitle>Documentos</CardTitle></CardHeader><CardContent>
+        <Card><CardHeader><div className="flex items-center justify-between gap-4"><CardTitle>Documentos</CardTitle><label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50"><UploadSimple className="mr-2 h-4 w-4" />{savingDocuments ? 'Enviando...' : 'Adicionar documentos'}<input type="file" className="hidden" multiple disabled={savingDocuments} onChange={(event) => { void handleSaveDocuments(event.target.files); event.target.value = ''; }} /></label></div></CardHeader><CardContent>
+          {selectedCustomer && selectedCustomer.documentos.length > 0 && <div className="mb-6 rounded-xl border border-white/10 bg-slate-950/35 p-4"><div className="flex items-center justify-between gap-3"><div><h4 className="text-sm font-semibold text-slate-100">Reaproveitar documentos do cliente</h4><p className="mt-1 text-xs text-slate-400">{selectedCustomer.nome} possui {selectedCustomer.documentos.length} documento(s) disponivel(is).</p></div><Button type="button" variant="outline" size="sm" onClick={() => void handleSaveDocuments(null)} disabled={savingDocuments || reusedDocuments.length === 0}>Vincular selecionados</Button></div><div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">{selectedCustomer.documentos.map((documento) => <label key={documento.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200"><input type="checkbox" checked={selectedCustomerDocumentIds.includes(documento.id)} onChange={(event) => setSelectedCustomerDocumentIds((current) => event.target.checked ? [...current, documento.id] : current.filter((id) => id !== documento.id))} className="mt-1" /><span><strong className="block text-slate-100">{documento.nome}</strong><span className="block text-xs text-slate-400">{documento.tipo}</span></span></label>)}</div></div>}
           {servico.documentos.length === 0 ? <p className="text-gray-400">Nenhum documento cadastrado.</p> : (
             <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-700"><thead><tr><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Nome</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Tipo</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Data</th><th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">Acoes</th></tr></thead><tbody className="divide-y divide-gray-800">{servico.documentos.map((documento) => <tr key={documento.id}><td className="px-4 py-3 text-sm text-gray-300"><div className="flex items-center"><FileText className="mr-2 h-4 w-4 text-gray-400" />{documento.nome}</div></td><td className="px-4 py-3 text-sm text-gray-300">{documento.tipo}</td><td className="px-4 py-3 text-sm text-gray-300">{formatDate(documento.dataUpload)}</td><td className="px-4 py-3 text-sm text-gray-300"><Button variant="outline" size="sm" onClick={() => void handleDownload(documento.fileId)} disabled={!documento.fileId}>Download</Button></td></tr>)}</tbody></table></div>
           )}

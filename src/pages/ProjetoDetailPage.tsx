@@ -1,18 +1,31 @@
 /** Pagina 'ProjetoDetailPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, FileText, Clock, CheckCircle } from '@phosphor-icons/react';
+import { ArrowLeft, FileText, Clock, CheckCircle, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '../components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import { filesService, projectsService } from '../services';
-import type { Projeto } from '../types';
+import { customersService, filesService, projectsService, type Customer } from '../services';
+import type { Documento, Projeto } from '../types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '../utils/masks';
+
+const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
+  const merged = new Map<string, Documento>();
+
+  [...current, ...incoming].forEach((documento) => {
+    merged.set(documento.fileId || documento.id, documento);
+  });
+
+  return Array.from(merged.values());
+};
 
 export const ProjetoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
+  const [clienteDetalhe, setClienteDetalhe] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dados');
+  const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
+  const [savingDocuments, setSavingDocuments] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -23,7 +36,18 @@ export const ProjetoDetailPage: React.FC = () => {
   const loadProjeto = async (projetoId: string) => {
     try {
       const data = await projectsService.getProjetoById(projetoId);
+      if (!data) {
+        setProjeto(null);
+        setClienteDetalhe(null);
+        return;
+      }
       setProjeto(data);
+      if (data.cliente.id && data.cliente.id !== 'sem-cliente') {
+        const customer = await customersService.getById(data.cliente.id).catch(() => null);
+        setClienteDetalhe(customer);
+      } else {
+        setClienteDetalhe(null);
+      }
     } catch (error) {
       console.error('Erro ao carregar projeto:', error);
     } finally {
@@ -165,6 +189,11 @@ export const ProjetoDetailPage: React.FC = () => {
 
   const formatDocumento = (value?: string) => (value ? maskCpfOrCnpj(value) : '-');
   const formatTelefone = (value?: string) => (value ? maskPhoneBR(onlyDigits(value)) : '-');
+  const reusedDocuments = useMemo(
+    () =>
+      (clienteDetalhe?.documentos ?? []).filter((documento) => selectedCustomerDocumentIds.includes(documento.id)),
+    [clienteDetalhe?.documentos, selectedCustomerDocumentIds]
+  );
   const potenciaTotalModulos = projeto?.modulos.reduce((total, item) => total + item.quantidade * item.potencia, 0) ?? 0;
   const potenciaTotalInversores = projeto?.inversores.reduce((total, item) => total + item.quantidade * item.potencia, 0) ?? 0;
   const potenciaTotalSistema =
@@ -187,6 +216,48 @@ export const ProjetoDetailPage: React.FC = () => {
       </div>
     );
   }
+
+  const handleSaveDocuments = async (files: FileList | null) => {
+    if (!projeto) {
+      return;
+    }
+
+    const selectedFiles = Array.from(files ?? []);
+    if (selectedFiles.length === 0 && reusedDocuments.length === 0) {
+      return;
+    }
+
+    setSavingDocuments(true);
+
+    try {
+      let nextDocuments = [...projeto.documentos];
+
+      if (selectedFiles.length > 0) {
+        const uploadedFiles = await filesService.uploadFiles(projeto.id, selectedFiles);
+        nextDocuments = mergeDocuments(nextDocuments, uploadedFiles.map((uploadedFile): Documento => ({
+          id: uploadedFile.id,
+          fileId: uploadedFile.id,
+          nome: uploadedFile.fileName,
+          tipo: 'Documento',
+          dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
+          tamanho: uploadedFile.size,
+          url: uploadedFile.urlS3
+        })));
+      }
+
+      if (reusedDocuments.length > 0) {
+        nextDocuments = mergeDocuments(nextDocuments, reusedDocuments);
+      }
+
+      projectsService.saveDocuments(projeto.id, nextDocuments);
+      setProjeto((current) => (current ? { ...current, documentos: nextDocuments } : current));
+      setSelectedCustomerDocumentIds([]);
+    } catch (error) {
+      console.error('Erro ao salvar documentos do projeto:', error);
+    } finally {
+      setSavingDocuments(false);
+    }
+  };
 
   const tabs = [
     { id: 'dados', label: 'Dados do Projeto' },
@@ -625,9 +696,58 @@ export const ProjetoDetailPage: React.FC = () => {
         {activeTab === 'documentos' && (
           <Card>
             <CardHeader>
-              <CardTitle>Documentos</CardTitle>
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle>Documentos</CardTitle>
+                <label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50">
+                  <UploadSimple className="mr-2 h-4 w-4" />
+                  {savingDocuments ? 'Enviando...' : 'Adicionar documentos'}
+                  <input
+                    type="file"
+                    className="hidden"
+                    multiple
+                    disabled={savingDocuments}
+                    onChange={(event) => {
+                      void handleSaveDocuments(event.target.files);
+                      event.target.value = '';
+                    }}
+                  />
+                </label>
+              </div>
             </CardHeader>
             <CardContent>
+              {clienteDetalhe && clienteDetalhe.documentos.length > 0 && (
+                <div className="mb-6 rounded-xl border border-white/10 bg-slate-950/35 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-100">Reaproveitar documentos do cliente</h4>
+                      <p className="mt-1 text-xs text-slate-400">{clienteDetalhe.nome} possui {clienteDetalhe.documentos.length} documento(s) disponivel(is).</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => void handleSaveDocuments(null)} disabled={savingDocuments || reusedDocuments.length === 0}>
+                      Vincular selecionados
+                    </Button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {clienteDetalhe.documentos.map((documento) => (
+                      <label key={documento.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200">
+                        <input
+                          type="checkbox"
+                          checked={selectedCustomerDocumentIds.includes(documento.id)}
+                          onChange={(event) =>
+                            setSelectedCustomerDocumentIds((current) =>
+                              event.target.checked ? [...current, documento.id] : current.filter((id) => id !== documento.id)
+                            )
+                          }
+                          className="mt-1"
+                        />
+                        <span>
+                          <strong className="block text-slate-100">{documento.nome}</strong>
+                          <span className="block text-xs text-slate-400">{documento.tipo}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               {projeto.documentos.length === 0 ? (
                 <p className="text-gray-400">Nenhum documento cadastrado.</p>
               ) : (

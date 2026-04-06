@@ -149,6 +149,7 @@ export const NovoServicoPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<ServicoForm>(createEmptyForm());
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
+  const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [cupons] = useState(() => getCuponsDescontoAtivos(loadConfiguracoesSistema()));
 
   useEffect(() => {
@@ -183,6 +184,10 @@ export const NovoServicoPage: React.FC = () => {
       return acc;
     }, {}));
   }, [documentCategories]);
+
+  useEffect(() => {
+    setSelectedCustomerDocumentIds([]);
+  }, [form.clienteId]);
 
   const fillAddressFromCep = async (
     cep: string,
@@ -219,6 +224,11 @@ export const NovoServicoPage: React.FC = () => {
     const selected = Array.from(files ?? []);
     setUploadedFiles((current) => ({ ...current, [key]: category.maxFiles ? selected.slice(0, category.maxFiles) : selected.slice(0, 1) }));
   };
+
+  const reusedDocuments = useMemo(
+    () => (selectedCustomer?.documentos ?? []).filter((documento) => selectedCustomerDocumentIds.includes(documento.id)),
+    [selectedCustomer?.documentos, selectedCustomerDocumentIds]
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -262,16 +272,21 @@ export const NovoServicoPage: React.FC = () => {
 
         await servicosService.saveDocuments(
           servicoCriado.id,
-          uploadedDocuments.map((uploadedDocument, index): Documento => ({
-            id: uploadedDocument.id,
-            fileId: uploadedDocument.id,
-            nome: uploadedDocument.fileName,
-            tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
-            dataUpload: uploadedDocument.createdAt ?? new Date().toISOString(),
-            tamanho: uploadedDocument.size,
-            url: uploadedDocument.urlS3
-          }))
+          [
+            ...reusedDocuments,
+            ...uploadedDocuments.map((uploadedDocument, index): Documento => ({
+              id: uploadedDocument.id,
+              fileId: uploadedDocument.id,
+              nome: uploadedDocument.fileName,
+              tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
+              dataUpload: uploadedDocument.createdAt ?? new Date().toISOString(),
+              tamanho: uploadedDocument.size,
+              url: uploadedDocument.urlS3
+            }))
+          ]
         );
+      } else if (reusedDocuments.length > 0) {
+        await servicosService.saveDocuments(servicoCriado.id, reusedDocuments);
       }
 
       navigate('/servicos');
@@ -342,6 +357,7 @@ export const NovoServicoPage: React.FC = () => {
 
       <Card><CardHeader><CardTitle>Etapa 3 • Observacoes e Uploads</CardTitle></CardHeader><CardContent className="space-y-6">
         <div><label className="mb-2 block text-sm text-slate-300">Observacoes / Comentarios</label><textarea value={form.observacoes} rows={4} onChange={(event) => setForm((prev) => ({ ...prev, observacoes: event.target.value }))} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100" /></div>
+        {selectedCustomer && selectedCustomer.documentos.length > 0 && <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4"><div className="flex items-center justify-between gap-3"><div><h3 className="text-sm font-semibold text-slate-100">Reaproveitar documentos do cliente</h3><p className="mt-1 text-xs text-slate-400">{selectedCustomer.nome} ja possui {selectedCustomer.documentos.length} documento(s) cadastrado(s).</p></div><span className="rounded-full bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-200">{reusedDocuments.length} selecionado(s)</span></div><div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">{selectedCustomer.documentos.map((documento) => <label key={documento.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200"><input type="checkbox" checked={selectedCustomerDocumentIds.includes(documento.id)} onChange={(event) => setSelectedCustomerDocumentIds((current) => event.target.checked ? [...current, documento.id] : current.filter((id) => id !== documento.id))} className="mt-1" /><span><strong className="block text-slate-100">{documento.nome}</strong><span className="block text-xs text-slate-400">{documento.tipo}</span></span></label>)}</div></div>}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{documentCategories.map((item) => <label key={item.key} className="cursor-pointer rounded-xl border border-dashed border-white/20 bg-slate-900/40 px-4 py-5 text-center hover:border-cyan-300/50"><div className="text-sm font-medium text-slate-100">{item.label}</div><div className="mt-2 text-xs text-slate-400">{(uploadedFiles[item.key] ?? []).length > 0 ? `${(uploadedFiles[item.key] ?? []).length} arquivo(s) selecionado(s)` : item.maxFiles ? `Selecionar ate ${item.maxFiles} arquivos` : 'Selecionar arquivo'}</div><input type="file" className="hidden" multiple={Boolean(item.maxFiles && item.maxFiles > 1)} onChange={(event) => handleFilesChange(item.key, event.target.files)} /></label>)}</div>
         <div className="flex justify-end gap-3"><Link to="/servicos"><Button type="button" variant="outline">Cancelar</Button></Link><Button type="button" loading={saving} onClick={(event) => void handleSubmit(event as unknown as React.FormEvent)}><FloppyDisk className="mr-2 h-4 w-4" />Criar servico</Button></div>
       </CardContent></Card>

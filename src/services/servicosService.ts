@@ -1,5 +1,6 @@
 /** Camada local para 'servicosService': persiste cadastro estruturado de servicos enquanto a API nao existe. */
 import type { Documento, DivisaoCreditos, Endereco, PadraoEntradaItem, Servico, StatusServico, TimelineItem, TipoServico } from '../types';
+import { approvalsService } from './approvalsService';
 
 export interface CreateServicoPayload {
   tipo: TipoServico;
@@ -298,6 +299,12 @@ export const servicosService = {
 
     const current = readStorage();
     writeStorage([item, ...current]);
+    approvalsService.createForNonAdmin({
+      entityType: 'servico',
+      entityId: item.id,
+      entityLabel: item.protocolo,
+      clientName: item.cliente
+    });
     return item;
   },
 

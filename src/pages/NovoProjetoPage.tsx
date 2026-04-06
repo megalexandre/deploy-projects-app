@@ -306,6 +306,7 @@ export const NovoProjetoPage: React.FC = () => {
   const [inversores, setInversores] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
   const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(buildPadraoEntradaLinhas());
   const [documentos, setDocumentos] = useState<Record<string, File[]>>({});
+  const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
   const [valorProjeto, setValorProjeto] = useState('');
   const [valorProjetoEditado, setValorProjetoEditado] = useState(false);
@@ -398,6 +399,10 @@ export const NovoProjetoPage: React.FC = () => {
     );
   }, [documentosTemplate]);
 
+  useEffect(() => {
+    setSelectedCustomerDocumentIds([]);
+  }, [clienteSelecionadoId, modoCliente]);
+
   const clientesFiltrados = useMemo(() => {
     const query = buscaCliente.trim().toLowerCase();
     if (!query) {
@@ -417,6 +422,13 @@ export const NovoProjetoPage: React.FC = () => {
   const clienteSelecionado = useMemo(
     () => clientes.find((cliente) => cliente.id === clienteSelecionadoId) ?? null,
     [clienteSelecionadoId, clientes]
+  );
+  const reusedCustomerDocuments = useMemo(
+    () =>
+      (clienteSelecionadoDetalhe?.documentos ?? []).filter((documento) =>
+        selectedCustomerDocumentIds.includes(documento.id)
+      ),
+    [clienteSelecionadoDetalhe?.documentos, selectedCustomerDocumentIds]
   );
   const enderecoClienteProjeto = useMemo(() => {
     if (modoCliente === 'novo') {
@@ -833,16 +845,21 @@ export const NovoProjetoPage: React.FC = () => {
 
         projectsService.saveDocuments(
           projetoCriado.id,
-          uploadedFiles.map((uploadedFile, index) => ({
-            id: uploadedFile.id,
-            fileId: uploadedFile.id,
-            nome: uploadedFile.fileName,
-            tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
-            dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
-            tamanho: uploadedFile.size,
-            url: uploadedFile.urlS3
-          }))
+          [
+            ...reusedCustomerDocuments,
+            ...uploadedFiles.map((uploadedFile, index) => ({
+              id: uploadedFile.id,
+              fileId: uploadedFile.id,
+              nome: uploadedFile.fileName,
+              tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
+              dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
+              tamanho: uploadedFile.size,
+              url: uploadedFile.urlS3
+            }))
+          ]
         );
+      } else if (reusedCustomerDocuments.length > 0) {
+        projectsService.saveDocuments(projetoCriado.id, reusedCustomerDocuments);
       }
 
       navigate('/projetos');
@@ -2004,6 +2021,46 @@ export const NovoProjetoPage: React.FC = () => {
 
               <div className="space-y-4">
                 <h3 className="text-3xl font-semibold text-gray-100">Documentos</h3>
+                {clienteSelecionadoDetalhe && clienteSelecionadoDetalhe.documentos.length > 0 && (
+                  <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-100">Reaproveitar documentos do cliente</h4>
+                        <p className="mt-1 text-sm text-gray-400">
+                          {clienteSelecionadoDetalhe.nome} ja possui {clienteSelecionadoDetalhe.documentos.length} documento(s) cadastrado(s).
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs text-cyan-200">
+                        {reusedCustomerDocuments.length} selecionado(s)
+                      </span>
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {clienteSelecionadoDetalhe.documentos.map((documento) => (
+                        <label
+                          key={documento.id}
+                          className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCustomerDocumentIds.includes(documento.id)}
+                            onChange={(event) =>
+                              setSelectedCustomerDocumentIds((current) =>
+                                event.target.checked
+                                  ? [...current, documento.id]
+                                  : current.filter((id) => id !== documento.id)
+                              )
+                            }
+                            className="mt-1"
+                          />
+                          <span>
+                            <strong className="block text-slate-100">{documento.nome}</strong>
+                            <span className="block text-xs text-slate-400">{documento.tipo}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {documentosTemplate.map((item) => (
                     <label

@@ -7,16 +7,19 @@ import {
   CheckCircle, 
   Clock,
   PlusCircle,
-  Eye
+  Eye,
+  ClipboardText
 } from '@phosphor-icons/react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
 import { Button } from '../components/Button';
 import { projectsService } from '../services';
+import { approvalsService, type ApprovalRequest } from '../services/approvalsService';
 import type { DashboardStats, Projeto } from '../types';
 
 export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentProjects, setRecentProjects] = useState<Projeto[]>([]);
+  const [recentApprovals, setRecentApprovals] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +32,7 @@ export const DashboardPage: React.FC = () => {
         
         setStats(statsData);
         setRecentProjects(projectsData.slice(0, 5));
+        setRecentApprovals(approvalsService.listPending().slice(0, 5));
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
       } finally {
@@ -66,6 +70,9 @@ export const DashboardPage: React.FC = () => {
         return status;
     }
   };
+
+  const getApprovalTypeText = (type: ApprovalRequest['entityType']) =>
+    type === 'projeto' ? 'Projeto' : 'Servico';
 
   if (loading) {
     return (
@@ -153,6 +160,58 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Recent Projects */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Ultimos a Serem Aprovados</CardTitle>
+            <Link to="/aprovacoes">
+              <Button variant="outline" size="sm">
+                Ver Aprovacoes
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recentApprovals.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-white/10 px-4 py-8 text-center text-sm text-gray-400">
+              Nenhuma solicitacao pendente de aprovacao no momento.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentApprovals.map((approval) => {
+                const destinationPath = approval.entityType === 'projeto'
+                  ? `/projetos/${approval.entityId}`
+                  : `/servicos/${approval.entityId}`;
+
+                return (
+                  <div key={approval.id} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 text-sm text-cyan-200">
+                        <ClipboardText className="h-4 w-4" />
+                        <span>{getApprovalTypeText(approval.entityType)}</span>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-gray-100">{approval.entityLabel}</p>
+                      <p className="mt-1 text-sm text-gray-300">{approval.clientName}</p>
+                      <p className="mt-1 text-xs text-gray-400">
+                        Solicitado por {approval.createdByName} em {new Date(approval.createdAt).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link to={destinationPath}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="mr-1 h-4 w-4" />
+                          Abrir
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

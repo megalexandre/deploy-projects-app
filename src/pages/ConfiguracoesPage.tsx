@@ -4,7 +4,6 @@ import {
   Bell,
   Buildings,
   CurrencyCircleDollar,
-  Database,
   EnvelopeSimple,
   FloppyDisk,
   Gear,
@@ -17,10 +16,10 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardContent } from '../components/Card';
 import type { ConfiguracoesSistema } from '../types';
-import { maskCnpj, maskNumeric, maskPhoneBR } from '../utils/masks';
+import { maskCnpj, maskPhoneBR } from '../utils/masks';
 import { getDefaultConfiguracoesSistema, loadConfiguracoesSistema, saveConfiguracoesSistema } from '../utils/configuracoesSistema';
 
-type AbaConfiguracoes = 'geral' | 'precos' | 'cupons' | 'notificacoes' | 'sistema' | 'seguranca' | 'backup';
+type AbaConfiguracoes = 'geral' | 'precos' | 'cupons' | 'notificacoes' | 'sistema' | 'seguranca';
 
 const tabs: Array<{
   id: AbaConfiguracoes;
@@ -32,8 +31,7 @@ const tabs: Array<{
   { id: 'cupons', label: 'Cupons', icon: Percent },
   { id: 'notificacoes', label: 'Notificacoes', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
-  { id: 'seguranca', label: 'Seguranca', icon: Shield },
-  { id: 'backup', label: 'Backup', icon: Database }
+  { id: 'seguranca', label: 'Seguranca', icon: Shield }
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
@@ -508,55 +506,6 @@ export const ConfiguracoesPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'backup' && (
-            <div className="space-y-6 page-enter">
-              <h3 className="mb-4 text-lg font-medium text-gray-100">Configuracoes de Backup</h3>
-
-              <div className="space-y-4">
-                <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
-                  <div>
-                    <div className="font-medium text-gray-100">Backup Automatico</div>
-                    <div className="text-sm text-gray-400">Faca backups periodicos dos dados</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={formData.backupAutomatico}
-                    onChange={(e) => handleInputChange('backupAutomatico', e.target.checked)}
-                    className="h-5 w-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
-                  />
-                </label>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Frequencia do Backup</label>
-                  <select
-                    value={formData.frequenciaBackup}
-                    onChange={(e) =>
-                      handleInputChange('frequenciaBackup', e.target.value as ConfiguracoesSistema['frequenciaBackup'])
-                    }
-                    className="w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="diario">Diario</option>
-                    <option value="semanal">Semanal</option>
-                    <option value="mensal">Mensal</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Retencao (dias)</label>
-                  <Input
-                    type="number"
-                    value={formData.retencaoBackup}
-                    onChange={(e) => handleInputChange('retencaoBackup', maskNumeric(e.target.value, 4))}
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <Button>Fazer Backup Agora</Button>
-                  <Button variant="outline">Restaurar Backup</Button>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

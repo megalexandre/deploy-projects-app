@@ -312,26 +312,7 @@ export interface ConfiguracoesSistema {
   idioma: string;
   fusoHorario: string;
   formatoData: string;
-  backupAutomatico: boolean;
-  frequenciaBackup: 'diario' | 'semanal' | 'mensal';
-  retencaoBackup: string;
   tabelaPrecoFotovoltaico: FaixaPrecoFotovoltaico[];
   tabelaPrecoPadraoEntrada: PrecoPadraoEntrada[];
   cuponsDesconto: CupomDesconto[];
-}
-
-export interface DatabaseTable {
-  name: string;
-  rows: number;
-  size: string;
-  lastModified: string;
-  type: 'table' | 'view' | 'procedure';
-}
-
-export interface Backup {
-  id: string;
-  name: string;
-  size: string;
-  date: string;
-  type: 'automatic' | 'manual';
 }
