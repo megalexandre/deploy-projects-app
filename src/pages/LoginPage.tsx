@@ -150,9 +150,7 @@ export const LoginPage: React.FC = () => {
               </button>
             </form>
 
-            <div className="mt-6 rounded-xl border border-emerald-300/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-              Autenticacao via API ativa.
-            </div>
+            
           </div>
         </section>
       </div>

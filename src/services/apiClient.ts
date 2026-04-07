@@ -40,8 +40,13 @@ const API_BASE_URL = getRequiredEnv('VITE_API_BASE_URL');
 /** Chave do localStorage onde o token de autenticacao e salvo. */
 const STORAGE_TOKEN_KEY = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
 const STORAGE_USER_KEY = 'user';
+const AUTH_STATE_CHANGED_EVENT = 'auth-state-changed';
 let unauthorizedHandler: ((error: ApiError) => void | Promise<void>) | null = null;
 let handlingUnauthorized = false;
+
+const notifyAuthStateChanged = () => {
+  window.dispatchEvent(new Event(AUTH_STATE_CHANGED_EVENT));
+};
 
 /** Monta URL final, incluindo endpoint e query params validos. */
 const buildUrl = (path: string, query?: ApiRequestOptions['query']) => {
@@ -83,6 +88,7 @@ const getStoredToken = () => localStorage.getItem(STORAGE_TOKEN_KEY);
 const clearStoredSession = () => {
   localStorage.removeItem(STORAGE_TOKEN_KEY);
   localStorage.removeItem(STORAGE_USER_KEY);
+  notifyAuthStateChanged();
 };
 
 /** Escolhe a melhor mensagem de erro possivel a partir do payload devolvido. */
@@ -179,9 +185,11 @@ export const apiClient = {
   setToken: (token: string | null) => {
     if (token) {
       localStorage.setItem(STORAGE_TOKEN_KEY, token);
+      notifyAuthStateChanged();
       return;
     }
     localStorage.removeItem(STORAGE_TOKEN_KEY);
+    notifyAuthStateChanged();
   },
   /** Leitura direta do token persistido. */
   getToken: getStoredToken,
@@ -192,5 +200,6 @@ export const apiClient = {
     unauthorizedHandler = handler;
   },
   /** Exposicao da URL base para diagnostico e logs. */
-  baseUrl: API_BASE_URL
+  baseUrl: API_BASE_URL,
+  authStateChangedEvent: AUTH_STATE_CHANGED_EVENT
 };

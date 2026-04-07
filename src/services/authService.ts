@@ -38,14 +38,7 @@ interface BackendRegisterResponse {
   profile: string;
 }
 
-const useMockApi = (import.meta.env.VITE_USE_MOCK_API as string | undefined)?.trim().toLowerCase() === 'true';
 const STORAGE_USER_KEY = 'user';
-const mockUser: User = {
-  id: 'mock-admin',
-  name: 'Admin OPJ',
-  email: 'admin@opjengenharia.com.br',
-  role: 'admin'
-};
 
 const persistUser = (user: User) => {
   localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
@@ -70,24 +63,6 @@ const mapBackendCurrentUser = (response: BackendCurrentUserResponse): User => ({
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    if (useMockApi) {
-      const isDemoUser =
-        credentials.email.trim().toLowerCase() === 'admin@opjengenharia.com.br' &&
-        credentials.password === 'admin123';
-
-      if (!isDemoUser) {
-        throw new Error('Credenciais invalidas. Use admin@opjengenharia.com.br / admin123');
-      }
-
-      const response: LoginResponse = {
-        user: mockUser,
-        token: 'mock-auth-token'
-      };
-      apiClient.setToken(response.token);
-      persistUser(response.user);
-      return response;
-    }
-
     const loginResponse = await apiClient.post<BackendLoginResponse>('/auth/login', credentials);
     apiClient.setToken(loginResponse.token);
 
@@ -110,21 +85,6 @@ export const authService = {
   },
 
   async register(userData: RegisterData): Promise<LoginResponse> {
-    if (useMockApi) {
-      const response: LoginResponse = {
-        user: {
-          id: crypto.randomUUID(),
-          name: userData.name,
-          email: userData.email,
-          role: 'admin'
-        },
-        token: 'mock-auth-token'
-      };
-      apiClient.setToken(response.token);
-      persistUser(response.user);
-      return response;
-    }
-
     const registerPayload = {
       name: userData.name,
       email: userData.email,
@@ -144,10 +104,6 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<User | null> {
-    if (useMockApi) {
-      return mockUser;
-    }
-
     try {
       const response = await apiClient.get<BackendCurrentUserResponse>('/auth/me');
       return mapBackendCurrentUser(response);
