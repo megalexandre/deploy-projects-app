@@ -19,6 +19,18 @@ interface ViaCepResponse {
   erro?: boolean;
 }
 
+const getRequiredEnv = (key: string) => {
+  const value = (import.meta.env[key as keyof ImportMetaEnv] as string | undefined)?.trim();
+
+  if (!value) {
+    throw new Error(`Variavel de ambiente obrigatoria ausente: ${key}`);
+  }
+
+  return value.replace(/\/+$/, '');
+};
+
+const VIACEP_BASE_URL = getRequiredEnv('VITE_VIACEP_BASE_URL');
+
 export const viaCepService = {
   async lookup(cep: string): Promise<ViaCepAddress | null> {
     const normalizedCep = onlyDigits(cep);
@@ -26,7 +38,7 @@ export const viaCepService = {
       return null;
     }
 
-    const response = await fetch(`https://viacep.com.br/ws/${normalizedCep}/json/`);
+    const response = await fetch(`${VIACEP_BASE_URL}/${normalizedCep}/json/`);
     if (!response.ok) {
       throw new Error('Falha ao consultar CEP.');
     }

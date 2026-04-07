@@ -25,9 +25,18 @@ export class ApiError extends Error {
   }
 }
 
-/** URL base da API, com fallback por ambiente. */
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? '/api' : 'https://project-deploy.shop');
+const getRequiredEnv = (key: string) => {
+  const value = (import.meta.env[key as keyof ImportMetaEnv] as string | undefined)?.trim();
+
+  if (!value) {
+    throw new Error(`Variavel de ambiente obrigatoria ausente: ${key}`);
+  }
+
+  return value;
+};
+
+/** URL base da API definida obrigatoriamente por ambiente. */
+const API_BASE_URL = getRequiredEnv('VITE_API_BASE_URL');
 /** Chave do localStorage onde o token de autenticacao e salvo. */
 const STORAGE_TOKEN_KEY = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
 const STORAGE_USER_KEY = 'user';
