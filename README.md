@@ -23,7 +23,7 @@ npm run test:e2e
 
 ## Variaveis de ambiente
 
-Configure o arquivo [.env](/a:/workspace/projeto%20orley/opj-engenharia/.env):
+Configure o arquivo `.env`:
 
 ```env
 VITE_API_BASE_URL=/api
@@ -31,6 +31,18 @@ VITE_API_PROXY_TARGET=https://project-deploy.shop
 VITE_AUTH_TOKEN_STORAGE_KEY=auth_token
 VITE_VIACEP_BASE_URL=https://viacep.com.br/ws
 ```
+
+### Runtime na imagem Docker
+
+Voce pode sobrescrever `VITE_API_PROXY_TARGET` ao subir o container, sem rebuild da imagem:
+
+```bash
+docker run -p 8080:80 \
+  -e VITE_API_PROXY_TARGET=https://api.seu-dominio.com \
+  opj-engenharia
+```
+
+Quando `VITE_API_BASE_URL` nao for informado no container, o frontend passa a assumir automaticamente `${VITE_API_PROXY_TARGET}/api`.
 
 ## Estrutura principal
 

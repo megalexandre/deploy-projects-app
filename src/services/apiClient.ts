@@ -25,8 +25,19 @@ export class ApiError extends Error {
   }
 }
 
-const getRequiredEnv = (key: string) => {
-  const value = (import.meta.env[key as keyof ImportMetaEnv] as string | undefined)?.trim();
+const getEnv = (key: keyof ImportMetaEnv) => {
+  const runtimeValue = window.__APP_ENV__?.[key as 'VITE_API_BASE_URL' | 'VITE_AUTH_TOKEN_STORAGE_KEY' | 'VITE_VIACEP_BASE_URL' | 'VITE_API_PROXY_TARGET'];
+  if (typeof runtimeValue === 'string' && runtimeValue.trim()) {
+    return runtimeValue.trim();
+  }
+
+  const value = (import.meta.env[key] as string | undefined)?.trim();
+
+  return value;
+};
+
+const getRequiredEnv = (key: keyof ImportMetaEnv) => {
+  const value = getEnv(key);
 
   if (!value) {
     throw new Error(`Variavel de ambiente obrigatoria ausente: ${key}`);
@@ -35,10 +46,34 @@ const getRequiredEnv = (key: string) => {
   return value;
 };
 
+const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
+const removeTrailingSlash = (value: string) => value.replace(/\/+$/, '');
+const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
+
 /** URL base da API definida obrigatoriamente por ambiente. */
 const API_BASE_URL = getRequiredEnv('VITE_API_BASE_URL');
+const API_PROXY_TARGET = getEnv('VITE_API_PROXY_TARGET');
+
+const resolveApiBaseUrl = () => {
+  if (import.meta.env.DEV && API_BASE_URL === '/api') {
+    return '/api';
+  }
+
+  if (isAbsoluteUrl(API_BASE_URL)) {
+    return removeTrailingSlash(API_BASE_URL);
+  }
+
+  if (API_PROXY_TARGET) {
+    return `${removeTrailingSlash(API_PROXY_TARGET)}${ensureLeadingSlash(API_BASE_URL)}`;
+  }
+
+  return API_BASE_URL;
+};
+
+const RESOLVED_API_BASE_URL = resolveApiBaseUrl();
+
 /** Chave do localStorage onde o token de autenticacao e salvo. */
-const STORAGE_TOKEN_KEY = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
+const STORAGE_TOKEN_KEY = getEnv('VITE_AUTH_TOKEN_STORAGE_KEY') || 'auth_token';
 const STORAGE_USER_KEY = 'user';
 const AUTH_STATE_CHANGED_EVENT = 'auth-state-changed';
 let unauthorizedHandler: ((error: ApiError) => void | Promise<void>) | null = null;
@@ -51,34 +86,29 @@ const notifyAuthStateChanged = () => {
 /** Monta URL final, incluindo endpoint e query params validos. */
 const buildUrl = (path: string, query?: ApiRequestOptions['query']) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
-
-  // Em desenvolvimento com proxy do Vite, usa URL relativa.
-  if (import.meta.env.DEV && API_BASE_URL === '/api') {
-    const url = `/api${endpoint}`;
-
-    if (query) {
-      const searchParams = new URLSearchParams();
-      Object.entries(query).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          searchParams.set(key, String(value));
-        }
-      });
-      return `${url}?${searchParams.toString()}`;
-    }
-
-    return url;
-  }
-
-  // Fora do proxy local, gera URL absoluta para chamadas remotas.
-  const url = new URL(`${API_BASE_URL}${endpoint}`);
+  const searchParams = new URLSearchParams();
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        url.searchParams.set(key, String(value));
+        searchParams.set(key, String(value));
       }
     });
   }
+
+  const search = searchParams.toString();
+
+  if (!isAbsoluteUrl(RESOLVED_API_BASE_URL)) {
+    const relativeBase = removeTrailingSlash(RESOLVED_API_BASE_URL || '/api');
+    const url = `${relativeBase}${endpoint}`;
+    return search ? `${url}?${search}` : url;
+  }
+
+  const url = new URL(`${RESOLVED_API_BASE_URL}${endpoint}`);
+
+  searchParams.forEach((value, key) => {
+    url.searchParams.set(key, value);
+  });
 
   return url.toString();
 };
@@ -200,6 +230,6 @@ export const apiClient = {
     unauthorizedHandler = handler;
   },
   /** Exposicao da URL base para diagnostico e logs. */
-  baseUrl: API_BASE_URL,
+  baseUrl: RESOLVED_API_BASE_URL,
   authStateChangedEvent: AUTH_STATE_CHANGED_EVENT
 };

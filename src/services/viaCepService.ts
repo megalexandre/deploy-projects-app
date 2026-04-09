@@ -20,7 +20,10 @@ interface ViaCepResponse {
 }
 
 const getRequiredEnv = (key: string) => {
-  const value = (import.meta.env[key as keyof ImportMetaEnv] as string | undefined)?.trim();
+  const runtimeValue = window.__APP_ENV__?.[key as 'VITE_API_BASE_URL' | 'VITE_AUTH_TOKEN_STORAGE_KEY' | 'VITE_VIACEP_BASE_URL' | 'VITE_API_PROXY_TARGET'];
+  const value = (typeof runtimeValue === 'string' && runtimeValue.trim())
+    ? runtimeValue.trim()
+    : (import.meta.env[key as keyof ImportMetaEnv] as string | undefined)?.trim();
 
   if (!value) {
     throw new Error(`Variavel de ambiente obrigatoria ausente: ${key}`);
