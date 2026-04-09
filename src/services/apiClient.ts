@@ -46,21 +46,12 @@ const getRequiredEnv = (key: keyof ImportMetaEnv) => {
   return value;
 };
 
-<<<<<<< HEAD
-const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, '');
-
-/** URL base da API definida obrigatoriamente por ambiente. */
-const API_BASE_URL = normalizeBaseUrl(
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-    getRequiredEnv('VITE_API_PROXY_TARGET')
-);
-=======
 const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
 const removeTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
 
 /** URL base da API definida obrigatoriamente por ambiente. */
-const API_BASE_URL = getRequiredEnv('VITE_API_BASE_URL');
+const API_BASE_URL = getEnv('VITE_API_BASE_URL') || getRequiredEnv('VITE_API_PROXY_TARGET');
 const API_PROXY_TARGET = getEnv('VITE_API_PROXY_TARGET');
 
 const resolveApiBaseUrl = () => {
@@ -81,7 +72,6 @@ const resolveApiBaseUrl = () => {
 
 const RESOLVED_API_BASE_URL = resolveApiBaseUrl();
 
->>>>>>> 71f4d552515e82251f58772e36e33fff7928bd37
 /** Chave do localStorage onde o token de autenticacao e salvo. */
 const STORAGE_TOKEN_KEY = getEnv('VITE_AUTH_TOKEN_STORAGE_KEY') || 'auth_token';
 const STORAGE_USER_KEY = 'user';
@@ -96,11 +86,7 @@ const notifyAuthStateChanged = () => {
 /** Monta URL final, incluindo endpoint e query params validos. */
 const buildUrl = (path: string, query?: ApiRequestOptions['query']) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
-<<<<<<< HEAD
-  const url = new URL(`${API_BASE_URL}${endpoint}`);
-=======
   const searchParams = new URLSearchParams();
->>>>>>> 71f4d552515e82251f58772e36e33fff7928bd37
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
