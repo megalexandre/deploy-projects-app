@@ -26,7 +26,7 @@ npm run test:e2e
 Configure o arquivo [.env](/a:/workspace/projeto%20orley/opj-engenharia/.env):
 
 ```env
-VITE_API_BASE_URL=/api
+VITE_API_BASE_URL=https://project-deploy.shop
 VITE_API_PROXY_TARGET=https://project-deploy.shop
 VITE_AUTH_TOKEN_STORAGE_KEY=auth_token
 VITE_VIACEP_BASE_URL=https://viacep.com.br/ws

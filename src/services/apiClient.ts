@@ -35,8 +35,13 @@ const getRequiredEnv = (key: string) => {
   return value;
 };
 
+const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, '');
+
 /** URL base da API definida obrigatoriamente por ambiente. */
-const API_BASE_URL = getRequiredEnv('VITE_API_BASE_URL');
+const API_BASE_URL = normalizeBaseUrl(
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
+    getRequiredEnv('VITE_API_PROXY_TARGET')
+);
 /** Chave do localStorage onde o token de autenticacao e salvo. */
 const STORAGE_TOKEN_KEY = (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
 const STORAGE_USER_KEY = 'user';
@@ -51,25 +56,6 @@ const notifyAuthStateChanged = () => {
 /** Monta URL final, incluindo endpoint e query params validos. */
 const buildUrl = (path: string, query?: ApiRequestOptions['query']) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
-
-  // Em desenvolvimento com proxy do Vite, usa URL relativa.
-  if (import.meta.env.DEV && API_BASE_URL === '/api') {
-    const url = `/api${endpoint}`;
-
-    if (query) {
-      const searchParams = new URLSearchParams();
-      Object.entries(query).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          searchParams.set(key, String(value));
-        }
-      });
-      return `${url}?${searchParams.toString()}`;
-    }
-
-    return url;
-  }
-
-  // Fora do proxy local, gera URL absoluta para chamadas remotas.
   const url = new URL(`${API_BASE_URL}${endpoint}`);
 
   if (query) {
