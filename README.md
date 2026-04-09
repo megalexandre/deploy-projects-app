@@ -26,11 +26,13 @@ npm run test:e2e
 Configure o arquivo `.env`:
 
 ```env
-VITE_API_BASE_URL=/api
+VITE_API_BASE_URL=
 VITE_API_PROXY_TARGET=https://project-deploy.shop
 VITE_AUTH_TOKEN_STORAGE_KEY=auth_token
 VITE_VIACEP_BASE_URL=https://viacep.com.br/ws
 ```
+
+> `VITE_API_BASE_URL` agora e opcional. So informe se o backend exigir um prefixo como `/api` ou um caminho customizado.
 
 ### Runtime na imagem Docker
 

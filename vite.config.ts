@@ -6,10 +6,6 @@ export default defineConfig(({ command, mode }) => {
   const base = command === 'serve' ? '/' : '/deploy-projects-app/'
   const apiProxyTarget = env.VITE_API_PROXY_TARGET?.trim()
 
-  if (!apiProxyTarget) {
-    throw new Error('Variavel de ambiente obrigatoria ausente: VITE_API_PROXY_TARGET')
-  }
-
   return {
     base,
     plugins: [react()],
@@ -17,15 +13,17 @@ export default defineConfig(({ command, mode }) => {
       outDir: 'dist',
       assetsDir: 'assets',
     },
-    server: {
-      proxy: {
-        '/api': {
-          target: apiProxyTarget,
-          changeOrigin: true,
-          secure: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
+    server: apiProxyTarget
+      ? {
+          proxy: {
+            '/api': {
+              target: apiProxyTarget,
+              changeOrigin: true,
+              secure: true,
+              rewrite: (path) => path.replace(/^\/api/, '')
+            }
+          }
         }
-      }
-    }
+      : undefined
   }
 })

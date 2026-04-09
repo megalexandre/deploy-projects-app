@@ -26,22 +26,15 @@ export class ApiError extends Error {
 }
 
 const getEnv = (key: keyof ImportMetaEnv) => {
-  const runtimeValue = window.__APP_ENV__?.[key as 'VITE_API_BASE_URL' | 'VITE_AUTH_TOKEN_STORAGE_KEY' | 'VITE_VIACEP_BASE_URL' | 'VITE_API_PROXY_TARGET'];
-  if (typeof runtimeValue === 'string' && runtimeValue.trim()) {
-    return runtimeValue.trim();
+  const runtimeEnv = window.__APP_ENV__;
+  const runtimeKey = key as 'VITE_API_BASE_URL' | 'VITE_AUTH_TOKEN_STORAGE_KEY' | 'VITE_VIACEP_BASE_URL' | 'VITE_API_PROXY_TARGET';
+
+  if (runtimeEnv && Object.prototype.hasOwnProperty.call(runtimeEnv, runtimeKey)) {
+    const runtimeValue = runtimeEnv[runtimeKey];
+    return typeof runtimeValue === 'string' ? runtimeValue.trim() : undefined;
   }
 
   const value = (import.meta.env[key] as string | undefined)?.trim();
-
-  return value;
-};
-
-const getRequiredEnv = (key: keyof ImportMetaEnv) => {
-  const value = getEnv(key);
-
-  if (!value) {
-    throw new Error(`Variavel de ambiente obrigatoria ausente: ${key}`);
-  }
 
   return value;
 };
@@ -50,24 +43,32 @@ const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
 const removeTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
 
-/** URL base da API definida obrigatoriamente por ambiente. */
-const API_BASE_URL = getRequiredEnv('VITE_API_BASE_URL');
+/** Base opcional da API e alvo de proxy definidos por ambiente/runtime. */
+const API_BASE_URL = getEnv('VITE_API_BASE_URL');
 const API_PROXY_TARGET = getEnv('VITE_API_PROXY_TARGET');
 
 const resolveApiBaseUrl = () => {
-  if (import.meta.env.DEV && API_BASE_URL === '/api') {
-    return '/api';
-  }
+  if (API_BASE_URL) {
+    if (import.meta.env.DEV && API_BASE_URL === '/api') {
+      return '/api';
+    }
 
-  if (isAbsoluteUrl(API_BASE_URL)) {
+    if (isAbsoluteUrl(API_BASE_URL)) {
+      return removeTrailingSlash(API_BASE_URL);
+    }
+
+    if (API_PROXY_TARGET) {
+      return `${removeTrailingSlash(API_PROXY_TARGET)}${ensureLeadingSlash(API_BASE_URL)}`;
+    }
+
     return removeTrailingSlash(API_BASE_URL);
   }
 
   if (API_PROXY_TARGET) {
-    return `${removeTrailingSlash(API_PROXY_TARGET)}${ensureLeadingSlash(API_BASE_URL)}`;
+    return removeTrailingSlash(API_PROXY_TARGET);
   }
 
-  return API_BASE_URL;
+  throw new Error('Variavel de ambiente obrigatoria ausente: defina VITE_API_PROXY_TARGET ou VITE_API_BASE_URL');
 };
 
 const RESOLVED_API_BASE_URL = resolveApiBaseUrl();
