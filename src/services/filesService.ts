@@ -13,17 +13,7 @@ const FILES_ENDPOINT = '/api/v1/file';
 const buildUrl = (path: string) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
   const baseUrl = apiClient.baseUrl;
-  const normalizedEndpoint = endpoint.startsWith('/api/') ? endpoint.slice(4) : endpoint;
-
-  if (import.meta.env.DEV && baseUrl === '/api') {
-    return endpoint.startsWith('/api/') ? endpoint : `/api${endpoint}`;
-  }
-
-  if (baseUrl.endsWith('/api')) {
-    return `${baseUrl}${normalizedEndpoint}`;
-  }
-
-  return `${baseUrl}${endpoint}`;
+  return new URL(endpoint, `${baseUrl}/`).toString();
 };
 
 const buildHeaders = () => {
