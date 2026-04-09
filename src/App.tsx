@@ -23,7 +23,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { useAuthInterceptor } from './hooks/useAuthInterceptor';
 import { apiClient } from './services';
 
-const getTokenKey = () => (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
+const getTokenKey = () => window.__APP_ENV__?.VITE_AUTH_TOKEN_STORAGE_KEY?.trim() || (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
 const getIsAuthenticated = () => Boolean(localStorage.getItem(getTokenKey()));
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; isAuthenticated: boolean }> = ({ children, isAuthenticated }) => {
