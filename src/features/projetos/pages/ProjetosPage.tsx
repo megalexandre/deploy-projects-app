@@ -2,11 +2,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, MagnifyingGlass, PlusCircle } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { Card, CardContent } from '../components/Card';
-import { customersService, projectsService } from '../services';
-import type { Projeto } from '../types';
+import { Button } from '@/shared/components/Button';
+import { Input } from '@/shared/components/Input';
+import { Card, CardContent } from '@/shared/components/Card';
+import { customersService, projectsService } from '@/services';
+import type { Projeto } from '@/types';
 
 type KanbanStatus =
   | 'em_analise_documentacao'

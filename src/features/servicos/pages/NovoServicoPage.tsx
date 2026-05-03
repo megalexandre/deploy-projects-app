@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, FloppyDisk, PlusCircle } from '@phosphor-icons/react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { concessionariasService, customersService, filesService, servicosService, viaCepService, type Concessionaria, type Customer } from '../services';
-import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, TipoServico } from '../types';
-import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
-import { formatCurrencyBRL, maskCep, maskLatitude, maskLongitude, maskNumeric, onlyDigits, parseCoordinate } from '../utils/masks';
+import { Button } from '@/shared/components/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { concessionariasService, customersService, filesService, servicosService, viaCepService, type Concessionaria, type Customer } from '@/services';
+import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, TipoServico } from '@/types';
+import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import { formatCurrencyBRL, maskCep, maskLatitude, maskLongitude, maskNumeric, onlyDigits, parseCoordinate } from '@/core/utils/masks';
 
 type PersonType = 'cpf' | 'cnpj';
 

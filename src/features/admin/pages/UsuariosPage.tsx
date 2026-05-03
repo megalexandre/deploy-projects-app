@@ -1,9 +1,9 @@
 /** Pagina 'UsuariosPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState } from 'react';
 import { Users, Plus, MagnifyingGlass, PencilSimple, Trash, Shield, User, EnvelopeSimple } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
+import { Button } from '@/shared/components/Button';
+import { Input } from '@/shared/components/Input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 
 interface Usuario {
   id: string;

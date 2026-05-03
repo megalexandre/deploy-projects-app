@@ -1,7 +1,7 @@
 /** Hook personalizado 'useAuthInterceptor': registra tratamento global para sessao expirada. */
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { apiClient, ApiError } from '../services/apiClient';
+import { apiClient, ApiError } from '@/shared/api/apiClient';
 
 export const useAuthInterceptor = () => {
   const navigate = useNavigate();

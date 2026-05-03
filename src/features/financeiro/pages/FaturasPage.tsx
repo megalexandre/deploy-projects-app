@@ -2,8 +2,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileText, FilePdf, FunnelSimple } from '@phosphor-icons/react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { Button } from '../components/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { Button } from '@/shared/components/Button';
 
 interface Fatura {
   id: string;

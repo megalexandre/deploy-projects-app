@@ -1,6 +1,8 @@
 /** Camada local para 'servicosService': persiste cadastro estruturado de servicos enquanto a API nao existe. */
-import type { Documento, DivisaoCreditos, Endereco, PadraoEntradaItem, Servico, StatusServico, TimelineItem, TipoServico } from '../types';
-import { approvalsService } from './approvalsService';
+import type { Documento, DivisaoCreditos, Endereco, PadraoEntradaItem, Servico, StatusServico, TimelineItem, TipoServico } from '@/types';
+import { asNumber } from '@/core/utils/normalize';
+import { createArrayStorage } from '@/core/utils/storage';
+import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
 
 export interface CreateServicoPayload {
   tipo: TipoServico;
@@ -28,7 +30,7 @@ export interface UpdateServicoPayload extends Partial<CreateServicoPayload> {
   timeline?: TimelineItem[];
 }
 
-const STORAGE_KEY = 'opj_frontend_servicos';
+const servicosStorage = createArrayStorage<Partial<Servico>>('opj_frontend_servicos');
 
 const SERVICE_STATUS_FLOW: Array<{ status: StatusServico; etapa: string }> = [
   { status: 'abertura_servico', etapa: 'Abertura do Servico' },
@@ -51,8 +53,6 @@ const SERVICE_TYPE_LABELS: Record<TipoServico, string> = {
   alteracao_compartilhamento_credito: 'Alteracao Compartilhamento de Credito'
 };
 
-const isBrowser = typeof window !== 'undefined';
-
 const normalizeText = (value?: string) => value?.trim() ?? '';
 
 const cloneEndereco = (endereco?: Endereco): Endereco | undefined =>
@@ -68,21 +68,6 @@ const cloneEndereco = (endereco?: Endereco): Endereco | undefined =>
         link: normalizeText(endereco.link) || undefined
       }
     : undefined;
-
-const toNumber = (value: unknown, fallback = 0) => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const parsed = Number(value.replace(',', '.'));
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return fallback;
-};
 
 const normalizeStatus = (value?: string): StatusServico => {
   const normalized = normalizeText(value).toLowerCase();
@@ -122,7 +107,7 @@ const normalizeDocumentos = (documentos?: Documento[]) =>
     nome: normalizeText(item.nome),
     tipo: normalizeText(item.tipo),
     dataUpload: normalizeText(item.dataUpload) || new Date().toISOString(),
-    tamanho: toNumber(item.tamanho),
+    tamanho: asNumber(item.tamanho),
     fileId: normalizeText(item.fileId) || undefined,
     url: normalizeText(item.url) || undefined
   }));
@@ -132,13 +117,13 @@ const normalizePadraoItens = (itens?: PadraoEntradaItem[]) =>
     id: normalizeText(item.id) || crypto.randomUUID(),
     tipoLigacao: normalizeText(item.tipoLigacao),
     classificacao: normalizeText(item.classificacao),
-    quantidade: toNumber(item.quantidade),
+    quantidade: asNumber(item.quantidade),
     disjuntor: normalizeText(item.disjuntor)
   }));
 
 const normalizeRateios = (rateios?: DivisaoCreditos[]) =>
   (rateios ?? []).map((item) => ({
-    percentual: toNumber(item.percentual),
+    percentual: asNumber(item.percentual),
     uc: normalizeText(item.uc),
     classe: normalizeText(item.classe),
     endereco: normalizeText(item.endereco)
@@ -166,8 +151,8 @@ const normalizeServico = (raw: Partial<Servico>): Servico => {
   const dataAtualizacao = normalizeText(raw.dataAtualizacao) || dataCriacao;
   const status = normalizeStatus(raw.status);
   const dataAbertura = normalizeText(raw.dataAbertura) || dataCriacao.slice(0, 10);
-  const valor = toNumber(raw.valor);
-  const cupomDescontoPct = toNumber(raw.cupomDescontoPct);
+  const valor = asNumber(raw.valor);
+  const cupomDescontoPct = asNumber(raw.cupomDescontoPct);
   const valorFinal = Math.max(valor - valor * (cupomDescontoPct / 100), 0);
 
   return {
@@ -203,44 +188,10 @@ const normalizeServico = (raw: Partial<Servico>): Servico => {
   };
 };
 
-const readStorage = (): Servico[] => {
-  if (!isBrowser) {
-    return [];
-  }
+const readStorage = (): Servico[] =>
+  servicosStorage.read().map(normalizeServico);
 
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    const normalized = parsed
-      .filter((item): item is Partial<Servico> => typeof item === 'object' && item !== null)
-      .map(normalizeServico);
-
-    return normalized;
-  } catch (error) {
-    console.error('Erro ao carregar servicos locais:', error);
-    return [];
-  }
-};
-
-const writeStorage = (items: Servico[]) => {
-  if (!isBrowser) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  } catch (error) {
-    console.error('Erro ao salvar servicos locais:', error);
-  }
-};
+const writeStorage = (items: Servico[]) => servicosStorage.write(items);
 
 const sortByDate = (items: Servico[]) =>
   [...items].sort((left, right) => new Date(right.dataCriacao).getTime() - new Date(left.dataCriacao).getTime());

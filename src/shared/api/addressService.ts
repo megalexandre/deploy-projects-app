@@ -1,3 +1,4 @@
+import { asString, isRecord } from '@/core/utils/normalize';
 import { apiClient } from './apiClient';
 
 export interface Address {
@@ -29,15 +30,7 @@ export interface UpdateAddressData extends CreateAddressData {
   id: string;
 }
 
-type UnknownRecord = Record<string, unknown>;
-
 const ADDRESS_ENDPOINT = '/address';
-
-const isRecord = (value: unknown): value is UnknownRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const asString = (value: unknown, fallback = ''): string =>
-  typeof value === 'string' ? value : fallback;
 
 const normalizeAddress = (raw: unknown): Address => {
   const address = isRecord(raw) ? raw : {};

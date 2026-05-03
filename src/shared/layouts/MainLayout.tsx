@@ -17,9 +17,9 @@ import {
   List,
   X
 } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { useTheme } from '../hooks/useTheme';
-import { authService } from '../services';
+import { Button } from '@/shared/components/Button';
+import { useTheme } from '@/shared/hooks/useTheme';
+import { authService } from '@/services';
 
 export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();

@@ -1,6 +1,8 @@
 /** Camada de acesso a dados para 'customersService': concentra chamadas HTTP e transformacao basica de payloads. */
-import type { Documento } from '../types';
-import { apiClient } from './apiClient';
+import type { Documento } from '@/types';
+import { asNumber, asString, isRecord } from '@/core/utils/normalize';
+import { createRecordStorage } from '@/core/utils/storage';
+import { apiClient } from '@/shared/api/apiClient';
 
 export interface Customer {
   id: string;
@@ -39,35 +41,13 @@ export interface UpdateCustomerData {
   email?: string;
 }
 
-type UnknownRecord = Record<string, unknown>;
 type CustomerEnhancement = {
   documentos?: Documento[];
 };
 
 const CUSTOMER_ENHANCEMENTS_STORAGE_KEY = 'opj_frontend_customer_enhancements';
 
-const isRecord = (value: unknown): value is UnknownRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isBrowser = typeof window !== 'undefined';
-
-const asString = (value: unknown, fallback = ''): string =>
-  typeof value === 'string' ? value : fallback;
-
-const asNumber = (value: unknown, fallback = 0): number => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const parsed = Number(value.replace(',', '.'));
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return fallback;
-};
+const customerEnhancementsStorage = createRecordStorage<CustomerEnhancement>(CUSTOMER_ENHANCEMENTS_STORAGE_KEY);
 
 const normalizeDocumentos = (documentos?: unknown): Documento[] =>
   (Array.isArray(documentos) ? documentos : []).map((item) => {
@@ -84,48 +64,17 @@ const normalizeDocumentos = (documentos?: unknown): Documento[] =>
     };
   });
 
-const readCustomerEnhancements = (): Record<string, CustomerEnhancement> => {
-  if (!isBrowser) {
-    return {};
-  }
-
-  try {
-    const raw = window.localStorage.getItem(CUSTOMER_ENHANCEMENTS_STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-
-    const parsed = JSON.parse(raw);
-    return isRecord(parsed) ? (parsed as Record<string, CustomerEnhancement>) : {};
-  } catch (error) {
-    console.error('Erro ao carregar dados locais complementares de clientes:', error);
-    return {};
-  }
-};
-
-const writeCustomerEnhancements = (enhancements: Record<string, CustomerEnhancement>) => {
-  if (!isBrowser) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(CUSTOMER_ENHANCEMENTS_STORAGE_KEY, JSON.stringify(enhancements));
-  } catch (error) {
-    console.error('Erro ao salvar dados locais complementares de clientes:', error);
-  }
-};
-
 const updateCustomerEnhancement = (
   customerId: string,
   updater: (current: CustomerEnhancement | undefined) => CustomerEnhancement
 ) => {
-  const current = readCustomerEnhancements();
+  const current = customerEnhancementsStorage.read();
   current[customerId] = updater(current[customerId]);
-  writeCustomerEnhancements(current);
+  customerEnhancementsStorage.write(current);
 };
 
 const mergeCustomerEnhancement = (customer: Customer): Customer => {
-  const enhancement = readCustomerEnhancements()[customer.id];
+  const enhancement = customerEnhancementsStorage.read()[customer.id];
   if (!enhancement) {
     return customer;
   }

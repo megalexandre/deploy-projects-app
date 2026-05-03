@@ -1,4 +1,5 @@
-import { apiClient } from './apiClient';
+import { asString, isRecord } from '@/core/utils/normalize';
+import { apiClient } from '@/shared/api/apiClient';
 
 export interface Concessionaria {
   id: string;
@@ -9,15 +10,7 @@ export interface SaveConcessionariaData {
   nome: string;
 }
 
-type UnknownRecord = Record<string, unknown>;
-
-const COMPANY_ENDPOINT = '/company';
-
-const isRecord = (value: unknown): value is UnknownRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const asString = (value: unknown, fallback = ''): string =>
-  typeof value === 'string' ? value : fallback;
+const COMPANY_ENDPOINT = '/concessionaires';
 
 const normalizeConcessionaria = (raw: unknown): Concessionaria => {
   const company = isRecord(raw) ? raw : {};

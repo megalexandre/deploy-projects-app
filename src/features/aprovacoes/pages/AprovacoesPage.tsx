@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle, ClockCounterClockwise, Eye, Prohibit } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
-import { Button } from '../components/Button';
-import { Card, CardContent } from '../components/Card';
-import { approvalsService, type ApprovalRequest } from '../services/approvalsService';
-import { projectsService } from '../services/projectsService';
-import { servicosService } from '../services/servicosService';
-import { getSessionUser, isAdminSessionUser } from '../utils/sessionUser';
+import { Button } from '@/shared/components/Button';
+import { Card, CardContent } from '@/shared/components/Card';
+import { approvalsService, type ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
+import { projectsService } from '@/features/projetos/services/projectsService';
+import { servicosService } from '@/features/servicos/services/servicosService';
+import { getSessionUser, isAdminSessionUser } from '@/shared/session/sessionUser';
 
 type EntitySnapshot = {
   status?: string;

@@ -1,7 +1,7 @@
 /** Camada de acesso a dados para 'financeiroService': concentra chamadas HTTP e transformacao basica de payloads. */
-import type { Transacao } from '../types';
-import { apiClient } from './apiClient';
-import { createCrudService } from './crudService';
+import type { Transacao } from '@/types';
+import { apiClient } from '@/shared/api/apiClient';
+import { createCrudService } from '@/shared/api/crudService';
 
 export type CreateTransacaoPayload = Omit<Transacao, 'id'>;
 export type UpdateTransacaoPayload = Partial<CreateTransacaoPayload>;

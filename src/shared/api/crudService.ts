@@ -1,5 +1,5 @@
 /** Camada de acesso a dados para 'crudService': concentra chamadas HTTP e transformacao basica de payloads. */
-import type { ApiListParams, PaginatedResponse } from '../types';
+import type { ApiListParams, PaginatedResponse } from '@/types';
 import { apiClient } from './apiClient';
 
 export interface CrudService<TEntity, TCreate, TUpdate = Partial<TCreate>> {

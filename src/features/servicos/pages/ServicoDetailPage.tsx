@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, Clock, FileText, FloppyDisk, UploadSimple } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { concessionariasService, customersService, filesService, servicosService, type Concessionaria, type Customer } from '../services';
-import type { Documento, Servico, StatusServico } from '../types';
-import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
-import { formatCurrencyBRL, maskLatitude, maskLongitude } from '../utils/masks';
+import { Button } from '@/shared/components/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { concessionariasService, customersService, filesService, servicosService, type Concessionaria, type Customer } from '@/services';
+import type { Documento, Servico, StatusServico } from '@/types';
+import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import { formatCurrencyBRL, maskLatitude, maskLongitude } from '@/core/utils/masks';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
   const merged = new Map<string, Documento>();

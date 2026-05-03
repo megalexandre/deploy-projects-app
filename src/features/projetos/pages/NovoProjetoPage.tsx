@@ -2,8 +2,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Calendar, MagnifyingGlass, UploadSimple, Plus } from '@phosphor-icons/react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/Button';
-import { Card } from '../components/Card';
+import { Button } from '@/shared/components/Button';
+import { Card } from '@/shared/components/Card';
 import {
   ApiError,
   addressService,
@@ -15,9 +15,9 @@ import {
   type Concessionaria,
   type CreateProjectData,
   type Customer
-} from '../services';
-import { buildTabelaPrecoPadraoEntradaMap, loadConfiguracoesSistema } from '../utils/configuracoesSistema';
-import { formatCurrencyBRL, maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskLatitude, maskLongitude, maskNumeric, maskPhoneBR, onlyDigits, parseCoordinate } from '../utils/masks';
+} from '@/services';
+import { buildTabelaPrecoPadraoEntradaMap, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import { formatCurrencyBRL, maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskLatitude, maskLongitude, maskNumeric, maskPhoneBR, onlyDigits, parseCoordinate } from '@/core/utils/masks';
 
 type Passo = 1 | 2 | 3;
 type TipoDocumento = 'cpf' | 'cnpj';

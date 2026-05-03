@@ -10,11 +10,11 @@ import {
   Eye,
   ClipboardText
 } from '@phosphor-icons/react';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import { Button } from '../components/Button';
-import { projectsService } from '../services';
-import { approvalsService, type ApprovalRequest } from '../services/approvalsService';
-import type { DashboardStats, Projeto } from '../types';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
+import { Button } from '@/shared/components/Button';
+import { projectsService } from '@/services';
+import { approvalsService, type ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
+import type { DashboardStats, Projeto } from '@/types';
 
 export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);

@@ -1,4 +1,5 @@
-import { getSessionUser } from '../utils/sessionUser';
+import { createArrayStorage } from '@/core/utils/storage';
+import { getSessionUser } from '@/shared/session/sessionUser';
 
 export type ApprovalEntityType = 'projeto' | 'servico';
 export type ApprovalStatus = 'pendente' | 'aprovado' | 'rejeitado';
@@ -19,37 +20,11 @@ export interface ApprovalRequest {
   decidedByName?: string;
 }
 
-const STORAGE_KEY = 'opj_approval_requests';
-
-const readStorage = (): ApprovalRequest[] => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed as ApprovalRequest[] : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeStorage = (items: ApprovalRequest[]) => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-};
+const storage = createArrayStorage<ApprovalRequest>('opj_approval_requests');
 
 export const approvalsService = {
   list(): ApprovalRequest[] {
-    return readStorage().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+    return storage.read().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
   },
 
   listPending(): ApprovalRequest[] {
@@ -67,7 +42,7 @@ export const approvalsService = {
       return;
     }
 
-    const current = readStorage();
+    const current = storage.read();
     const existingIndex = current.findIndex(
       (item) => item.entityType === input.entityType && item.entityId === input.entityId
     );
@@ -91,12 +66,12 @@ export const approvalsService = {
       current.unshift(request);
     }
 
-    writeStorage(current);
+    storage.write(current);
   },
 
   decide(id: string, status: Extract<ApprovalStatus, 'aprovado' | 'rejeitado'>) {
     const sessionUser = getSessionUser();
-    const current = readStorage();
+    const current = storage.read();
     const index = current.findIndex((item) => item.id === id);
     if (index < 0) {
       return;
@@ -110,6 +85,6 @@ export const approvalsService = {
       decidedByName: sessionUser?.name
     };
 
-    writeStorage(current);
+    storage.write(current);
   }
 };

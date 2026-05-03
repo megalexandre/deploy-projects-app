@@ -1,9 +1,7 @@
-import type { User } from '../types';
+import type { User } from '@/types';
+import { isRecord } from '@/core/utils/normalize';
 
 const STORAGE_USER_KEY = 'user';
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 export const getSessionUser = (): User | null => {
   if (typeof window === 'undefined') {

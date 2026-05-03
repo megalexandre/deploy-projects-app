@@ -1,4 +1,4 @@
-import { ApiError, apiClient } from './apiClient';
+import { ApiError, apiClient, resolveErrorMessage } from './apiClient';
 
 export interface UploadedFileResponse {
   id: string;
@@ -13,7 +13,10 @@ const FILES_ENDPOINT = '/api/v1/file';
 const buildUrl = (path: string) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
   const baseUrl = apiClient.baseUrl;
-  return new URL(endpoint, `${baseUrl}/`).toString();
+  // Em modo proxy (dev), baseUrl é relativo (/api). new URL exige base absoluta,
+  // então usa a origem atual — o proxy do Vite intercepta o request.
+  const absoluteBase = /^https?:\/\//i.test(baseUrl) ? `${baseUrl}/` : `${window.location.origin}/`;
+  return new URL(endpoint, absoluteBase).toString();
 };
 
 const buildHeaders = () => {
@@ -26,21 +29,6 @@ const buildHeaders = () => {
   }
 
   return headers;
-};
-
-const resolveErrorMessage = (payload: unknown, fallback: string) => {
-  if (typeof payload === 'string' && payload.trim()) {
-    return payload;
-  }
-
-  if (payload && typeof payload === 'object' && 'message' in payload) {
-    const message = (payload as { message?: unknown }).message;
-    if (typeof message === 'string' && message.trim()) {
-      return message;
-    }
-  }
-
-  return fallback;
 };
 
 export const filesService = {

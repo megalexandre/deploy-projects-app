@@ -1,5 +1,5 @@
 /** Camada de acesso a dados para 'usersService': concentra chamadas HTTP e transformacao basica de payloads. */
-import { apiClient } from './apiClient';
+import { apiClient } from '@/shared/api/apiClient';
 
 export interface User {
   id: string;

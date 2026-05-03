@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -9,6 +10,11 @@ export default defineConfig(({ command, mode }) => {
   return {
     base,
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src')
+      }
+    },
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
@@ -16,11 +22,18 @@ export default defineConfig(({ command, mode }) => {
     server: apiProxyTarget
       ? {
           proxy: {
+            // Regra mais específica primeiro: /api/v1/* (filesService) → sem rewrite
+            '/api/v1': {
+              target: apiProxyTarget,
+              changeOrigin: true,
+              secure: true
+            },
+            // /api/* → /api/v2/* (API principal)
             '/api': {
               target: apiProxyTarget,
               changeOrigin: true,
               secure: true,
-              rewrite: (path) => path.replace(/^\/api/, '')
+              rewrite: (path) => path.replace(/^\/api/, '/api/v2')
             }
           }
         }

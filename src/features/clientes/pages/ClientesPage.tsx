@@ -1,11 +1,11 @@
 /** Pagina 'ClientesPage': lista clientes cadastrados e permite novo cadastro com endereco. */
 import React, { useEffect, useMemo, useState } from 'react';
 import { DownloadSimple, FileText, MagnifyingGlass, PencilSimple, PlusCircle, UploadSimple } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { Input } from '../components/Input';
-import { ApiError, addressService, customersService, filesService, viaCepService, type Customer } from '../services';
-import { maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '../utils/masks';
+import { Button } from '@/shared/components/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { Input } from '@/shared/components/Input';
+import { ApiError, addressService, customersService, filesService, viaCepService, type Customer } from '@/services';
+import { maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
 
 type TipoDocumento = 'cpf' | 'cnpj';
 

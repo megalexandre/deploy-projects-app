@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrencyDollar, TrendUp, TrendDown, Plus, DownloadSimple, Calendar } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import { projectsService } from '../services';
-import { formatCurrencyBRL } from '../utils/masks';
+import { Button } from '@/shared/components/Button';
+import { Input } from '@/shared/components/Input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
+import { projectsService } from '@/services';
+import { formatCurrencyBRL } from '@/core/utils/masks';
 
 interface Transacao {
   id: string;

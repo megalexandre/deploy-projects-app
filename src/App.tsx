@@ -1,30 +1,30 @@
 /** Componente raiz da aplicacao: define rotas e composicao principal da interface. */
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { ClientesPage } from './pages/ClientesPage';
-import { ProjetosPage } from './pages/ProjetosPage';
-import { ProjetoDetailPage } from './pages/ProjetoDetailPage';
-import { NovoProjetoPage } from './pages/NovoProjetoPage';
-import { NovoServicoPage } from './pages/NovoServicoPage';
-import { ServicosPage } from './pages/ServicosPage';
-import { ServicoDetailPage } from './pages/ServicoDetailPage';
-import { FinanceiroPage } from './pages/FinanceiroPage';
-import { PagamentosPage } from './pages/PagamentosPage';
-import { RecebimentosPage } from './pages/RecebimentosPage';
-import { FaturasPage } from './pages/FaturasPage';
-import { CalendarioPage } from './pages/CalendarioPage';
-import { UsuariosPage } from './pages/UsuariosPage';
-import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
-import { ConcessionariasPage } from './pages/ConcessionariasPage';
-import { AprovacoesPage } from './pages/AprovacoesPage';
-import { MainLayout } from './layouts/MainLayout';
-import { useAuthInterceptor } from './hooks/useAuthInterceptor';
-import { apiClient } from './services';
+import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
+import { ClientesPage } from '@/features/clientes/pages/ClientesPage';
+import { ProjetosPage } from '@/features/projetos/pages/ProjetosPage';
+import { ProjetoDetailPage } from '@/features/projetos/pages/ProjetoDetailPage';
+import { NovoProjetoPage } from '@/features/projetos/pages/NovoProjetoPage';
+import { NovoServicoPage } from '@/features/servicos/pages/NovoServicoPage';
+import { ServicosPage } from '@/features/servicos/pages/ServicosPage';
+import { ServicoDetailPage } from '@/features/servicos/pages/ServicoDetailPage';
+import { FinanceiroPage } from '@/features/financeiro/pages/FinanceiroPage';
+import { PagamentosPage } from '@/features/financeiro/pages/PagamentosPage';
+import { RecebimentosPage } from '@/features/financeiro/pages/RecebimentosPage';
+import { FaturasPage } from '@/features/financeiro/pages/FaturasPage';
+import { CalendarioPage } from '@/features/calendario/pages/CalendarioPage';
+import { UsuariosPage } from '@/features/admin/pages/UsuariosPage';
+import { ConfiguracoesPage } from '@/features/admin/pages/ConfiguracoesPage';
+import { ConcessionariasPage } from '@/features/admin/pages/ConcessionariasPage';
+import { AprovacoesPage } from '@/features/aprovacoes/pages/AprovacoesPage';
+import { MainLayout } from '@/shared/layouts/MainLayout';
+import { useAuthInterceptor } from '@/shared/hooks/useAuthInterceptor';
+import { apiClient } from '@/services';
+import { ENV } from '@/shared/config/env';
 
-const getTokenKey = () => window.__APP_ENV__?.VITE_AUTH_TOKEN_STORAGE_KEY?.trim() || (import.meta.env.VITE_AUTH_TOKEN_STORAGE_KEY as string | undefined)?.trim() || 'auth_token';
-const getIsAuthenticated = () => Boolean(localStorage.getItem(getTokenKey()));
+const getIsAuthenticated = () => Boolean(localStorage.getItem(ENV.AUTH_TOKEN_STORAGE_KEY));
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; isAuthenticated: boolean }> = ({ children, isAuthenticated }) => {
   if (!isAuthenticated) {

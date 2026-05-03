@@ -1,8 +1,10 @@
 ﻿/** Camada de acesso a dados para 'projectsService': concentra chamadas HTTP e transformacao basica de payloads. */
-import type { Documento, PadraoEntradaItem, Projeto, DashboardStats, PaginatedResponse, StatusProjeto } from '../types';
-import { apiClient } from './apiClient';
-import { approvalsService } from './approvalsService';
-import { customersService } from './customersService';
+import type { Documento, PadraoEntradaItem, Projeto, DashboardStats, PaginatedResponse, StatusProjeto } from '@/types';
+import { asArray, asBooleanString, asNumber, asString, isRecord } from '@/core/utils/normalize';
+import { createRecordStorage } from '@/core/utils/storage';
+import { apiClient } from '@/shared/api/apiClient';
+import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
+import { customersService } from '@/features/clientes/services/customersService';
 
 export type Project = Projeto;
 
@@ -64,7 +66,6 @@ export interface UpdateProjectData {
   description?: string;
 }
 
-type UnknownRecord = Record<string, unknown>;
 type FrontendProjectEnhancement = Partial<Pick<
   Projeto,
   | 'modulos'
@@ -89,58 +90,7 @@ type FrontendProjectEnhancement = Partial<Pick<
 
 type TimelineStatus = Projeto['timeline'][number]['status'];
 
-const PROJECTS_FRONTEND_STORAGE_KEY = 'opj_frontend_project_enhancements';
-
-const isRecord = (value: unknown): value is UnknownRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isBrowser = typeof window !== 'undefined';
-
-const asString = (value: unknown, fallback = ''): string =>
-  typeof value === 'string' ? value : fallback;
-
-const asBooleanString = (value: unknown): string | undefined => {
-  if (typeof value === 'boolean') {
-    return value ? 'sim' : 'nao';
-  }
-
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'true' || normalized === 'sim') {
-      return 'sim';
-    }
-
-    if (normalized === 'false' || normalized === 'nao') {
-      return 'nao';
-    }
-
-    return value;
-  }
-
-  return undefined;
-};
-
-const asNumber = (value: unknown, fallback = 0): number => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const normalized = value
-      .trim()
-      .replace(/[^\d,.-]/g, '')
-      .replace(/\.(?=.*\.)/g, '')
-      .replace(',', '.');
-    const parsed = Number(normalized);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return fallback;
-};
-
-const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+const projectEnhancementsStorage = createRecordStorage<FrontendProjectEnhancement>('opj_frontend_project_enhancements');
 
 const asCoordinateObject = (value: unknown): Projeto['coordenadas'] | undefined => {
   if (!isRecord(value)) {
@@ -157,53 +107,19 @@ const asCoordinateObject = (value: unknown): Projeto['coordenadas'] | undefined 
   return { latitude, longitude };
 };
 
-const readProjectEnhancements = (): Record<string, FrontendProjectEnhancement> => {
-  if (!isBrowser) {
-    return {};
-  }
-
-  try {
-    const raw = window.localStorage.getItem(PROJECTS_FRONTEND_STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-
-    const parsed = JSON.parse(raw);
-    return isRecord(parsed) ? (parsed as Record<string, FrontendProjectEnhancement>) : {};
-  } catch (error) {
-    console.error('Erro ao carregar dados locais complementares de projetos:', error);
-    return {};
-  }
-};
-
-const writeProjectEnhancements = (enhancements: Record<string, FrontendProjectEnhancement>) => {
-  if (!isBrowser) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(PROJECTS_FRONTEND_STORAGE_KEY, JSON.stringify(enhancements));
-  } catch (error) {
-    console.error('Erro ao salvar dados locais complementares de projetos:', error);
-  }
-};
-
 const saveProjectEnhancement = (projectId: string, enhancement: FrontendProjectEnhancement) => {
-  const current = readProjectEnhancements();
-  current[projectId] = {
-    ...current[projectId],
-    ...enhancement
-  };
-  writeProjectEnhancements(current);
+  const current = projectEnhancementsStorage.read();
+  current[projectId] = { ...current[projectId], ...enhancement };
+  projectEnhancementsStorage.write(current);
 };
 
 const updateProjectEnhancement = (
   projectId: string,
   updater: (current: FrontendProjectEnhancement | undefined) => FrontendProjectEnhancement
 ) => {
-  const current = readProjectEnhancements();
+  const current = projectEnhancementsStorage.read();
   current[projectId] = updater(current[projectId]);
-  writeProjectEnhancements(current);
+  projectEnhancementsStorage.write(current);
 };
 
 const hasAddressData = (endereco?: Projeto['endereco']): boolean => {
@@ -576,7 +492,7 @@ const buildFrontendEnhancement = (projectData: CreateProjectData): FrontendProje
 });
 
 const mergeProjectEnhancement = (project: Projeto): Projeto => {
-  const enhancement = readProjectEnhancements()[project.id];
+  const enhancement = projectEnhancementsStorage.read()[project.id];
   if (!enhancement) {
     return project;
   }

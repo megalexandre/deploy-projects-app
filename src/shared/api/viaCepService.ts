@@ -1,4 +1,5 @@
-import { onlyDigits } from '../utils/masks';
+import { onlyDigits } from '@/core/utils/masks';
+import { ENV } from '@/shared/config/env';
 
 export interface ViaCepAddress {
   cep: string;
@@ -19,20 +20,10 @@ interface ViaCepResponse {
   erro?: boolean;
 }
 
-const getRequiredEnv = (key: string) => {
-  const runtimeValue = window.__APP_ENV__?.[key as 'VITE_API_BASE_URL' | 'VITE_AUTH_TOKEN_STORAGE_KEY' | 'VITE_VIACEP_BASE_URL' | 'VITE_API_PROXY_TARGET'];
-  const value = (typeof runtimeValue === 'string' && runtimeValue.trim())
-    ? runtimeValue.trim()
-    : (import.meta.env[key as keyof ImportMetaEnv] as string | undefined)?.trim();
-
-  if (!value) {
-    throw new Error(`Variavel de ambiente obrigatoria ausente: ${key}`);
-  }
-
-  return value.replace(/\/+$/, '');
-};
-
-const VIACEP_BASE_URL = getRequiredEnv('VITE_VIACEP_BASE_URL');
+if (!ENV.VIACEP_BASE_URL) {
+  throw new Error('Variavel de ambiente obrigatoria ausente: VITE_VIACEP_BASE_URL');
+}
+const VIACEP_BASE_URL = ENV.VIACEP_BASE_URL.replace(/\/+$/, '');
 
 export const viaCepService = {
   async lookup(cep: string): Promise<ViaCepAddress | null> {

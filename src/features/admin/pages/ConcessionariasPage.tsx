@@ -1,9 +1,9 @@
 /** Pagina 'ConcessionariasPage': gerencia cadastro de concessionarias integrado ao backend. */
 import React, { useEffect, useMemo, useState } from 'react';
 import { MagnifyingGlass, PencilSimple, PlusCircle } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { Input } from '../components/Input';
+import { Button } from '@/shared/components/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { Input } from '@/shared/components/Input';
 import { concessionariasService, type Concessionaria } from '../services/concessionariasService';
 
 interface ConcessionariaForm {

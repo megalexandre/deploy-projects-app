@@ -1,6 +1,6 @@
 /** Camada de acesso a dados para 'authService': concentra chamadas HTTP e transformacao basica de payloads. */
-import type { User } from './usersService';
-import { apiClient } from './apiClient';
+import type { User } from '@/features/admin/services/usersService';
+import { apiClient } from '@/shared/api/apiClient';
 
 export interface LoginCredentials {
   email: string;

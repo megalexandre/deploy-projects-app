@@ -12,12 +12,12 @@ import {
   Plus,
   Shield
 } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { Card, CardContent } from '../components/Card';
-import type { ConfiguracoesSistema } from '../types';
-import { maskCnpj, maskPhoneBR } from '../utils/masks';
-import { getDefaultConfiguracoesSistema, loadConfiguracoesSistema, saveConfiguracoesSistema } from '../utils/configuracoesSistema';
+import { Button } from '@/shared/components/Button';
+import { Input } from '@/shared/components/Input';
+import { Card, CardContent } from '@/shared/components/Card';
+import type { ConfiguracoesSistema } from '@/types';
+import { maskCnpj, maskPhoneBR } from '@/core/utils/masks';
+import { getDefaultConfiguracoesSistema, loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
 
 type AbaConfiguracoes = 'geral' | 'precos' | 'cupons' | 'notificacoes' | 'sistema' | 'seguranca';
 

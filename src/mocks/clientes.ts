@@ -1,5 +1,5 @@
 /** Dados mockados para desenvolvimento e testes locais. */
-import type { Cliente } from '../types';
+import type { Cliente } from '@/types';
 
 export const clientesMock: Cliente[] = [
   {

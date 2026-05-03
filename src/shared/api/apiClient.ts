@@ -1,4 +1,5 @@
-/** Camada de acesso a dados para 'apiClient': concentra chamadas HTTP e transformacao basica de payloads. */
+import { ENV } from '@/shared/config/env';
+
 /** Metodos HTTP suportados pelo cliente interno. */
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -25,27 +26,13 @@ export class ApiError extends Error {
   }
 }
 
-const getEnv = (key: keyof ImportMetaEnv) => {
-  const runtimeEnv = window.__APP_ENV__;
-  const runtimeKey = key as 'VITE_API_BASE_URL' | 'VITE_AUTH_TOKEN_STORAGE_KEY' | 'VITE_VIACEP_BASE_URL' | 'VITE_API_PROXY_TARGET';
-
-  if (runtimeEnv && Object.prototype.hasOwnProperty.call(runtimeEnv, runtimeKey)) {
-    const runtimeValue = runtimeEnv[runtimeKey];
-    return typeof runtimeValue === 'string' ? runtimeValue.trim() : undefined;
-  }
-
-  const value = (import.meta.env[key] as string | undefined)?.trim();
-
-  return value;
-};
-
 const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
 const removeTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
 
 /** Base opcional da API e alvo de proxy definidos por ambiente/runtime. */
-const API_BASE_URL = getEnv('VITE_API_BASE_URL');
-const API_PROXY_TARGET = getEnv('VITE_API_PROXY_TARGET');
+const API_BASE_URL = ENV.API_BASE_URL;
+const API_PROXY_TARGET = ENV.API_PROXY_TARGET;
 
 const resolveApiBaseUrl = () => {
   if (API_BASE_URL) {
@@ -74,7 +61,7 @@ const resolveApiBaseUrl = () => {
 const RESOLVED_API_BASE_URL = resolveApiBaseUrl();
 
 /** Chave do localStorage onde o token de autenticacao e salvo. */
-const STORAGE_TOKEN_KEY = getEnv('VITE_AUTH_TOKEN_STORAGE_KEY') || 'auth_token';
+const STORAGE_TOKEN_KEY = ENV.AUTH_TOKEN_STORAGE_KEY;
 const STORAGE_USER_KEY = 'user';
 const AUTH_STATE_CHANGED_EVENT = 'auth-state-changed';
 let unauthorizedHandler: ((error: ApiError) => void | Promise<void>) | null = null;
@@ -123,7 +110,7 @@ const clearStoredSession = () => {
 };
 
 /** Escolhe a melhor mensagem de erro possivel a partir do payload devolvido. */
-const resolveErrorMessage = (payload: unknown, fallback: string) => {
+export const resolveErrorMessage = (payload: unknown, fallback: string) => {
   if (typeof payload === 'string' && payload.trim()) {
     return payload;
   }

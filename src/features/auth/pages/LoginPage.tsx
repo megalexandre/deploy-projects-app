@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, EnvelopeSimple, Eye, EyeSlash, Lightning, Lock, ShieldCheck, SunDim } from '@phosphor-icons/react';
 import { authService } from '../services/authService';
-import type { LoginCredentials } from '../services';
+import type { LoginCredentials } from '@/services';
 
 export const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState<LoginCredentials>({

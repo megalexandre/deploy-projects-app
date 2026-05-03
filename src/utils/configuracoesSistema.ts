@@ -1,4 +1,4 @@
-import type { ConfiguracoesSistema, CupomDesconto, PrecoPadraoEntrada } from '../types';
+import type { ConfiguracoesSistema, CupomDesconto, PrecoPadraoEntrada } from '@/types';
 
 const STORAGE_KEY = 'opj_configuracoes_sistema';
 

@@ -2,9 +2,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Bank, CurrencyCircleDollar, TrendUp } from '@phosphor-icons/react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { Button } from '../components/Button';
-import { formatCurrencyBRL } from '../utils/masks';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { Button } from '@/shared/components/Button';
+import { formatCurrencyBRL } from '@/core/utils/masks';
 
 interface Recebimento {
   id: string;

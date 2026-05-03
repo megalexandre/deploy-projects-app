@@ -1,11 +1,11 @@
 /** Pagina 'CalendarioPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CaretLeft, CaretRight, Folder, Wrench } from '@phosphor-icons/react';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
-import type { Projeto, Servico } from '../types';
-import { projectsService, servicosService } from '../services';
+import { Button } from '@/shared/components/Button';
+import { Input } from '@/shared/components/Input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
+import type { Projeto, Servico } from '@/types';
+import { projectsService, servicosService } from '@/services';
 
 type TipoEventoManual = 'instalacao' | 'manutencao' | 'reuniao' | 'vistoria';
 type OrigemAgenda = 'evento' | 'projeto' | 'servico';
