@@ -21,7 +21,7 @@ import { Button } from '@/shared/components/Button';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { authService } from '@/services';
 
-export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+export const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,13 +35,13 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
     { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
     { icon: Users, label: 'Clientes', path: '/clientes' },
     { icon: Folder, label: 'Projetos', path: '/projetos' },
-    { icon: Buildings, label: 'Concessionarias', path: '/concessionarias' },
-    { icon: Wrench, label: 'Servicos', path: '/servicos' },
+    { icon: Buildings, label: 'Concessionárias', path: '/concessionarias' },
+    { icon: Wrench, label: 'Serviços', path: '/servicos' },
     { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
-    { icon: Calendar, label: 'Calendario', path: '/calendario' },
-    { icon: Users, label: 'Usuarios', path: '/usuarios' },
-    { icon: CheckSquare, label: 'Aprovacoes', path: '/aprovacoes' },
-    { icon: Gear, label: 'Configuracoes', path: '/configuracoes' }
+    { icon: Calendar, label: 'Calendário', path: '/calendario' },
+    { icon: Users, label: 'Usuários', path: '/usuarios' },
+    { icon: CheckSquare, label: 'Aprovações', path: '/aprovacoes' },
+    { icon: Gear, label: 'Configurações', path: '/configuracoes' }
   ];
 
   return (
@@ -139,7 +139,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
           </header>
 
           <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-            {children || <Outlet />}
+            <Outlet />
           </main>
         </div>
       </div>
