@@ -1,6 +1,9 @@
-docker build -t alexandreqrz/deploy-board-app:latest .
+docker build -t alexandreqrz/opj:latest .
+docker push alexandreqrz/opj:latest
+
+
 docker run --rm -p 8080:80 alexandreqrz/deploy-board-app:latest
-docker push alexandreqrz/deploy-board-app:latest
+
 
 
 docker run -p 8080:80 \

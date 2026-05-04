@@ -9,4 +9,4 @@ tmp_pdf_images
 README.md
 docs
 dist
-!nginx.conf
+Dockerfile
