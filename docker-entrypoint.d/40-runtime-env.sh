@@ -8,10 +8,10 @@ escape_js() {
 }
 
 # Defaults para variaveis conhecidas (sobrescritos por vars de ambiente do container)
-: "${VITE_API_PROXY_TARGET:=https://project-deploy.shop}"
-: "${VITE_API_BASE_URL:=}"
-: "${VITE_AUTH_TOKEN_STORAGE_KEY:=auth_token}"
-: "${VITE_VIACEP_BASE_URL:=https://viacep.com.br/ws}"
+export VITE_API_PROXY_TARGET="${VITE_API_PROXY_TARGET:-https://project-deploy.shop}"
+export VITE_API_BASE_URL="${VITE_API_BASE_URL:-}"
+export VITE_AUTH_TOKEN_STORAGE_KEY="${VITE_AUTH_TOKEN_STORAGE_KEY:-auth_token}"
+export VITE_VIACEP_BASE_URL="${VITE_VIACEP_BASE_URL:-https://viacep.com.br/ws}"
 
 {
   printf 'window.__APP_ENV__ = {\n'
