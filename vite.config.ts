@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const base = command === 'serve' ? '/' : '/deploy-projects-app/'
+  const base = command === 'serve' ? '/' : (process.env.VITE_BASE ?? '/deploy-projects-app/')
   const apiProxyTarget = env.VITE_API_PROXY_TARGET?.trim()
 
   return {

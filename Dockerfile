@@ -7,6 +7,7 @@ RUN npm ci
 
 # Include source and env files so Vite can resolve VITE_* values at build time.
 COPY . .
+ENV VITE_BASE=/
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
