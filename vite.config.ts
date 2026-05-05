@@ -26,14 +26,22 @@ export default defineConfig(({ command, mode }) => {
             '/api/v1': {
               target: apiProxyTarget,
               changeOrigin: true,
-              secure: true
+              secure: true,
+              configure: (proxy) => {
+                proxy.on('proxyReq', (_, req) => console.log('[proxy]', req.method, req.url))
+                proxy.on('error', (err) => console.error('[proxy error]', err.message))
+              }
             },
             // /api/* → /api/v2/* (API principal)
             '/api': {
               target: apiProxyTarget,
               changeOrigin: true,
               secure: true,
-              rewrite: (path) => path.replace(/^\/api/, '/api/v2')
+              rewrite: (path) => path.replace(/^\/api/, '/api/v2'),
+              configure: (proxy) => {
+                proxy.on('proxyReq', (_, req) => console.log('[proxy]', req.method, req.url))
+                proxy.on('error', (err) => console.error('[proxy error]', err.message))
+              }
             }
           }
         }
