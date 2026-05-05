@@ -19,11 +19,14 @@ export const getSessionUser = (): User | null => {
       return null;
     }
 
+    const role = typeof parsed.role === 'string' ? parsed.role : ''
+
     return {
       id: typeof parsed.id === 'string' ? parsed.id : '',
       name: typeof parsed.name === 'string' ? parsed.name : '',
       email: typeof parsed.email === 'string' ? parsed.email : '',
-      role: parsed.role === 'admin' || parsed.role === 'manager' || parsed.role === 'technician' ? parsed.role : 'technician'
+      role: role,
+      isAdmin: role === 'main',
     };
   } catch {
     return null;

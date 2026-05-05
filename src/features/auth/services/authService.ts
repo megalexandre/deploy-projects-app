@@ -92,6 +92,7 @@ export const authService = {
       profile: userData.profile ?? 'ADMIN'
     };
 
+    // @todo change all rotes do proper path and remove this endpoint
     await apiClient.post<BackendRegisterResponse>('/auth/register', registerPayload);
     return authService.login({
       email: userData.email,
