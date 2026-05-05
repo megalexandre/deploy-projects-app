@@ -107,11 +107,8 @@ const asCoordinateObject = (value: unknown): Projeto['coordenadas'] | undefined 
   return { latitude, longitude };
 };
 
-const saveProjectEnhancement = (projectId: string, enhancement: FrontendProjectEnhancement) => {
-  const current = projectEnhancementsStorage.read();
-  current[projectId] = { ...current[projectId], ...enhancement };
-  projectEnhancementsStorage.write(current);
-};
+const saveProjectEnhancement = (projectId: string, enhancement: FrontendProjectEnhancement) =>
+  updateProjectEnhancement(projectId, (current) => ({ ...current, ...enhancement }));
 
 const updateProjectEnhancement = (
   projectId: string,
@@ -211,60 +208,28 @@ const normalizeModalidade = (rawModalidade: unknown): Projeto['dadosProjeto']['m
   return 'autoconsumo_local';
 };
 
+const VALID_STATUSES = new Set<StatusProjeto>([
+  'em_analise_documentacao', 'elaboracao_documentacao_tecnica', 'aguardando_assinatura_cliente',
+  'projeto_enviado_aguardando_protocolo_concessionaria', 'em_analise_concessionaria',
+  'ressalvas_projetos', 'obras_concessionaria', 'projeto_aprovado',
+  'vistoria_solicitada', 'vistoria_reprovada', 'aguardando_pagamento', 'projeto_encerrado'
+]);
+
+const STATUS_ALIASES: Record<string, StatusProjeto> = {
+  completed: 'projeto_encerrado', concluido: 'projeto_encerrado',
+  cancelled: 'projeto_encerrado', cancelado: 'projeto_encerrado',
+  active: 'em_analise_concessionaria', em_analise: 'em_analise_concessionaria',
+  in_progress: 'em_analise_concessionaria', em_andamento: 'em_analise_concessionaria',
+  novo: 'em_analise_documentacao', pending: 'em_analise_documentacao', pendente: 'em_analise_documentacao',
+  approved: 'projeto_aprovado', aprovado: 'projeto_aprovado',
+  installation: 'obras_concessionaria', instalacao: 'obras_concessionaria',
+  aguardando_aprovacao: 'aguardando_assinatura_cliente'
+};
+
 const toProjetoStatus = (rawStatus: unknown): StatusProjeto => {
   const status = normalizeStatusKey(rawStatus);
-
-  switch (status) {
-    case 'em_analise_documentacao':
-      return 'em_analise_documentacao';
-    case 'elaboracao_documentacao_tecnica':
-      return 'elaboracao_documentacao_tecnica';
-    case 'aguardando_assinatura_cliente':
-      return 'aguardando_assinatura_cliente';
-    case 'projeto_enviado_aguardando_protocolo_concessionaria':
-      return 'projeto_enviado_aguardando_protocolo_concessionaria';
-    case 'em_analise_concessionaria':
-      return 'em_analise_concessionaria';
-    case 'ressalvas_projetos':
-      return 'ressalvas_projetos';
-    case 'obras_concessionaria':
-      return 'obras_concessionaria';
-    case 'projeto_aprovado':
-      return 'projeto_aprovado';
-    case 'vistoria_solicitada':
-      return 'vistoria_solicitada';
-    case 'vistoria_reprovada':
-      return 'vistoria_reprovada';
-    case 'aguardando_pagamento':
-      return 'aguardando_pagamento';
-    case 'projeto_encerrado':
-      return 'projeto_encerrado';
-    case 'completed':
-    case 'concluido':
-      return 'projeto_encerrado';
-    case 'active':
-    case 'em_analise':
-    case 'in_progress':
-    case 'em_andamento':
-      return 'em_analise_concessionaria';
-    case 'novo':
-    case 'pending':
-    case 'pendente':
-      return 'em_analise_documentacao';
-    case 'approved':
-    case 'aprovado':
-      return 'projeto_aprovado';
-    case 'cancelled':
-    case 'cancelado':
-      return 'projeto_encerrado';
-    case 'installation':
-    case 'instalacao':
-      return 'obras_concessionaria';
-    case 'aguardando_aprovacao':
-      return 'aguardando_assinatura_cliente';
-    default:
-      return 'em_analise_documentacao';
-  }
+  if (VALID_STATUSES.has(status as StatusProjeto)) return status as StatusProjeto;
+  return STATUS_ALIASES[status] ?? 'em_analise_documentacao';
 };
 const extractDataFromList = (response: unknown[] | PaginatedResponse<unknown>) => {
   if (Array.isArray(response)) {
@@ -429,7 +394,6 @@ const normalizeProjeto = (raw: unknown): Projeto => {
       asBooleanString(project.zeroGridControleExportacao) ||
       asBooleanString(project.zero_grid_controle_exportacao) ||
       asBooleanString(project.zeroGridControlExport) ||
-      asBooleanString(project.zeroGridControleExportacao) ||
       undefined,
     observacoes:
       asString(project.observacoes) ||
@@ -537,15 +501,6 @@ const mergeProjectEnhancement = (project: Projeto): Projeto => {
 const PROJECTS_ENDPOINT = '/projects';
 
 const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
-  const { latitude, longitude, tensaoFornecimento, padraoEntradaItens, modulos, inversores, documentos } = projectData;
-  void latitude;
-  void longitude;
-  void tensaoFornecimento;
-  void padraoEntradaItens;
-  void modulos;
-  void inversores;
-  void documentos;
-
   const payload: Record<string, unknown> = {
     clientId: projectData.clientId,
     clienteId: projectData.clientId,
@@ -715,58 +670,7 @@ export const projectsService = {
         }
       : enrichedProject;
 
-    try {
-      const allProjects = await projectsService.getAll();
-      const listedProject = allProjects.find((project) => project.id === id);
-
-      if (!listedProject) {
-        return enriched;
-      }
-
-      return mergeProjectEnhancement({
-        ...enriched,
-        cliente: {
-          ...listedProject.cliente,
-          ...enriched.cliente
-        },
-        endereco: {
-          ...listedProject.endereco,
-          ...enriched.endereco
-        },
-        dadosProjeto: {
-          ...listedProject.dadosProjeto,
-          ...enriched.dadosProjeto
-        },
-        dadosTecnicos: {
-          ...listedProject.dadosTecnicos,
-          ...enriched.dadosTecnicos
-        },
-        valor: enriched.valor || listedProject.valor,
-        status: enriched.status || listedProject.status,
-        tipoProjeto: enriched.tipoProjeto || listedProject.tipoProjeto,
-        servicos: enriched.servicos?.length ? enriched.servicos : listedProject.servicos,
-        numeroUc: enriched.numeroUc || listedProject.numeroUc,
-        dataAbertura: enriched.dataAbertura || listedProject.dataAbertura,
-        coordenadas: enriched.coordenadas || listedProject.coordenadas,
-        latitude: enriched.latitude || listedProject.latitude,
-        longitude: enriched.longitude || listedProject.longitude,
-        tensaoFornecimento: enriched.tensaoFornecimento || listedProject.tensaoFornecimento,
-        padraoEntradaItens:
-          (enriched.padraoEntradaItens?.length ?? 0) > 0 ? enriched.padraoEntradaItens : listedProject.padraoEntradaItens,
-        projetoFastTrack: enriched.projetoFastTrack || listedProject.projetoFastTrack,
-        projetoNovo: enriched.projetoNovo || listedProject.projetoNovo,
-        zeroGridControleExportacao: enriched.zeroGridControleExportacao || listedProject.zeroGridControleExportacao,
-        observacoes: enriched.observacoes || listedProject.observacoes,
-        modulos: enriched.modulos.length > 0 ? enriched.modulos : listedProject.modulos,
-        inversores: enriched.inversores.length > 0 ? enriched.inversores : listedProject.inversores,
-        divisaoCreditos:
-          enriched.divisaoCreditos.length > 0 ? enriched.divisaoCreditos : listedProject.divisaoCreditos,
-        documentos: enriched.documentos.length > 0 ? enriched.documentos : listedProject.documentos
-      });
-    } catch (error) {
-      console.error('Erro ao complementar dados do projeto pelo endpoint de listagem:', error);
-      return enriched;
-    }
+    return enriched;
   },
 
   async getByIdRaw(id: string): Promise<Record<string, unknown>> {
