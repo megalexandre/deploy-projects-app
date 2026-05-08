@@ -22,7 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: alexandreqrz/opj
+          images: alexandreqrz/opjapp
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest
