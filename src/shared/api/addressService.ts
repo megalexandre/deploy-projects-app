@@ -30,7 +30,7 @@ export interface UpdateAddressData extends CreateAddressData {
   id: string;
 }
 
-const ADDRESS_ENDPOINT = '/address';
+const ADDRESS_ENDPOINT = '/addresses';
 
 const normalizeAddress = (raw: unknown): Address => {
   const address = isRecord(raw) ? raw : {};

@@ -66,6 +66,22 @@ export interface UpdateProjectData {
   description?: string;
 }
 
+export const projectStatusFlow: Array<{ status: StatusProjeto; etapa: string }> = [
+  { status: 'aguardando_aprovacao', etapa: 'Aguardando Aprovacao' },
+  { status: 'em_analise_documentacao', etapa: 'Em Analise da Documentacao' },
+  { status: 'elaboracao_documentacao_tecnica', etapa: 'Elaboracao da Documentacao Tecnica' },
+  { status: 'aguardando_assinatura_cliente', etapa: 'Aguardando Assinatura do Cliente' },
+  { status: 'projeto_enviado_aguardando_protocolo_concessionaria', etapa: 'Projeto Enviado para Concessionaria' },
+  { status: 'em_analise_concessionaria', etapa: 'Em Analise na Concessionaria' },
+  { status: 'ressalvas_projetos', etapa: 'Ressalvas de Projeto' },
+  { status: 'obras_concessionaria', etapa: 'Obras da Concessionaria' },
+  { status: 'projeto_aprovado', etapa: 'Projeto Aprovado' },
+  { status: 'vistoria_solicitada', etapa: 'Vistoria Solicitada' },
+  { status: 'vistoria_reprovada', etapa: 'Vistoria Reprovada' },
+  { status: 'aguardando_pagamento', etapa: 'Aguardando Pagamento' },
+  { status: 'projeto_encerrado', etapa: 'Projeto Encerrado' }
+];
+
 type FrontendProjectEnhancement = Partial<Pick<
   Projeto,
   | 'modulos'
@@ -86,6 +102,7 @@ type FrontendProjectEnhancement = Partial<Pick<
   | 'zeroGridControleExportacao'
   | 'observacoes'
   | 'timeline'
+  | 'status'
 >>;
 
 type TimelineStatus = Projeto['timeline'][number]['status'];
@@ -105,6 +122,135 @@ const asCoordinateObject = (value: unknown): Projeto['coordenadas'] | undefined 
   }
 
   return { latitude, longitude };
+};
+
+const deriveTensao = (tensaoAtual: number, tensaoFornecimento?: string) => {
+  if (tensaoAtual > 0) {
+    return tensaoAtual;
+  }
+
+  const normalized = asString(tensaoFornecimento);
+  if (!normalized) {
+    return 0;
+  }
+
+  const values = normalized
+    .replace(/[^\d/]/g, '')
+    .split('/')
+    .map((item) => Number(item))
+    .filter((item) => Number.isFinite(item) && item > 0);
+
+  return values.length > 0 ? Math.max(...values) : 0;
+};
+
+const deriveNumeroFases = (numeroFasesAtual: number, padraoEntradaItens?: PadraoEntradaItem[], tensaoFornecimento?: string) => {
+  if (numeroFasesAtual > 0) {
+    return numeroFasesAtual;
+  }
+
+  const tipoLigacao = padraoEntradaItens?.find((item) => asString(item.tipoLigacao))?.tipoLigacao?.toLowerCase() ?? '';
+  if (tipoLigacao.includes('trif')) {
+    return 3;
+  }
+
+  if (tipoLigacao.includes('bif')) {
+    return 2;
+  }
+
+  if (tipoLigacao.includes('mono')) {
+    return 1;
+  }
+
+  const normalized = asString(tensaoFornecimento).toLowerCase();
+  if (normalized.includes('380')) {
+    return 3;
+  }
+
+  if (normalized.includes('220')) {
+    return 2;
+  }
+
+  return 0;
+};
+
+const deriveRamal = (ramalAtual: string, padraoEntradaItens?: PadraoEntradaItem[], numeroFases?: number) => {
+  if (ramalAtual.trim()) {
+    return ramalAtual;
+  }
+
+  const tipoLigacao = padraoEntradaItens?.find((item) => asString(item.tipoLigacao))?.tipoLigacao?.trim();
+  if (tipoLigacao) {
+    return tipoLigacao;
+  }
+
+  if (numeroFases === 3) {
+    return 'Trifasico';
+  }
+
+  if (numeroFases === 2) {
+    return 'Bifasico';
+  }
+
+  if (numeroFases === 1) {
+    return 'Monofasico';
+  }
+
+  return '';
+};
+
+const deriveDisjuntor = (disjuntorAtual: string, padraoEntradaItens?: PadraoEntradaItem[], protecaoCC?: string) => {
+  if (disjuntorAtual.trim()) {
+    return disjuntorAtual;
+  }
+
+  const padraoDisjuntor = padraoEntradaItens?.find((item) => asString(item.disjuntor))?.disjuntor?.trim();
+  if (padraoDisjuntor) {
+    return padraoDisjuntor;
+  }
+
+  return asString(protecaoCC);
+};
+
+const deriveCargaInstalada = (
+  cargaInstaladaAtual: number,
+  modulos: Projeto['modulos'],
+  inversores: Projeto['inversores'],
+  potenciaSistemaKw: number
+) => {
+  if (cargaInstaladaAtual > 0) {
+    return cargaInstaladaAtual;
+  }
+
+  const cargaModulos = modulos.reduce((total, item) => total + (Number(item.quantidade) || 0) * (Number(item.potencia) || 0), 0);
+  const cargaInversores = inversores.reduce((total, item) => total + (Number(item.quantidade) || 0) * (Number(item.potencia) || 0), 0);
+  const cargaSistema = Math.round((Number(potenciaSistemaKw) || 0) * 1000);
+
+  return Math.max(cargaModulos, cargaInversores, cargaSistema, 0);
+};
+
+const applyDerivedDadosTecnicos = (project: Projeto): Projeto => {
+  const tensao = deriveTensao(project.dadosTecnicos.tensao, project.tensaoFornecimento);
+  const numeroFases = deriveNumeroFases(project.dadosTecnicos.numeroFases, project.padraoEntradaItens, project.tensaoFornecimento);
+  const ramal = deriveRamal(project.dadosTecnicos.ramal, project.padraoEntradaItens, numeroFases);
+  const disjuntor = deriveDisjuntor(project.dadosTecnicos.disjuntor, project.padraoEntradaItens, project.dadosProjeto.protecaoCC);
+  const cargaInstalada = deriveCargaInstalada(
+    project.dadosTecnicos.cargaInstalada,
+    project.dadosTecnicos.modulos,
+    project.dadosTecnicos.inversores,
+    project.dadosProjeto.potenciaSistema
+  );
+
+  return {
+    ...project,
+    dadosTecnicos: {
+      ...project.dadosTecnicos,
+      tensao,
+      numeroFases,
+      ramal,
+      disjuntor,
+      cargaInstalada
+    }
+  };
 };
 
 const saveProjectEnhancement = (projectId: string, enhancement: FrontendProjectEnhancement) =>
@@ -137,20 +283,7 @@ const normalizeStatusKey = (rawStatus: unknown): string => {
     .replace(/[\s-]+/g, '_');
 };
 
-const STATUS_FLOW: Array<{ status: StatusProjeto; etapa: string }> = [
-  { status: 'em_analise_documentacao', etapa: 'Em Analise da Documentacao' },
-  { status: 'elaboracao_documentacao_tecnica', etapa: 'Elaboracao da Documentacao Tecnica' },
-  { status: 'aguardando_assinatura_cliente', etapa: 'Aguardando Assinatura do Cliente' },
-  { status: 'projeto_enviado_aguardando_protocolo_concessionaria', etapa: 'Projeto Enviado para Concessionaria' },
-  { status: 'em_analise_concessionaria', etapa: 'Em Analise na Concessionaria' },
-  { status: 'ressalvas_projetos', etapa: 'Ressalvas de Projeto' },
-  { status: 'obras_concessionaria', etapa: 'Obras da Concessionaria' },
-  { status: 'projeto_aprovado', etapa: 'Projeto Aprovado' },
-  { status: 'vistoria_solicitada', etapa: 'Vistoria Solicitada' },
-  { status: 'vistoria_reprovada', etapa: 'Vistoria Reprovada' },
-  { status: 'aguardando_pagamento', etapa: 'Aguardando Pagamento' },
-  { status: 'projeto_encerrado', etapa: 'Projeto Encerrado' }
-];
+const STATUS_FLOW = projectStatusFlow;
 
 const getTimelineStatusFromProjectStatus = (status: StatusProjeto, currentStatus: StatusProjeto): TimelineStatus => {
   const currentIndex = STATUS_FLOW.findIndex((item) => item.status === currentStatus);
@@ -209,6 +342,7 @@ const normalizeModalidade = (rawModalidade: unknown): Projeto['dadosProjeto']['m
 };
 
 const VALID_STATUSES = new Set<StatusProjeto>([
+  'aguardando_aprovacao',
   'em_analise_documentacao', 'elaboracao_documentacao_tecnica', 'aguardando_assinatura_cliente',
   'projeto_enviado_aguardando_protocolo_concessionaria', 'em_analise_concessionaria',
   'ressalvas_projetos', 'obras_concessionaria', 'projeto_aprovado',
@@ -222,8 +356,7 @@ const STATUS_ALIASES: Record<string, StatusProjeto> = {
   in_progress: 'em_analise_concessionaria', em_andamento: 'em_analise_concessionaria',
   novo: 'em_analise_documentacao', pending: 'em_analise_documentacao', pendente: 'em_analise_documentacao',
   approved: 'projeto_aprovado', aprovado: 'projeto_aprovado',
-  installation: 'obras_concessionaria', instalacao: 'obras_concessionaria',
-  aguardando_aprovacao: 'aguardando_assinatura_cliente'
+  installation: 'obras_concessionaria', instalacao: 'obras_concessionaria'
 };
 
 const toProjetoStatus = (rawStatus: unknown): StatusProjeto => {
@@ -285,6 +418,7 @@ const normalizeProjeto = (raw: unknown): Projeto => {
       id:
         asString(cliente.id) ||
         asString(customer.id) ||
+        asString(project.client_id) ||
         asString(project.clientId) ||
         asString(project.clienteId) ||
         asString(project.customerId) ||
@@ -300,6 +434,7 @@ const normalizeProjeto = (raw: unknown): Projeto => {
       cpfCnpj:
         asString(cliente.cpfCnpj) ||
         asString(customer.cpfCnpj) ||
+        asString(customer.tax_id) ||
         asString(customer.taxId) ||
         asString(project.cpfCnpj),
       telefone:
@@ -320,13 +455,39 @@ const normalizeProjeto = (raw: unknown): Projeto => {
       link: asString(endereco.link) || undefined
     },
     dadosProjeto: {
-      concessionaria: asString(dadosProjeto.concessionaria) || asString(project.concessionaria),
-      classe: asString(dadosProjeto.classe) || asString(project.classe) || asString(project.customerClass),
+      concessionaria:
+        asString(dadosProjeto.concessionaria) ||
+        asString(project.concessionaria) ||
+        asString(project.utility_company) ||
+        asString(project.utilityCompany),
+      classe:
+        asString(dadosProjeto.classe) ||
+        asString(project.classe) ||
+        asString(project.customer_class) ||
+        asString(project.customerClass),
       integrador: asString(dadosProjeto.integrador) || asString(project.integrator),
-      modalidade: normalizeModalidade(dadosProjeto.modalidade || project.modalidade || project.modality),
-      enquadramento: asString(dadosProjeto.enquadramento) || asString(project.enquadramento) || asString(project.framework),
-      potenciaSistema: asNumber(dadosProjeto.potenciaSistema ?? project.potenciaSistema ?? project.systemPower),
-      protecaoCC: asString(dadosProjeto.protecaoCC) || asString(project.protecaoCC) || asString(project.dcProtection)
+      modalidade:
+        normalizeModalidade(
+          dadosProjeto.modalidade ??
+          project.modalidade ??
+          project.modality
+        ),
+      enquadramento:
+        asString(dadosProjeto.enquadramento) ||
+        asString(project.enquadramento) ||
+        asString(project.framework),
+      potenciaSistema:
+        asNumber(
+          dadosProjeto.potenciaSistema ??
+          project.potenciaSistema ??
+          project.system_power ??
+          project.systemPower
+        ),
+      protecaoCC:
+        asString(dadosProjeto.protecaoCC) ||
+        asString(project.protecaoCC) ||
+        asString(project.dc_protection) ||
+        asString(project.dcProtection)
     },
     dadosTecnicos: {
       tensao: asNumber(dadosTecnicos.tensao),
@@ -346,11 +507,16 @@ const normalizeProjeto = (raw: unknown): Projeto => {
     status: toProjetoStatus(project.status ?? project.projectStatus ?? project.situacao ?? project.state),
     valor: asNumber(project.valor ?? project.amount ?? project.value ?? dadosProjeto.valor ?? financeiro.valor),
     tipoProjeto:
-      asString(project.tipoProjeto) || asString(project.tipo_projeto) || asString(project.projectType) || undefined,
-    servicos: asArray<string>(project.servicos ?? project.servicesNames),
+      asString(project.tipoProjeto) ||
+      asString(project.tipo_projeto) ||
+      asString(project.project_type) ||
+      asString(project.projectType) ||
+      undefined,
+    servicos: asArray<string>(project.servicos ?? project.services_names ?? project.servicesNames),
     numeroUc:
       asString(project.numeroUc) ||
       asString(project.numero_uc) ||
+      asString(project.unit_control) ||
       asString(project.ucNumber) ||
       asString(project.unitControl) ||
       asString(project.unidade_controladora) ||
@@ -359,6 +525,7 @@ const normalizeProjeto = (raw: unknown): Projeto => {
       asString(project.dataAbertura) ||
       asString(project.data_abertura) ||
       asString(project.openingDate) ||
+      asString(project.created_at) ||
       asString(project.createdAt) ||
       undefined,
     coordenadas:
@@ -382,6 +549,7 @@ const normalizeProjeto = (raw: unknown): Projeto => {
     projetoFastTrack:
       asBooleanString(project.projetoFastTrack) ||
       asBooleanString(project.projeto_fast_track) ||
+      asBooleanString(project.fast_track) ||
       asBooleanString(project.fastTrack) ||
       undefined,
     projetoNovo:
@@ -403,17 +571,25 @@ const normalizeProjeto = (raw: unknown): Projeto => {
       asString(project.description) ||
       asString(project.observations) ||
       undefined,
-    dataCriacao: asString(project.dataCriacao) || asString(project.createdAt) || new Date().toISOString(),
-    dataAtualizacao: asString(project.dataAtualizacao) || asString(project.updatedAt) || new Date().toISOString()
+    dataCriacao:
+      asString(project.dataCriacao) ||
+      asString(project.created_at) ||
+      asString(project.createdAt) ||
+      new Date().toISOString(),
+    dataAtualizacao:
+      asString(project.dataAtualizacao) ||
+      asString(project.updated_at) ||
+      asString(project.updatedAt) ||
+      new Date().toISOString()
   };
 
-  return {
+  return applyDerivedDadosTecnicos({
     ...projetoNormalizado,
     timeline:
       projetoNormalizado.timeline.length > 0
         ? projetoNormalizado.timeline
         : buildFallbackTimeline(projetoNormalizado)
-  };
+  });
 };
 
 const buildInitialTimeline = (projectData: CreateProjectData): Projeto['timeline'] => {
@@ -434,6 +610,20 @@ const buildInitialTimeline = (projectData: CreateProjectData): Projeto['timeline
   }));
 };
 
+const buildTimelineForProjectStatus = (project: Projeto, status: StatusProjeto, descricaoAtual?: string): Projeto['timeline'] =>
+  STATUS_FLOW.map((item, index) => ({
+    id: `${project.id}-timeline-${item.status}`,
+    etapa: item.etapa,
+    data: index === 0 ? project.dataAbertura || project.dataCriacao : new Date().toISOString(),
+    status: getTimelineStatusFromProjectStatus(item.status, status),
+    descricao:
+      item.status === status
+        ? descricaoAtual || `Status atual do projeto ${project.protocolo}.`
+        : item.status === 'aguardando_aprovacao'
+          ? 'Projeto aguardando validacao administrativa antes de entrar no fluxo operacional.'
+          : 'Etapa prevista no fluxo padrao do projeto.'
+  }));
+
 const buildFrontendEnhancement = (projectData: CreateProjectData): FrontendProjectEnhancement => ({
   modulos: projectData.modulos ?? [],
   inversores: projectData.inversores ?? [],
@@ -452,6 +642,7 @@ const buildFrontendEnhancement = (projectData: CreateProjectData): FrontendProje
   projetoNovo: projectData.projetoNovo,
   zeroGridControleExportacao: projectData.zeroGridControleExportacao,
   observacoes: projectData.description,
+  status: toProjetoStatus(projectData.status),
   timeline: buildInitialTimeline(projectData)
 });
 
@@ -469,7 +660,7 @@ const mergeProjectEnhancement = (project: Projeto): Projeto => {
   const servicos = enhancement.servicos ?? [];
   const timeline = enhancement.timeline ?? [];
 
-  return {
+  return applyDerivedDadosTecnicos({
     ...project,
     modulos: modulos.length > 0 ? modulos : project.modulos,
     inversores: inversores.length > 0 ? inversores : project.inversores,
@@ -487,6 +678,7 @@ const mergeProjectEnhancement = (project: Projeto): Projeto => {
     projetoNovo: enhancement.projetoNovo || project.projetoNovo,
     zeroGridControleExportacao: enhancement.zeroGridControleExportacao || project.zeroGridControleExportacao,
     observacoes: enhancement.observacoes || project.observacoes,
+    status: project.status,
     timeline: timeline.length > 0 ? timeline : project.timeline,
     padraoEntradaItens: padraoEntradaItens.length > 0 ? padraoEntradaItens : project.padraoEntradaItens,
     dadosTecnicos: {
@@ -495,21 +687,26 @@ const mergeProjectEnhancement = (project: Projeto): Projeto => {
       inversores: inversores.length > 0 ? inversores : project.dadosTecnicos.inversores,
       divisaoCreditos: divisaoCreditos.length > 0 ? divisaoCreditos : project.dadosTecnicos.divisaoCreditos
     }
-  };
+  });
 };
 
 const PROJECTS_ENDPOINT = '/projects';
 
 const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
   const payload: Record<string, unknown> = {
+    client_id: projectData.clientId,
     clientId: projectData.clientId,
     clienteId: projectData.clientId,
+    address_id: projectData.addressId,
     addressId: projectData.addressId,
     enderecoId: projectData.addressId,
+    utility_company: projectData.utilityCompany,
     utilityCompany: projectData.utilityCompany,
     concessionaria: projectData.utilityCompany,
+    utility_protocol: projectData.utilityProtocol,
     utilityProtocol: projectData.utilityProtocol,
     protocoloConcessionaria: projectData.utilityProtocol,
+    customer_class: projectData.customerClass,
     customerClass: projectData.customerClass,
     classe: projectData.customerClass,
     integrator: projectData.integrator,
@@ -517,8 +714,10 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
     modalidade: projectData.modality,
     framework: projectData.framework,
     enquadramento: projectData.framework,
+    dc_protection: projectData.dcProtection,
     dcProtection: projectData.dcProtection,
     protecaoCC: projectData.dcProtection,
+    system_power: projectData.systemPower,
     systemPower: projectData.systemPower,
     potenciaSistema: projectData.systemPower,
     status: projectData.status,
@@ -526,12 +725,16 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
     valor: projectData.amount !== undefined ? String(projectData.amount) : undefined,
     coordinates: projectData.coordinates,
     coordenadas: projectData.coordinates,
+    services_names: projectData.servicesNames,
     servicesNames: projectData.servicesNames,
     servicos: projectData.servicesNames,
+    project_type: projectData.projectType,
     projectType: projectData.projectType,
     tipo_projeto: projectData.projectType,
+    fast_track: projectData.fastTrack === 'sim',
     fastTrack: projectData.fastTrack === 'sim',
     projeto_fast_track: projectData.fastTrack === 'sim',
+    unit_control: projectData.unitControl,
     unitControl: projectData.unitControl
     ,
     unidade_controladora: projectData.unitControl
@@ -631,6 +834,25 @@ export const projectsService = {
     return mergedProject;
   },
 
+  async approvePending(id: string, nextStatus: StatusProjeto = 'em_analise_documentacao'): Promise<Project> {
+    const project = await projectsService.getById(id);
+    await projectsService.update(id, {
+      status: nextStatus
+    });
+
+    updateProjectEnhancement(id, (current) => ({
+      ...current,
+      status: nextStatus,
+      timeline: buildTimelineForProjectStatus(
+        project,
+        nextStatus,
+        'Projeto aprovado no frontend e liberado para o fluxo operacional.'
+      )
+    }));
+
+    return projectsService.getById(id);
+  },
+
   async getAll(): Promise<Project[]> {
     const response = await apiClient.get<unknown[] | PaginatedResponse<unknown>>(PROJECTS_ENDPOINT);
     const projects = extractDataFromList(response).map(normalizeProjeto).map(mergeProjectEnhancement);
@@ -689,23 +911,34 @@ export const projectsService = {
       ? {
           id,
           ...projectData,
+          client_id: projectData.clientId,
           clienteId: projectData.clientId,
+          address_id: projectData.addressId,
           enderecoId: projectData.addressId,
+          utility_company: projectData.utilityCompany,
           concessionaria: projectData.utilityCompany,
+          utility_protocol: projectData.utilityProtocol,
           protocoloConcessionaria: projectData.utilityProtocol,
+          customer_class: projectData.customerClass,
           classe: projectData.customerClass,
           modalidade: projectData.modality,
           enquadramento: projectData.framework,
+          dc_protection: projectData.dcProtection,
           protecaoCC: projectData.dcProtection,
+          system_power: projectData.systemPower,
           potenciaSistema: projectData.systemPower,
           valor:
             typeof projectData.amount === 'number'
               ? String(projectData.amount)
               : projectData.amount,
           coordenadas: projectData.coordinates,
+          services_names: projectData.servicesNames,
           servicos: projectData.servicesNames,
+          project_type: projectData.projectType,
           tipo_projeto: projectData.projectType,
+          fast_track: normalizedFastTrack,
           projeto_fast_track: normalizedFastTrack,
+          unit_control: projectData.unitControl,
           unidade_controladora: projectData.unitControl,
           'descri\u00e7\u00e3o': projectData.description,
           amount:
@@ -715,7 +948,7 @@ export const projectsService = {
           fastTrack: normalizedFastTrack
         }
       : { id };
-    const response = await apiClient.put<unknown>(PROJECTS_ENDPOINT, payloadWithId);
+    const response = await apiClient.put<unknown>(`${PROJECTS_ENDPOINT}/${id}`, payloadWithId);
     return normalizeProjeto(response);
   },
 

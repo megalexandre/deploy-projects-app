@@ -9,6 +9,7 @@ import { concessionariasService, customersService, filesService, servicosService
 import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, Servico, StatusServico, TipoServico } from '@/types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskCep, maskLatitude, maskLongitude, maskNumeric, onlyDigits, parseCoordinate } from '@/core/utils/masks';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 
 type PersonType = 'cpf' | 'cnpj';
 
@@ -81,6 +82,7 @@ const tipoLigacaoOptions = ['Monofasico', 'Bifasico', 'Trifasico'];
 const classificacaoOptions = ['Residencial', 'Comercial', 'Industrial', 'Rural', 'Condominio'];
 
 const statusColumnStyles: Record<StatusServico, string> = {
+  aguardando_aprovacao: 'border-amber-500/60 bg-amber-700/20',
   abertura_servico: 'border-amber-700/60 bg-amber-900/20',
   elaboracao_documentacao: 'border-orange-700/60 bg-orange-900/20',
   aguardando_assinatura_cliente: 'border-yellow-700/60 bg-yellow-900/20',
@@ -245,6 +247,8 @@ const formatAddressSummary = (endereco?: Endereco) => {
 };
 
 export const ServicosPage: React.FC = () => {
+  const currentUser = useCurrentUser();
+  const canManageStatus = currentUser?.isAdmin === true;
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [clientes, setClientes] = useState<Customer[]>([]);
   const [concessionarias, setConcessionarias] = useState<Concessionaria[]>([]);
@@ -339,16 +343,20 @@ export const ServicosPage: React.FC = () => {
         const query = searchTerm.toLowerCase();
         const matchesStatus = statusFilter === 'todos' || servico.status === statusFilter;
         const matchesType = typeFilter === 'todos' || servico.tipo === typeFilter;
+        const nome = String(servico.nome ?? '').toLowerCase();
+        const cliente = String(servico.cliente ?? '').toLowerCase();
+        const protocolo = String(servico.protocolo ?? '').toLowerCase();
+        const concessionaria = String(servico.concessionaria ?? '').toLowerCase();
 
         if (!matchesStatus || !matchesType) {
           return false;
         }
 
         return (
-          servico.nome.toLowerCase().includes(query) ||
-          servico.cliente.toLowerCase().includes(query) ||
-          servico.protocolo.toLowerCase().includes(query) ||
-          servico.concessionaria.toLowerCase().includes(query)
+          nome.includes(query) ||
+          cliente.includes(query) ||
+          protocolo.includes(query) ||
+          concessionaria.includes(query)
         );
       }),
     [searchTerm, servicos, statusFilter, typeFilter]
@@ -850,6 +858,7 @@ export const ServicosPage: React.FC = () => {
                   <span className="rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">{groupedServicos[column.status].length}</span>
                 </div>
                 <div className="space-y-3" onDragOver={(event: React.DragEvent<HTMLDivElement>) => event.preventDefault()} onDrop={(event: React.DragEvent<HTMLDivElement>) => {
+                  if (!canManageStatus) return;
                   event.preventDefault();
                   const id = event.dataTransfer.getData('text/service-id');
                   if (!id) return;
@@ -857,7 +866,8 @@ export const ServicosPage: React.FC = () => {
                   void updateStatus(id, column.status);
                 }}>
                   {groupedServicos[column.status].map((servico) => (
-                    <div key={servico.id} draggable onDragStart={(event) => {
+                    <div key={servico.id} draggable={canManageStatus} onDragStart={(event) => {
+                      if (!canManageStatus) return;
                       setDraggedId(servico.id);
                       event.dataTransfer.setData('text/service-id', servico.id);
                     }} onDragEnd={() => setDraggedId(null)} className={`rounded-xl border border-white/10 bg-slate-900/80 p-4 transition hover:border-cyan-300/40 hover:bg-slate-800/80 ${draggedId === servico.id ? 'opacity-50' : ''}`}>
@@ -871,7 +881,7 @@ export const ServicosPage: React.FC = () => {
                         {servico.tipo === 'alteracao_compartilhamento_credito' ? `UC Geradora: ${servico.ucGeradora || '-'}` : `Endereco: ${formatAddressSummary(servico.enderecoObra)}`}
                       </div>
                       <div className="mt-3 flex items-center gap-2">
-                        <select value={servico.status} onChange={(event) => void updateStatus(servico.id, event.target.value as StatusServico)} className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200">
+                        <select value={servico.status} onChange={(event) => void updateStatus(servico.id, event.target.value as StatusServico)} disabled={!canManageStatus} className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200">
                           {servicosService.statusFlow.map((option) => <option key={option.status} value={option.status}>{option.etapa}</option>)}
                         </select>
                         <Link to={`/servicos/${servico.id}`}>

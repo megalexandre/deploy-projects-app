@@ -218,6 +218,17 @@ body.light .bg-opj-orange:hover {
   background-color: #d67707 !important;
 }
 
+.password-visibility-input::-ms-reveal,
+.password-visibility-input::-ms-clear {
+  display: none;
+}
+
+.password-visibility-input::-webkit-credentials-auto-fill-button,
+.password-visibility-input::-webkit-textfield-decoration-container {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Card hover in light theme */
 body.light .bg-gray-800:hover,
 body.light .bg-white:hover {

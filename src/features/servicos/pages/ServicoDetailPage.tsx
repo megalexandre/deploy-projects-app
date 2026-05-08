@@ -7,6 +7,7 @@ import { concessionariasService, customersService, filesService, servicosService
 import type { Documento, Servico, StatusServico } from '@/types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '@/core/utils/masks';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
   const merged = new Map<string, Documento>();
@@ -82,6 +83,8 @@ const buildForm = (servico: Servico): EditForm => ({
 });
 
 export const ServicoDetailPage: React.FC = () => {
+  const currentUser = useCurrentUser();
+  const canManageStatus = currentUser?.isAdmin === true;
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -300,7 +303,7 @@ export const ServicoDetailPage: React.FC = () => {
               <div><label className="mb-2 block text-sm text-slate-300">Cliente cadastrado</label><select value={form.clienteId} onChange={(event) => setForm((prev) => prev ? { ...prev, clienteId: event.target.value } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"><option value="">Selecionar depois / nome manual</option>{clientes.map((customer) => <option key={customer.id} value={customer.id}>{customer.nome}</option>)}</select></div>
               <div><label className="mb-2 block text-sm text-slate-300">Nome do cliente</label><input value={form.clienteId ? selectedCustomer?.nome ?? '' : form.clienteNomeManual} disabled={form.clienteId !== ''} onChange={(event) => setForm((prev) => prev ? { ...prev, clienteNomeManual: event.target.value } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 disabled:opacity-60" /></div>
               <div><label className="mb-2 block text-sm text-slate-300">Concessionaria</label><select value={form.concessionaria} onChange={(event) => setForm((prev) => prev ? { ...prev, concessionaria: event.target.value } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"><option value="">Selecione...</option>{concessionarias.map((item) => <option key={item.id} value={item.nome}>{item.nome}</option>)}</select></div>
-              <div><label className="mb-2 block text-sm text-slate-300">Status</label><select value={form.status} onChange={(event) => setForm((prev) => prev ? { ...prev, status: event.target.value as StatusServico } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100">{servicosService.statusFlow.map((item) => <option key={item.status} value={item.status}>{item.etapa}</option>)}</select></div>
+              <div><label className="mb-2 block text-sm text-slate-300">Status</label><select value={form.status} onChange={(event) => setForm((prev) => prev ? { ...prev, status: event.target.value as StatusServico } : prev)} disabled={!canManageStatus} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 disabled:opacity-60">{servicosService.statusFlow.map((item) => <option key={item.status} value={item.status}>{item.etapa}</option>)}</select></div>
               <div><label className="mb-2 block text-sm text-slate-300">Data de Abertura</label><input type="date" value={form.dataAbertura} onChange={(event) => setForm((prev) => prev ? { ...prev, dataAbertura: event.target.value } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100" /></div>
               <div><label className="mb-2 block text-sm text-slate-300">Valor</label><input value={form.valor} onChange={(event) => setForm((prev) => prev ? { ...prev, valor: event.target.value.replace(/[^0-9.,]/g, '') } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100" /></div>
               <div><label className="mb-2 block text-sm text-slate-300">Cupom</label><select value={form.cupomDescontoPct} onChange={(event) => setForm((prev) => prev ? { ...prev, cupomDescontoPct: event.target.value } : prev)} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"><option value="0">Sem desconto</option>{cupons.map((item) => <option key={item.id} value={String(item.percentual)}>{item.nome} ({item.percentual}%)</option>)}</select></div>

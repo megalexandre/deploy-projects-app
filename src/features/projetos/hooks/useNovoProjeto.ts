@@ -21,17 +21,19 @@ import {
   customersService,
   filesService,
   projectsService,
+  usersService,
   viaCepService,
   type Concessionaria,
   type CreateProjectData,
-  type Customer
+  type Customer,
+  type User
 } from '@/services';
 import { buildTabelaPrecoPadraoEntradaMap, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export const integradores = ['Selecione...', 'OPJ Engenharia', 'Parceiro Externo'];
+const integradoresPadrao = ['OPJ Engenharia', 'Parceiro Externo'];
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
   { value: 'padrao_entrada' as const, label: 'Padrao de entrada' }
@@ -156,18 +158,30 @@ const parseCurrencyInput = (value: string) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const getFaixaFotovoltaicaValor = (potenciaKw: number, faixas: Array<{ min: number; max: number; valor: number }>) => {
-  if (!Number.isFinite(potenciaKw) || potenciaKw <= 0 || faixas.length === 0) {
+const getFaixaFotovoltaicaValor = (
+  potencias: { watts: number; kilowatts: number },
+  faixas: Array<{ min: number; max: number; valor: number }>
+) => {
+  if (
+    !Number.isFinite(potencias.watts) ||
+    !Number.isFinite(potencias.kilowatts) ||
+    potencias.watts <= 0 ||
+    faixas.length === 0
+  ) {
     return 0;
   }
 
   const ordered = [...faixas].sort((a, b) => a.min - b.min);
+  const highestMax = ordered.reduce((max, faixa) => Math.max(max, faixa.max), 0);
+  const faixaUsaWatts = highestMax > 500;
+  const potenciaComparacao = faixaUsaWatts ? potencias.watts : potencias.kilowatts;
 
   for (let index = 0; index < ordered.length; index += 1) {
     const faixa = ordered[index];
     const nextFaixa = ordered[index + 1];
-    const estaDentroDaFaixa = potenciaKw >= faixa.min && potenciaKw <= faixa.max;
-    const estaNoIntervaloAteProximaFaixa = potenciaKw >= faixa.min && (!nextFaixa || potenciaKw < nextFaixa.min);
+    const estaDentroDaFaixa = potenciaComparacao >= faixa.min && potenciaComparacao <= faixa.max;
+    const estaNoIntervaloAteProximaFaixa =
+      potenciaComparacao >= faixa.min && (!nextFaixa || potenciaComparacao < nextFaixa.min);
 
     if (estaDentroDaFaixa || estaNoIntervaloAteProximaFaixa) {
       return faixa.valor;
@@ -208,6 +222,7 @@ export const useNovoProjeto = () => {
   const [clientesLoading, setClientesLoading] = useState(false);
   const [concessionarias, setConcessionarias] = useState<Concessionaria[]>([]);
   const [concessionariasLoading, setConcessionariasLoading] = useState(false);
+  const [integradores, setIntegradores] = useState<string[]>(integradoresPadrao);
   const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
   const [clienteSelecionadoDetalhe, setClienteSelecionadoDetalhe] = useState<Customer | null>(null);
   const [buscaCliente, setBuscaCliente] = useState('');
@@ -281,8 +296,15 @@ export const useNovoProjeto = () => {
   );
 
   const precoFotovoltaicoAtual = useMemo(
-    () => getFaixaFotovoltaicaValor(potenciaTotalSistemaKw, configuracoesSistema.tabelaPrecoFotovoltaico),
-    [configuracoesSistema.tabelaPrecoFotovoltaico, potenciaTotalSistemaKw]
+    () =>
+      getFaixaFotovoltaicaValor(
+        {
+          watts: potenciaTotalSistemaW,
+          kilowatts: potenciaTotalSistemaKw
+        },
+        configuracoesSistema.tabelaPrecoFotovoltaico
+      ),
+    [configuracoesSistema.tabelaPrecoFotovoltaico, potenciaTotalSistemaKw, potenciaTotalSistemaW]
   );
 
   const custoCalculadoProjeto = useMemo(() => {
@@ -374,6 +396,40 @@ export const useNovoProjeto = () => {
     };
     void loadConcessionarias();
   }, []);
+
+  useEffect(() => {
+    const loadIntegradores = async () => {
+      try {
+        const users = await usersService.getAll();
+        const names = Array.from(
+          new Set(
+            users
+              .map((user: User) => user.name.trim())
+              .filter((name) => name.length > 0)
+          )
+        ).sort((left, right) => left.localeCompare(right, 'pt-BR'));
+
+        if (names.length > 0) {
+          setIntegradores(names);
+          setDadosBasicos((prev) => {
+            if (prev.integrador.trim() !== '') {
+              return prev;
+            }
+
+            if (!currentUser?.isAdmin && names.length === 1) {
+              return { ...prev, integrador: names[0] };
+            }
+
+            return prev;
+          });
+        }
+      } catch (loadError) {
+        console.error('Erro ao carregar integradores:', loadError);
+      }
+    };
+
+    void loadIntegradores();
+  }, [currentUser?.isAdmin]);
 
   useEffect(() => {
     if (modoCliente !== 'existente') return;
@@ -742,6 +798,8 @@ export const useNovoProjeto = () => {
 
   return {
     navigate,
+    currentUser,
+    integradores,
     enderecoClienteProjeto,
     tabelaPrecoPadraoEntradaMap,
     valorProjetoEditado,

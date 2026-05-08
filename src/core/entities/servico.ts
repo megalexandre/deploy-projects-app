@@ -10,6 +10,7 @@ export const TipoServico = {
 export type TipoServico = (typeof TipoServico)[keyof typeof TipoServico];
 
 export const StatusServico = {
+  AGUARDANDO_APROVACAO: 'aguardando_aprovacao',
   ABERTURA_SERVICO: 'abertura_servico',
   ELABORACAO_DOCUMENTACAO: 'elaboracao_documentacao',
   AGUARDANDO_ASSINATURA_CLIENTE: 'aguardando_assinatura_cliente',
@@ -31,6 +32,7 @@ export interface Servico {
   tipo: TipoServico;
   nome: string;
   clienteId?: string;
+  concessionariaId?: string;
   cliente: string;
   concessionaria: string;
   status: StatusServico;
@@ -51,6 +53,7 @@ export interface Servico {
   enderecoGeradora?: Endereco;
   padraoEntradaItens?: PadraoEntradaItem[];
   rateios?: DivisaoCreditos[];
+  precisaAprovacao?: boolean;
   documentos: Documento[];
   timeline: TimelineItem[];
   dataCriacao: string;

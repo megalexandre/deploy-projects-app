@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent } from '@/shared/components/Card';
 import { approvalsService, type ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
-import { projectsService } from '@/features/projetos/services/projectsService';
+import { projectStatusFlow, projectsService } from '@/features/projetos/services/projectsService';
 import { servicosService } from '@/features/servicos/services/servicosService';
 import { getSessionUser, isAdminSessionUser } from '@/shared/session/sessionUser';
+import type { Projeto, Servico, StatusProjeto, StatusServico } from '@/types';
 
 type EntitySnapshot = {
   status?: string;
@@ -20,13 +21,54 @@ const formatApprovalStatus = (status: ApprovalRequest['status']) =>
 export const AprovacoesPage: React.FC = () => {
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [snapshots, setSnapshots] = useState<Record<string, EntitySnapshot>>({});
+  const [approvalTargets, setApprovalTargets] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      const bootstrapPendingRequests = async () => {
+        const [projetos, servicos] = await Promise.all([
+          projectsService.getProjetos().catch(() => []),
+          servicosService.list().catch(() => [])
+        ]);
+
+        (projetos as Projeto[])
+          .filter((projeto) => projeto.status === 'aguardando_aprovacao')
+          .forEach((projeto) => {
+            approvalsService.ensurePendingRequest({
+              entityType: 'projeto',
+              entityId: projeto.id,
+              entityLabel: projeto.protocolo,
+              clientName: projeto.cliente.nome,
+              createdAt: projeto.dataCriacao
+            });
+          });
+
+        (servicos as Servico[])
+          .filter((servico) => servico.status === 'aguardando_aprovacao')
+          .forEach((servico) => {
+            approvalsService.ensurePendingRequest({
+              entityType: 'servico',
+              entityId: servico.id,
+              entityLabel: servico.protocolo,
+              clientName: servico.cliente,
+              createdAt: servico.dataCriacao
+            });
+          });
+      };
+
+      await bootstrapPendingRequests();
       const approvalRequests = approvalsService.list();
       setRequests(approvalRequests);
+      setApprovalTargets((current) =>
+        approvalRequests.reduce<Record<string, string>>((acc, request) => {
+          acc[request.id] =
+            current[request.id] ??
+            (request.entityType === 'projeto' ? 'em_analise_documentacao' : 'abertura_servico');
+          return acc;
+        }, {})
+      );
 
       const nextSnapshots: Record<string, EntitySnapshot> = {};
       await Promise.all(
@@ -67,7 +109,40 @@ export const AprovacoesPage: React.FC = () => {
   const sessionUser = getSessionUser();
   const isAdmin = isAdminSessionUser();
 
-  const handleDecision = (id: string, status: 'aprovado' | 'rejeitado') => {
+  const handleDecision = async (id: string, status: 'aprovado' | 'rejeitado') => {
+    const request = requests.find((item) => item.id === id);
+    if (!request) {
+      return;
+    }
+
+    if (status === 'aprovado') {
+      if (request.entityType === 'projeto') {
+        const projeto = await projectsService.approvePending(
+          request.entityId,
+          (approvalTargets[request.id] as StatusProjeto | undefined) ?? 'em_analise_documentacao'
+        );
+        setSnapshots((current) => ({
+          ...current,
+          [request.id]: {
+            status: projeto.status,
+            destinationPath: `/projetos/${request.entityId}`
+          }
+        }));
+      } else {
+        const servico = await servicosService.approvePending(
+          request.entityId,
+          (approvalTargets[request.id] as StatusServico | undefined) ?? 'abertura_servico'
+        );
+        setSnapshots((current) => ({
+          ...current,
+          [request.id]: {
+            status: servico.status,
+            destinationPath: `/servicos/${request.entityId}`
+          }
+        }));
+      }
+    }
+
     approvalsService.decide(id, status);
     setRequests(approvalsService.list());
   };
@@ -157,6 +232,25 @@ export const AprovacoesPage: React.FC = () => {
                         </Link>
                         {request.status === 'pendente' && (
                           <>
+                            <select
+                              value={approvalTargets[request.id] ?? (request.entityType === 'projeto' ? 'em_analise_documentacao' : 'abertura_servico')}
+                              onChange={(event) =>
+                                setApprovalTargets((current) => ({
+                                  ...current,
+                                  [request.id]: event.target.value
+                                }))
+                              }
+                              className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+                            >
+                              {(request.entityType === 'projeto'
+                                ? projectStatusFlow.filter((item) => item.status !== 'aguardando_aprovacao')
+                                : servicosService.statusFlow.filter((item) => item.status !== 'aguardando_aprovacao')
+                              ).map((item) => (
+                                <option key={item.status} value={item.status}>
+                                  {item.etapa}
+                                </option>
+                              ))}
+                            </select>
                             <Button type="button" size="sm" onClick={() => handleDecision(request.id, 'aprovado')}>
                               <CheckCircle className="mr-1 h-4 w-4" />
                               Aprovar

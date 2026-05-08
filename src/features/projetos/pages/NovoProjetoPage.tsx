@@ -9,7 +9,6 @@ import type { TipoDocumento, DadosDetalhesForm } from '@/features/projetos/domai
 import {
   useNovoProjeto,
   buildItemVazio,
-  integradores,
   tiposProjeto,
   servicosDisponiveis,
   formatDocumento,
@@ -19,6 +18,8 @@ import {
 export const NovoProjetoPage: React.FC = () => {
   const {
     navigate,
+    currentUser,
+    integradores,
     enderecoClienteProjeto,
     tabelaPrecoPadraoEntradaMap,
     valorProjetoEditado,
@@ -473,9 +474,11 @@ export const NovoProjetoPage: React.FC = () => {
                         ? `${concessionarias.length} concessionaria(s) disponivel(is) no cadastro local.`
                         : 'Nenhuma concessionaria ativa cadastrada.'}
                     </span>
-                    <Link to="/concessionarias" className="text-cyan-300 hover:text-cyan-200">
-                      Gerenciar concessionarias
-                    </Link>
+                    {currentUser?.isAdmin && (
+                      <Link to="/concessionarias" className="text-cyan-300 hover:text-cyan-200">
+                        Gerenciar concessionarias
+                      </Link>
+                    )}
                   </div>
                 </div>
 
@@ -848,8 +851,9 @@ export const NovoProjetoPage: React.FC = () => {
                     onChange={(e) => setDadosBasicos((prev) => ({ ...prev, integrador: e.target.value }))}
                     className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                   >
-                    {integradores.map((item, index) => (
-                      <option key={item} value={index === 0 ? '' : item}>
+                    <option value="">Selecione...</option>
+                    {integradores.map((item) => (
+                      <option key={item} value={item}>
                         {item}
                       </option>
                     ))}
