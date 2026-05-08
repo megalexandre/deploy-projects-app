@@ -60,6 +60,8 @@ export const ProjetoDetailPage: React.FC = () => {
       case 'projeto_encerrado':
       case 'concluido':
         return 'text-green-400 bg-green-900/20';
+      case 'aguardando_aprovacao':
+        return 'text-amber-200 bg-amber-700/20';
       case 'em_analise_concessionaria':
       case 'em_andamento':
         return 'text-cyan-300 bg-cyan-500/10';
@@ -85,6 +87,8 @@ export const ProjetoDetailPage: React.FC = () => {
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case 'aguardando_aprovacao':
+        return 'Aguardando Aprovacao';
       case 'projeto_encerrado':
         return 'Projeto Encerrado';
       case 'em_analise_documentacao':

@@ -1,7 +1,7 @@
 /** Pagina 'FinanceiroPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CurrencyDollar, TrendUp, TrendDown, Plus, DownloadSimple, Calendar } from '@phosphor-icons/react';
+import { CurrencyDollar, TrendUp, TrendDown, Plus, DownloadSimple, Calendar, PencilSimple, X } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
@@ -18,6 +18,53 @@ interface Transacao {
   status: 'pago' | 'pendente';
 }
 
+type TransactionFormState = {
+  descricao: string;
+  categoria: string;
+  tipo: Transacao['tipo'];
+  status: Transacao['status'];
+  valor: string;
+  data: string;
+};
+
+const TRANSACTION_OVERRIDES_STORAGE_KEY = 'opj_finance_transaction_overrides';
+const CUSTOM_TRANSACTIONS_STORAGE_KEY = 'opj_finance_custom_transactions';
+
+const createEmptyTransactionForm = (): TransactionFormState => ({
+  descricao: '',
+  categoria: '',
+  tipo: 'receita',
+  status: 'pendente',
+  valor: '',
+  data: new Date().toISOString().split('T')[0]
+});
+
+const readStoredTransactions = (key: string): Transacao[] => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeStoredTransactions = (key: string, items: Transacao[]) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(key, JSON.stringify(items));
+};
+
 export const FinanceiroPage: React.FC = () => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [loadingProjetos, setLoadingProjetos] = useState(false);
@@ -25,14 +72,8 @@ export const FinanceiroPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [novaTransacao, setNovaTransacao] = useState({
-    descricao: '',
-    categoria: '',
-    tipo: 'receita' as Transacao['tipo'],
-    status: 'pendente' as Transacao['status'],
-    valor: '',
-    data: new Date().toISOString().split('T')[0]
-  });
+  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
+  const [novaTransacao, setNovaTransacao] = useState<TransactionFormState>(createEmptyTransactionForm());
 
   useEffect(() => {
     const loadTransacoesFromProjetos = async () => {
@@ -52,7 +93,12 @@ export const FinanceiroPage: React.FC = () => {
             status: projeto.status === 'concluido' || projeto.status === 'aprovado' ? 'pago' : 'pendente'
           }));
 
-        setTransacoes(transacoesProjetos);
+        const customTransactions = readStoredTransactions(CUSTOM_TRANSACTIONS_STORAGE_KEY);
+        const transactionOverrides = readStoredTransactions(TRANSACTION_OVERRIDES_STORAGE_KEY);
+        const overridesById = new Map(transactionOverrides.map((item) => [item.id, item]));
+        const mergedProjectTransactions = transacoesProjetos.map((transacao) => overridesById.get(transacao.id) ?? transacao);
+
+        setTransacoes([...customTransactions, ...mergedProjectTransactions]);
       } catch (error) {
         console.error('Erro ao carregar transacoes de projetos:', error);
       } finally {
@@ -84,17 +130,23 @@ export const FinanceiroPage: React.FC = () => {
   };
 
   const resetForm = () => {
-    setNovaTransacao({
-      descricao: '',
-      categoria: '',
-      tipo: 'receita',
-      status: 'pendente',
-      valor: '',
-      data: new Date().toISOString().split('T')[0]
-    });
+    setNovaTransacao(createEmptyTransactionForm());
   };
 
-  const handleCreateTransacao = (event: React.FormEvent<HTMLFormElement>) => {
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingTransactionId(null);
+    resetForm();
+  };
+
+  const persistTransactions = (nextTransactions: Transacao[]) => {
+    const customTransactions = nextTransactions.filter((item) => !item.id.startsWith('projeto-'));
+    const transactionOverrides = nextTransactions.filter((item) => item.id.startsWith('projeto-'));
+    writeStoredTransactions(CUSTOM_TRANSACTIONS_STORAGE_KEY, customTransactions);
+    writeStoredTransactions(TRANSACTION_OVERRIDES_STORAGE_KEY, transactionOverrides);
+  };
+
+  const handleSubmitTransacao = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const valor = Number(novaTransacao.valor);
@@ -102,8 +154,9 @@ export const FinanceiroPage: React.FC = () => {
       return;
     }
 
-    const novaEntrada: Transacao = {
-      id: String(Date.now()),
+    const transactionId = editingTransactionId ?? String(Date.now());
+    const updatedEntry: Transacao = {
+      id: transactionId,
       descricao: novaTransacao.descricao.trim(),
       categoria: novaTransacao.categoria.trim(),
       tipo: novaTransacao.tipo,
@@ -112,9 +165,28 @@ export const FinanceiroPage: React.FC = () => {
       data: novaTransacao.data
     };
 
-    setTransacoes((prev) => [novaEntrada, ...prev]);
-    resetForm();
-    setIsFormOpen(false);
+    setTransacoes((prev) => {
+      const nextTransactions = editingTransactionId
+        ? prev.map((item) => (item.id === transactionId ? updatedEntry : item))
+        : [updatedEntry, ...prev];
+      persistTransactions(nextTransactions);
+      return nextTransactions;
+    });
+
+    closeForm();
+  };
+
+  const handleEditTransacao = (transacao: Transacao) => {
+    setEditingTransactionId(transacao.id);
+    setNovaTransacao({
+      descricao: transacao.descricao,
+      categoria: transacao.categoria,
+      tipo: transacao.tipo,
+      status: transacao.status,
+      valor: String(transacao.valor),
+      data: transacao.data
+    });
+    setIsFormOpen(true);
   };
 
   return (
@@ -130,7 +202,18 @@ export const FinanceiroPage: React.FC = () => {
             <DownloadSimple className="h-4 w-4 mr-2" />
             Exportar
           </Button>
-          <Button onClick={() => setIsFormOpen((prev) => !prev)}>
+          <Button
+            onClick={() => {
+              if (isFormOpen && !editingTransactionId) {
+                closeForm();
+                return;
+              }
+
+              setEditingTransactionId(null);
+              resetForm();
+              setIsFormOpen(true);
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nova Transacao
           </Button>
@@ -140,10 +223,20 @@ export const FinanceiroPage: React.FC = () => {
       {isFormOpen && (
         <Card>
           <CardHeader>
-            <CardTitle>Cadastrar nova transacao</CardTitle>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle>{editingTransactionId ? 'Editar transacao' : 'Cadastrar nova transacao'}</CardTitle>
+              <button
+                type="button"
+                onClick={closeForm}
+                className="rounded-lg border border-white/10 p-2 text-slate-300 transition hover:bg-slate-800"
+                aria-label="Fechar formulario de transacao"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleCreateTransacao} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmitTransacao} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Descricao"
                 placeholder="Ex: Entrada projeto comercial"
@@ -201,14 +294,11 @@ export const FinanceiroPage: React.FC = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setIsFormOpen(false);
-                    resetForm();
-                  }}
+                  onClick={closeForm}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit">Salvar transacao</Button>
+                <Button type="submit">{editingTransactionId ? 'Salvar alteracoes' : 'Salvar transacao'}</Button>
               </div>
             </form>
           </CardContent>
@@ -340,7 +430,8 @@ export const FinanceiroPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleEditTransacao(transacao)}>
+                        <PencilSimple className="mr-1 h-4 w-4" />
                         Editar
                       </Button>
                     </td>
@@ -361,4 +452,3 @@ export const FinanceiroPage: React.FC = () => {
     </div>
   );
 };
-

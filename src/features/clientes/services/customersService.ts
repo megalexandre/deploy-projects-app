@@ -129,9 +129,9 @@ const normalizeCustomer = (raw: unknown): Customer => {
 
   return {
     id: asString(customer.id) || crypto.randomUUID(),
-    addressId: asString(customer.addressId) || nestedAddressId || undefined,
+    addressId: asString(customer.address_id) || asString(customer.addressId) || nestedAddressId || undefined,
     nome: asString(customer.nome) || asString(customer.name),
-    cpfCnpj: asString(customer.cpfCnpj) || asString(customer.taxId),
+    cpfCnpj: asString(customer.cpfCnpj) || asString(customer.tax_id) || asString(customer.taxId),
     telefone: asString(customer.telefone) || asString(customer.phone),
     email: asString(customer.email),
     enderecoCompleto: enderecoCompleto || undefined,
@@ -146,14 +146,17 @@ const buildCustomerPayload = (customerData: CreateCustomerData | UpdateCustomerD
   const payload: Record<string, unknown> = {};
 
   if (customerData.nome !== undefined) {
+    payload.name = customerData.nome;
     payload.nome = customerData.nome;
   }
 
   if (customerData.cpfCnpj !== undefined) {
+    payload.tax_id = customerData.cpfCnpj;
     payload.cpfCnpj = customerData.cpfCnpj;
   }
 
   if (customerData.telefone !== undefined) {
+    payload.phone = customerData.telefone;
     payload.telefone = customerData.telefone;
   }
 
@@ -162,6 +165,7 @@ const buildCustomerPayload = (customerData: CreateCustomerData | UpdateCustomerD
   }
 
   if (customerData.addressId !== undefined) {
+    payload.address_id = customerData.addressId;
     payload.addressId = customerData.addressId;
   }
 
@@ -199,7 +203,7 @@ export const customersService = {
 
   async update(id: string, customerData: UpdateCustomerData): Promise<Customer> {
     const payload = { id, ...buildCustomerPayload(customerData) };
-    const response = await apiClient.put<unknown>(CUSTOMERS_ENDPOINT, payload);
+    const response = await apiClient.put<unknown>(`${CUSTOMERS_ENDPOINT}/${id}`, payload);
     return mergeCustomerEnhancement(normalizeCustomer(response));
   }
 };

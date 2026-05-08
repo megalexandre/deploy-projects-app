@@ -17,6 +17,7 @@ import { Input } from '@/shared/components/Input';
 import { Card, CardContent } from '@/shared/components/Card';
 import type { ConfiguracoesSistema } from '@/types';
 import { maskCnpj, maskPhoneBR } from '@/core/utils/masks';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { getDefaultConfiguracoesSistema, loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
 
 type AbaConfiguracoes = 'geral' | 'precos' | 'cupons' | 'notificacoes' | 'sistema' | 'seguranca';
@@ -35,9 +36,11 @@ const tabs: Array<{
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
+  const currentUser = useCurrentUser();
   const [activeTab, setActiveTab] = useState<AbaConfiguracoes>('geral');
   const [formData, setFormData] = useState<ConfiguracoesSistema>(getDefaultConfiguracoesSistema());
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const isAdmin = currentUser?.isAdmin === true;
 
   useEffect(() => {
     setFormData(loadConfiguracoesSistema());
@@ -106,6 +109,32 @@ export const ConfiguracoesPage: React.FC = () => {
     setSaveMessage('Configuracoes salvas. Novos projetos passam a usar esses valores.');
     window.setTimeout(() => setSaveMessage(null), 3000);
   };
+
+  if (!isAdmin) {
+    return (
+      <div className="space-y-6 page-enter">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-100">Meu Perfil</h1>
+          <p className="mt-1 text-gray-400">Visualizacao do proprio usuario autenticado.</p>
+        </div>
+
+        <Card>
+          <CardContent className="space-y-6 p-6">
+            <div className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+              A API atual nao possui endpoint para editar o proprio perfil. Por isso, os dados abaixo estao disponiveis apenas para consulta no frontend.
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Input label="Nome" value={currentUser?.name ?? ''} readOnly />
+              <Input label="E-mail" value={currentUser?.email ?? ''} readOnly />
+              <Input label="Perfil" value={currentUser?.role ?? 'user'} readOnly />
+              <Input label="Acesso" value={currentUser?.isAdmin ? 'Administrador do sistema' : 'Usuario'} readOnly />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 page-enter">

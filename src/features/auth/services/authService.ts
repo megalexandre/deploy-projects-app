@@ -1,6 +1,7 @@
 /** Camada de acesso a dados para 'authService': concentra chamadas HTTP e transformacao basica de payloads. */
-import type { User } from '@/features/admin/services/usersService';
+import type { User } from '@/types';
 import { apiClient } from '@/shared/api/apiClient';
+import { clearSessionUser, setSessionUser } from '@/shared/session/sessionUser';
 
 export interface LoginCredentials {
   email: string;
@@ -26,9 +27,12 @@ interface BackendLoginResponse {
 }
 
 interface BackendCurrentUserResponse {
-  userId: string;
+  id: string;
+  name: string;
   email: string;
-  authorities?: Array<{ authority?: string }>;
+  profile?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface BackendRegisterResponse {
@@ -38,27 +42,24 @@ interface BackendRegisterResponse {
   profile: string;
 }
 
-const STORAGE_USER_KEY = 'user';
-
-const persistUser = (user: User) => {
-  localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
-};
-
 const clearPersistedSession = () => {
-  localStorage.removeItem(STORAGE_USER_KEY);
+  clearSessionUser();
   apiClient.setToken(null);
 };
 
-const normalizeRole = (authorities?: BackendCurrentUserResponse['authorities']) => {
-  const authority = authorities?.find((item) => typeof item?.authority === 'string')?.authority;
-  return authority ? authority.replace(/^ROLE_/i, '').toLowerCase() : undefined;
+const normalizeRole = (profile?: string) => {
+  const normalized = profile?.trim().toLowerCase();
+  return normalized || 'user';
 };
 
+const isAdminRole = (role: string) => role === 'admin' || role === 'main';
+
 const mapBackendCurrentUser = (response: BackendCurrentUserResponse): User => ({
-  id: response.userId,
-  name: response.email,
+  id: response.id,
+  name: response.name,
   email: response.email,
-  role: normalizeRole(response.authorities)
+  role: normalizeRole(response.profile),
+  isAdmin: isAdminRole(normalizeRole(response.profile))
 });
 
 export const authService = {
@@ -72,7 +73,7 @@ export const authService = {
         throw new Error('Nao foi possivel carregar os dados do usuario autenticado.');
       }
 
-      persistUser(currentUser);
+      setSessionUser(currentUser);
 
       return {
         user: currentUser,
@@ -89,7 +90,7 @@ export const authService = {
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      profile: userData.profile ?? 'ADMIN'
+      profile: userData.profile ?? 'admin'
     };
 
     // @todo change all rotes do proper path and remove this endpoint

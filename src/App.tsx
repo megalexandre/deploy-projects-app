@@ -20,9 +20,20 @@ import { ConcessionariasPage } from '@/features/admin/pages/ConcessionariasPage'
 import { ConfiguracoesPage } from '@/features/admin/pages/ConfiguracoesPage';
 import { ProtectedLayout } from '@/shared/layouts/ProtectedLayout';
 import { useAuthInterceptor } from '@/shared/hooks/useAuthInterceptor';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { ENV } from '@/shared/config/env';
 
 const getIsAuthenticated = () => Boolean(localStorage.getItem(ENV.AUTH_TOKEN_STORAGE_KEY));
+
+const AdminOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const currentUser = useCurrentUser();
+
+  if (!currentUser?.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const AppRoutes: React.FC = () => {
   useAuthInterceptor();
@@ -32,37 +43,43 @@ const AppRoutes: React.FC = () => {
       <Route path="/login" element={getIsAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
 
       <Route element={<ProtectedLayout />}>
-        {/* dashboard */}
         <Route path="/dashboard" element={<DashboardPage />} />
-
-        {/* clientes */}
         <Route path="/clientes" element={<ClientesPage />} />
-
-        {/* projetos */}
         <Route path="/projetos" element={<ProjetosPage />} />
         <Route path="/projetos/novo" element={<NovoProjetoPage />} />
         <Route path="/projetos/:id" element={<ProjetoDetailPage />} />
-
-        {/* servicos */}
         <Route path="/servicos" element={<ServicosPage />} />
         <Route path="/servicos/novo" element={<NovoServicoPage />} />
         <Route path="/servicos/:id" element={<ServicoDetailPage />} />
-
-        {/* financeiro */}
         <Route path="/financeiro" element={<FinanceiroPage />} />
         <Route path="/financeiro/pagamentos" element={<PagamentosPage />} />
         <Route path="/financeiro/recebimentos" element={<RecebimentosPage />} />
         <Route path="/financeiro/faturas" element={<FaturasPage />} />
-
-        {/* calendario */}
         <Route path="/calendario" element={<CalendarioPage />} />
-
-        {/* aprovacoes */}
-        <Route path="/aprovacoes" element={<AprovacoesPage />} />
-
-        {/* admin */}
-        <Route path="/usuarios" element={<UsuariosPage />} />
-        <Route path="/concessionarias" element={<ConcessionariasPage />} />
+        <Route
+          path="/aprovacoes"
+          element={
+            <AdminOnlyRoute>
+              <AprovacoesPage />
+            </AdminOnlyRoute>
+          }
+        />
+        <Route
+          path="/usuarios"
+          element={
+            <AdminOnlyRoute>
+              <UsuariosPage />
+            </AdminOnlyRoute>
+          }
+        />
+        <Route
+          path="/concessionarias"
+          element={
+            <AdminOnlyRoute>
+              <ConcessionariasPage />
+            </AdminOnlyRoute>
+          }
+        />
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
       </Route>
 

@@ -38,7 +38,7 @@ export const approvalsService = {
     clientName: string;
   }) {
     const sessionUser = getSessionUser();
-    if (!sessionUser || sessionUser.role === 'admin') {
+    if (!sessionUser || sessionUser.isAdmin) {
       return;
     }
 
@@ -67,6 +67,43 @@ export const approvalsService = {
     }
 
     storage.write(current);
+  },
+
+  ensurePendingRequest(input: {
+    entityType: ApprovalEntityType;
+    entityId: string;
+    entityLabel: string;
+    clientName: string;
+    createdAt?: string;
+    createdByUserId?: string;
+    createdByName?: string;
+    createdByRole?: string;
+  }) {
+    const current = storage.read();
+    const existingIndex = current.findIndex(
+      (item) => item.entityType === input.entityType && item.entityId === input.entityId
+    );
+
+    if (existingIndex >= 0) {
+      return current[existingIndex];
+    }
+
+    const request: ApprovalRequest = {
+      id: crypto.randomUUID(),
+      entityType: input.entityType,
+      entityId: input.entityId,
+      entityLabel: input.entityLabel,
+      clientName: input.clientName,
+      createdAt: input.createdAt || new Date().toISOString(),
+      createdByUserId: input.createdByUserId || 'desconhecido',
+      createdByName: input.createdByName || 'Usuario do sistema',
+      createdByRole: input.createdByRole || 'user',
+      status: 'pendente'
+    };
+
+    current.unshift(request);
+    storage.write(current);
+    return request;
   },
 
   decide(id: string, status: Extract<ApprovalStatus, 'aprovado' | 'rejeitado'>) {

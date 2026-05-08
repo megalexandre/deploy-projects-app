@@ -8,7 +8,23 @@ export interface UploadedFileResponse {
   createdAt?: string;
 }
 
-const FILES_ENDPOINT = '/api/v1/file';
+type BackendUploadResponse = {
+  id?: string;
+  filename?: string;
+  url_s3?: string;
+  size?: number;
+  created_at?: string;
+};
+
+const FILES_ENDPOINT = '/uploads';
+
+const normalizeUpload = (payload: BackendUploadResponse): UploadedFileResponse => ({
+  id: payload.id ?? crypto.randomUUID(),
+  fileName: payload.filename ?? 'Arquivo',
+  urlS3: payload.url_s3 ?? '',
+  size: typeof payload.size === 'number' ? payload.size : 0,
+  createdAt: payload.created_at
+});
 
 const buildUrl = (path: string) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
@@ -37,12 +53,12 @@ export const filesService = {
       return [];
     }
 
-    // O backend vincula os arquivos ao item pelo campo multipart "id".
+    // O backend vincula os arquivos ao item pelo campo multipart "item_id".
     const formData = new FormData();
-    formData.append('id', itemId);
+    formData.append('item_id', itemId);
     files.forEach((file) => formData.append('files', file));
 
-    const response = await fetch(buildUrl(`${FILES_ENDPOINT}/upload`), {
+    const response = await fetch(buildUrl(FILES_ENDPOINT), {
       method: 'POST',
       headers: buildHeaders(),
       body: formData
@@ -56,11 +72,28 @@ export const filesService = {
       throw new ApiError(resolveErrorMessage(payload, 'Erro ao enviar arquivos'), response.status, payload);
     }
 
-    return Array.isArray(payload) ? (payload as UploadedFileResponse[]) : [];
+    return Array.isArray(payload) ? payload.map((item) => normalizeUpload(item as BackendUploadResponse)) : [];
+  },
+
+  async listByItem(itemId: string): Promise<UploadedFileResponse[]> {
+    const response = await fetch(buildUrl(`${FILES_ENDPOINT}?item_id=${encodeURIComponent(itemId)}`), {
+      method: 'GET',
+      headers: buildHeaders()
+    });
+
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType?.includes('application/json');
+    const payload = isJson ? await response.json() : await response.text();
+
+    if (!response.ok) {
+      throw new ApiError(resolveErrorMessage(payload, 'Erro ao carregar arquivos'), response.status, payload);
+    }
+
+    return Array.isArray(payload) ? payload.map((item) => normalizeUpload(item as BackendUploadResponse)) : [];
   },
 
   async downloadFile(fileId: string) {
-    const response = await fetch(buildUrl(`${FILES_ENDPOINT}/download/${fileId}`), {
+    const response = await fetch(buildUrl(`${FILES_ENDPOINT}/${fileId}/download`), {
       method: 'GET',
       headers: buildHeaders()
     });

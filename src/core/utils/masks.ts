@@ -66,8 +66,17 @@ export const maskCoordinate = (value: string, _maxIntegerDigits = 3, maxDecimalD
   const signal = trimmed.startsWith('-') ? '-' : '';
   const unsigned = trimmed.replace(/-/g, '');
   const [integerPart = '', ...decimalParts] = unsigned.split('.');
-  const integerDigits = integerPart.replace(/\D/g, '');
+  const integerDigits = integerPart.replace(/\D/g, '').slice(0, _maxIntegerDigits);
   const decimalDigits = decimalParts.join('').replace(/\D/g, '').slice(0, maxDecimalDigits);
+  const endsWithDecimalSeparator = /[.,]$/.test(trimmed);
+
+  if (trimmed === '-') {
+    return '-';
+  }
+
+  if ((trimmed === '.' || trimmed === '-.') && !integerDigits && !decimalDigits) {
+    return `${signal}0.`;
+  }
 
   if (!integerDigits && !decimalDigits) {
     return '';
@@ -77,7 +86,15 @@ export const maskCoordinate = (value: string, _maxIntegerDigits = 3, maxDecimalD
     return `${signal}0.${decimalDigits}`;
   }
 
-  return decimalDigits ? `${signal}${integerDigits}.${decimalDigits}` : `${signal}${integerDigits}`;
+  if (decimalDigits) {
+    return `${signal}${integerDigits}.${decimalDigits}`;
+  }
+
+  if (endsWithDecimalSeparator) {
+    return `${signal}${integerDigits}.`;
+  }
+
+  return `${signal}${integerDigits}`;
 };
 
 export const maskLatitude = (value: string, maxDecimalDigits = 8) => maskCoordinate(value, 2, maxDecimalDigits);

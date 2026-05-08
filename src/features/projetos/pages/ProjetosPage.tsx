@@ -7,8 +7,10 @@ import { Input } from '@/shared/components/Input';
 import { Card, CardContent } from '@/shared/components/Card';
 import { customersService, projectsService } from '@/services';
 import type { Projeto } from '@/types';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 
 type KanbanStatus =
+  | 'aguardando_aprovacao'
   | 'em_analise_documentacao'
   | 'elaboracao_documentacao_tecnica'
   | 'aguardando_assinatura_cliente'
@@ -62,6 +64,7 @@ const pickValidString = (...values: Array<unknown>): string | undefined => {
 };
 
 const columns: Array<{ id: KanbanStatus; label: string; className: string }> = [
+  { id: 'aguardando_aprovacao', label: 'Aguardando Aprovação', className: 'border-amber-500/60 bg-amber-700/20' },
   { id: 'em_analise_documentacao', label: 'Em Análise da Documentação', className: 'border-amber-700/60 bg-amber-900/20' },
   { id: 'elaboracao_documentacao_tecnica', label: 'Elaboração da Documentação Técnica', className: 'border-orange-700/60 bg-orange-900/20' },
   { id: 'aguardando_assinatura_cliente', label: 'Aguardando Assinatura do Cliente', className: 'border-yellow-700/60 bg-yellow-900/20' },
@@ -77,6 +80,7 @@ const columns: Array<{ id: KanbanStatus; label: string; className: string }> = [
 ];
 
 const kanbanStatusMap: Record<string, KanbanStatus> = {
+  aguardando_aprovacao: 'aguardando_aprovacao',
   em_analise_documentacao: 'em_analise_documentacao',
   elaboracao_documentacao_tecnica: 'elaboracao_documentacao_tecnica',
   aguardando_assinatura_cliente: 'aguardando_assinatura_cliente',
@@ -94,7 +98,6 @@ const kanbanStatusMap: Record<string, KanbanStatus> = {
   novo: 'em_analise_documentacao',
   em_andamento: 'em_analise_concessionaria',
   em_analise: 'em_analise_concessionaria',
-  aguardando_aprovacao: 'aguardando_assinatura_cliente',
   instalacao: 'obras_concessionaria',
   aprovado: 'projeto_aprovado',
   concluido: 'projeto_encerrado',
@@ -111,7 +114,12 @@ const toTimelineStatus = (status: KanbanStatus): Projeto['timeline'][number]['st
     return 'concluido';
   }
 
-  if (status === 'em_analise_documentacao' || status === 'aguardando_assinatura_cliente' || status === 'aguardando_pagamento') {
+  if (
+    status === 'aguardando_aprovacao' ||
+    status === 'em_analise_documentacao' ||
+    status === 'aguardando_assinatura_cliente' ||
+    status === 'aguardando_pagamento'
+  ) {
     return 'pendente';
   }
 
@@ -126,6 +134,8 @@ type PendingStatusChange = {
 };
 
 export const ProjetosPage: React.FC = () => {
+  const currentUser = useCurrentUser();
+  const canManageStatus = currentUser?.isAdmin === true;
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -444,6 +454,9 @@ export const ProjetosPage: React.FC = () => {
                 className="space-y-3"
                 onDragOver={(event: React.DragEvent<HTMLDivElement>) => event.preventDefault()}
                 onDrop={(event: React.DragEvent<HTMLDivElement>) => {
+                  if (!canManageStatus) {
+                    return;
+                  }
                   event.preventDefault();
                   const id = event.dataTransfer.getData('text/project-id');
                   if (!id) {
@@ -457,8 +470,11 @@ export const ProjetosPage: React.FC = () => {
                 {groupedProjetos[column.id].map((projeto) => (
                   <div
                     key={projeto.id}
-                    draggable
+                    draggable={canManageStatus}
                     onDragStart={(event) => {
+                      if (!canManageStatus) {
+                        return;
+                      }
                       setDraggedId(projeto.id);
                       event.dataTransfer.setData('text/project-id', projeto.id);
                     }}
@@ -476,8 +492,12 @@ export const ProjetosPage: React.FC = () => {
                       <select
                         value={toKanbanStatus(projeto.status)}
                         onChange={(event) => {
+                          if (!canManageStatus) {
+                            return;
+                          }
                           openStatusDialog(projeto.id, event.target.value as KanbanStatus);
                         }}
+                        disabled={!canManageStatus}
                         className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200"
                       >
                         {columns.map((columnOption) => (
