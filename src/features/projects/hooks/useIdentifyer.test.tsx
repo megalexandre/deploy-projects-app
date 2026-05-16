@@ -16,7 +16,7 @@ const mockProjectWithoutSubsequente = {
   id: '1',
   protocolo: 'PROJ-001',
   sequence: 42,
-  subsequente: undefined,
+  subsequente: '',
 } as unknown as Projeto;
 
 

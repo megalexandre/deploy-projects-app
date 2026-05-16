@@ -463,8 +463,8 @@ export const NovoProjetoPage: React.FC = () => {
                       {concessionariasLoading ? 'Carregando...' : 'Selecione...'}
                     </option>
                     {concessionarias.map((item) => (
-                      <option key={item.id} value={item.nome}>
-                        {item.nome}
+                      <option key={item.id} value={item.name}>
+                        {item.name}
                       </option>
                     ))}
                   </select>

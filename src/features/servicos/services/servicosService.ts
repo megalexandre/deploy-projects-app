@@ -6,7 +6,7 @@ import { createRecordStorage } from '@/core/utils/storage';
 import { addressService } from '@/shared/api/addressService';
 import { apiClient } from '@/shared/api/apiClient';
 import { filesService } from '@/shared/api/filesService';
-import { concessionariasService } from '@/features/admin/services/concessionariasService';
+import { concessionariasService } from '@/features/concessionarias/services/concessionariasService';
 import { customersService } from '@/features/clientes/services/customersService';
 import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
 import { getSessionUser } from '@/shared/session/sessionUser';
@@ -398,7 +398,7 @@ const loadReferenceData = async (records: RawServiceRecord[]) => {
 
   return {
     customerNamesById: new Map(customers.map((customer) => [customer.id, customer.nome])),
-    concessionaireNamesById: new Map(concessionarias.map((item) => [item.id, item.nome])),
+    concessionaireNamesById: new Map(concessionarias.map((item) => [item.id, item.name])),
     addressesById: new Map(
       addresses
         .filter((item) => item !== null)
@@ -430,7 +430,7 @@ const resolveConcessionaireId = async (concessionaria: string) => {
   const normalizedTarget = normalizeText(concessionaria).toLowerCase();
   const concessionarias = await concessionariasService.getAll();
   const matched = concessionarias.find(
-    (item) => item.id === concessionaria || item.nome.trim().toLowerCase() === normalizedTarget
+    (item) => item.id === concessionaria || item.name.trim().toLowerCase() === normalizedTarget
   );
 
   if (!matched) {

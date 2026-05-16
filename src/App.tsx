@@ -16,7 +16,7 @@ import { FaturasPage } from '@/features/financeiro/pages/FaturasPage';
 import { CalendarioPage } from '@/features/calendario/pages/CalendarioPage';
 import { AprovacoesPage } from '@/features/aprovacoes/pages/AprovacoesPage';
 import { UsuariosPage } from '@/features/admin/pages/UsuariosPage';
-import { ConcessionariasPage } from '@/features/admin/pages/ConcessionariasPage';
+import { ConcessionariasPage } from '@/features/concessionarias/pages/ConcessionariasPage';
 import { ConfiguracoesPage } from '@/features/admin/pages/ConfiguracoesPage';
 import { ProtectedLayout } from '@/shared/layouts/ProtectedLayout';
 import { useAuthInterceptor } from '@/shared/hooks/useAuthInterceptor';

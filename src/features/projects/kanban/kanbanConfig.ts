@@ -15,6 +15,17 @@ export type KanbanStatus =
   | 'aguardando_pagamento'
   | 'projeto_encerrado';
 
+const legacyStatusMap: Record<string, KanbanStatus> = {
+  pendente: 'em_analise_documentacao',
+  novo: 'em_analise_documentacao',
+  em_andamento: 'em_analise_concessionaria',
+  em_analise: 'em_analise_concessionaria',
+  instalacao: 'obras_concessionaria',
+  aprovado: 'projeto_aprovado',
+  concluido: 'projeto_encerrado',
+  cancelado: 'projeto_encerrado',
+};
+
 export const columns: Array<{ id: KanbanStatus; label: string; className: string }> = [
   { id: 'aguardando_aprovacao', label: 'Aguardando Aprovação', className: 'border-amber-500/60 bg-amber-700/20' },
   { id: 'em_analise_documentacao', label: 'Em Análise da Documentação', className: 'border-amber-700/60 bg-amber-900/20' },
@@ -31,30 +42,7 @@ export const columns: Array<{ id: KanbanStatus; label: string; className: string
   { id: 'projeto_encerrado', label: 'Projeto Encerrado', className: 'border-emerald-700/60 bg-emerald-900/30' },
 ];
 
-const kanbanStatusMap: Record<string, KanbanStatus> = {
-  aguardando_aprovacao: 'aguardando_aprovacao',
-  em_analise_documentacao: 'em_analise_documentacao',
-  elaboracao_documentacao_tecnica: 'elaboracao_documentacao_tecnica',
-  aguardando_assinatura_cliente: 'aguardando_assinatura_cliente',
-  projeto_enviado_aguardando_protocolo_concessionaria: 'projeto_enviado_aguardando_protocolo_concessionaria',
-  em_analise_concessionaria: 'em_analise_concessionaria',
-  ressalvas_projetos: 'ressalvas_projetos',
-  obras_concessionaria: 'obras_concessionaria',
-  projeto_aprovado: 'projeto_aprovado',
-  vistoria_solicitada: 'vistoria_solicitada',
-  vistoria_reprovada: 'vistoria_reprovada',
-  aguardando_pagamento: 'aguardando_pagamento',
-  projeto_encerrado: 'projeto_encerrado',
-  // Compatibilidade com status antigos.
-  pendente: 'em_analise_documentacao',
-  novo: 'em_analise_documentacao',
-  em_andamento: 'em_analise_concessionaria',
-  em_analise: 'em_analise_concessionaria',
-  instalacao: 'obras_concessionaria',
-  aprovado: 'projeto_aprovado',
-  concluido: 'projeto_encerrado',
-  cancelado: 'projeto_encerrado',
-};
+
 
 const normalizeStatusKey = (rawStatus: unknown): string =>
   String(rawStatus ?? '')
@@ -66,7 +54,8 @@ const normalizeStatusKey = (rawStatus: unknown): string =>
 
 export const toKanbanStatus = (status: Projeto['status']): KanbanStatus => {
   const normalized = normalizeStatusKey(status);
-  return kanbanStatusMap[normalized] ?? 'em_analise_documentacao';
+  const column = columns.find((c) => c.id === normalized);
+  return column?.id ?? legacyStatusMap[normalized] ?? 'em_analise_documentacao';
 };
 
 export const getStatusLabel = (status: KanbanStatus): string =>

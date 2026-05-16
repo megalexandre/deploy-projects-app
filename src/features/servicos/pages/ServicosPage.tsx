@@ -273,7 +273,7 @@ export const ServicosPage: React.FC = () => {
         const [servicosData, clientesData, concessionariasData] = await Promise.all([
           servicosService.list(),
           customersService.getAll().catch(() => []),
-          concessionariasService.getActive().catch(() => [])
+          concessionariasService.getAll().catch(() => [])
         ]);
 
         setServicos(servicosData);
@@ -654,7 +654,7 @@ export const ServicosPage: React.FC = () => {
                   <label className="mb-2 block text-sm text-slate-300">Concessionaria</label>
                   <select value={form.concessionaria} onChange={(event) => setForm((prev) => ({ ...prev, concessionaria: event.target.value }))} className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue">
                     <option value="">Selecione...</option>
-                    {concessionarias.map((item) => <option key={item.id} value={item.nome}>{item.nome}</option>)}
+                    {concessionarias.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
                   </select>
                 </div>
                 <div>

@@ -386,7 +386,7 @@ export const useNovoProjeto = () => {
     const loadConcessionarias = async () => {
       setConcessionariasLoading(true);
       try {
-        setConcessionarias(await concessionariasService.getActive());
+        setConcessionarias(await concessionariasService.getAll());
       } catch (loadError) {
         console.error('Erro ao carregar concessionarias:', loadError);
         setErro('Nao foi possivel carregar as concessionarias disponiveis.');

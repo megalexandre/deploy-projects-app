@@ -3,6 +3,8 @@ import { asString } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
 import { applyDerivedDadosTecnicos, getTimelineStatusFromProjectStatus, projectStatusFlow, toProjetoStatus } from './projectNormalizer';
 
+// @TODO: achoq ue da pra remover essa classe toda 
+
 type FrontendProjectEnhancement = Partial<Pick<
   Projeto,
   | 'modulos'

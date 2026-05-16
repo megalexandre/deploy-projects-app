@@ -2,7 +2,7 @@ import { asString, isRecord } from '@/core/utils/normalize';
 import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
 import { customersService } from '@/features/clientes/services/customersService';
 import { apiClient } from '@/shared/api/apiClient';
-import type { DashboardStats, Documento, PaginatedResponse, Projeto, StatusProjeto } from '@/types';
+import type { DashboardStats, Documento, Projeto, StatusProjeto } from '@/types';
 import {
   buildInitialTimeline,
   buildTimelineForProjectStatus,
@@ -14,10 +14,16 @@ import {
 import { extractDataFromList, normalizeProjeto, toProjetoStatus } from './projectNormalizer';
 import type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
 
-export type { Project, CreateProjectData, UpdateProjectData } from './projectTypes';
 export { projectStatusFlow } from './projectNormalizer';
+export type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
 
 const PROJECTS_ENDPOINT = '/projects';
+
+
+export const projectsResouces = {
+
+}
+
 
 const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   modulos: projectData.modulos ?? [],
@@ -96,6 +102,7 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
   return apiClient.post<unknown>(PROJECTS_ENDPOINT, payload);
 };
 
+//@TODO: isso não deve estar aqui!!!!
 const isMissingCustomerName = (name: string) => {
   const normalized = name.trim().toLowerCase();
   return !normalized || normalized === 'cliente sem nome';
@@ -144,6 +151,7 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
 
 
 export const projectsService = {
+
   saveDocuments(projectId: string, documentos: Documento[]) {
     // Documentos enviados apos a criacao precisam ser persistidos no enhancement local
     // porque o fluxo de upload e separado do POST principal de projeto.
@@ -193,7 +201,7 @@ export const projectsService = {
   },
 
   async getAll(): Promise<Project[]> {
-    const response = await apiClient.get<unknown[] | PaginatedResponse<unknown>>(PROJECTS_ENDPOINT);
+    const response = await apiClient.get<unknown[]>(PROJECTS_ENDPOINT);
     const projects = extractDataFromList(response).map(normalizeProjeto).map(mergeProjectEnhancement);
     return enrichProjectsWithCustomers(projects);
   },

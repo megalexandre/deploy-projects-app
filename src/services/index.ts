@@ -9,7 +9,7 @@ export { projectsService } from '@/features/projects/services/projectsService';
 export { customersService } from '@/features/clientes/services/customersService';
 export { addressService } from '@/shared/api/addressService';
 export { auditService } from '@/shared/api/auditService';
-export { concessionariasService } from '@/features/admin/services/concessionariasService';
+export { concessionariasService } from '@/features/concessionarias/services/concessionariasService';
 export { viaCepService } from '@/shared/api/viaCepService';
 export { filesService } from '@/shared/api/filesService';
 
@@ -52,7 +52,7 @@ export type {
 export type {
   Concessionaria,
   SaveConcessionariaData
-} from '@/features/admin/services/concessionariasService';
+} from '@/features/concessionarias/services/concessionariasService';
 export type { UploadedFileResponse } from '@/shared/api/filesService';
 
 // Legacy services (keep if needed)

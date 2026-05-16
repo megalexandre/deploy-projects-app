@@ -3,7 +3,8 @@ import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import type { Projeto } from '@/types';
 import React from 'react';
 import { useIdentifier } from '../hooks/useIdentifyer';
-import { columns, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
+import { type KanbanStatus } from '../kanban/kanbanConfig';
+import { StatusSelect } from './kanban/StatusSelect';
 
 type ProjetoCardProps = {
   projeto: Projeto;
@@ -47,21 +48,12 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
       <div className="mt-1 text-xs text-slate-400">{projeto.dadosProjeto.potenciaSistema} kWp</div>
 
       <div className="mt-3 flex items-center gap-2">
-        <select
-          value={toKanbanStatus(projeto.status)}
-          onChange={(event) => {
-            if (!canManageStatus) return;
-            onStatusChange(projeto.id, event.target.value as KanbanStatus);
-          }}
-          disabled={!canManageStatus}
-          className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200"
-        >
-          {columns.map((column) => (
-            <option key={column.id} value={column.id}>
-              {column.label}
-            </option>
-          ))}
-        </select>
+        <StatusSelect
+          projectId={projeto.id}
+          status={projeto.status}
+          canManageStatus={canManageStatus}
+          onStatusChange={onStatusChange}
+        />
 
         <ViewButton to={`/projetos/${projeto.id}`} />
       </div>

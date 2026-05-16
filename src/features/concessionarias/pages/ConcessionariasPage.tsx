@@ -1,4 +1,3 @@
-/** Pagina 'ConcessionariasPage': gerencia cadastro de concessionarias integrado ao backend. */
 import React, { useEffect, useMemo, useState } from 'react';
 import { MagnifyingGlass, PencilSimple, PlusCircle } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
@@ -7,18 +6,18 @@ import { Input } from '@/shared/components/Input';
 import { concessionariasService, type Concessionaria } from '../services/concessionariasService';
 
 interface ConcessionariaForm {
-  nome: string;
+  name: string;
 }
 
 const createEmptyForm = (): ConcessionariaForm => ({
-  nome: ''
+  name: ''
 });
 
 const createFormFromConcessionaria = (item: Concessionaria): ConcessionariaForm => ({
-  nome: item.nome
+  name: item.name
 });
 
-const isFormValid = (form: ConcessionariaForm) => form.nome.trim().length >= 2;
+const isFormValid = (form: ConcessionariaForm) => form.name.trim().length >= 2;
 
 export const ConcessionariasPage: React.FC = () => {
   const [items, setItems] = useState<Concessionaria[]>([]);
@@ -48,13 +47,8 @@ export const ConcessionariasPage: React.FC = () => {
 
   const filteredItems = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
-    if (!query) {
-      return items;
-    }
-
-    return items.filter((item) => {
-      return item.nome.toLowerCase().includes(query);
-    });
+    if (!query) return items;
+    return items.filter((item) => item.name.toLowerCase().includes(query));
   }, [items, searchTerm]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -69,9 +63,7 @@ export const ConcessionariasPage: React.FC = () => {
     setError(null);
 
     try {
-      const payload = {
-        nome: form.nome.trim()
-      };
+      const payload = { name: form.name.trim() };
 
       if (editingId) {
         await concessionariasService.update(editingId, payload);
@@ -152,7 +144,7 @@ export const ConcessionariasPage: React.FC = () => {
               <tbody className="divide-y divide-white/5">
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="text-sm text-slate-200">
-                    <td className="px-4 py-3">{item.nome}</td>
+                    <td className="px-4 py-3">{item.name}</td>
                     <td className="px-4 py-3 text-right">
                       <Button type="button" variant="outline" size="sm" onClick={() => handleEdit(item)}>
                         <PencilSimple className="mr-2 h-4 w-4" />
@@ -188,14 +180,12 @@ export const ConcessionariasPage: React.FC = () => {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <div>
-                <label className="mb-2 block text-sm text-slate-300">Nome</label>
-                <input
-                  value={form.nome}
-                  onChange={(event) => setForm((prev) => ({ ...prev, nome: event.target.value }))}
-                  className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
-                />
-              </div>
+              <label className="mb-2 block text-sm text-slate-300">Nome</label>
+              <input
+                value={form.name}
+                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+              />
             </div>
 
             <div className="flex justify-end">
