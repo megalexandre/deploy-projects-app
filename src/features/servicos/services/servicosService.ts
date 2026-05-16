@@ -6,7 +6,7 @@ import { createRecordStorage } from '@/core/utils/storage';
 import { addressService } from '@/shared/api/addressService';
 import { apiClient } from '@/shared/api/apiClient';
 import { filesService } from '@/shared/api/filesService';
-import { concessionariasService } from '@/features/concessionarias/services/concessionariasService';
+import { concessionairesService } from '@/features/concessionaries/services/concessionairesService';
 import { customersService } from '@/features/clientes/services/customersService';
 import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
 import { getSessionUser } from '@/shared/session/sessionUser';
@@ -367,7 +367,7 @@ const toAddressPayload = (endereco?: Endereco) => {
 const loadReferenceData = async (records: RawServiceRecord[]) => {
   const [customers, concessionarias] = await Promise.all([
     customersService.getAll().catch(() => []),
-    concessionariasService.getAll().catch(() => [])
+    concessionairesService.getAll().catch(() => [])
   ]);
 
   const addressIds = Array.from(new Set(records.flatMap((record) => [
@@ -428,7 +428,7 @@ const resolveCustomerId = async (payload: Pick<CreateServicoPayload, 'clienteId'
 
 const resolveConcessionaireId = async (concessionaria: string) => {
   const normalizedTarget = normalizeText(concessionaria).toLowerCase();
-  const concessionarias = await concessionariasService.getAll();
+  const concessionarias = await concessionairesService.getAll();
   const matched = concessionarias.find(
     (item) => item.id === concessionaria || item.name.trim().toLowerCase() === normalizedTarget
   );

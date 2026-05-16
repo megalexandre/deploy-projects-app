@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, Clock, FileText, FloppyDisk, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
-import { concessionariasService, customersService, filesService, servicosService, type Concessionaria, type Customer } from '@/services';
+import { concessionairesService, customersService, filesService, servicosService, type Concessionaire, type Customer } from '@/services';
 import type { Documento, Servico, StatusServico } from '@/types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '@/core/utils/masks';
@@ -90,7 +90,7 @@ export const ServicoDetailPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [servico, setServico] = useState<Servico | null>(null);
   const [clientes, setClientes] = useState<Customer[]>([]);
-  const [concessionarias, setConcessionarias] = useState<Concessionaria[]>([]);
+  const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
   const [form, setForm] = useState<EditForm | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -109,7 +109,7 @@ export const ServicoDetailPage: React.FC = () => {
         const [serviceData, customersData, utilitiesData] = await Promise.all([
           servicosService.getById(id),
           customersService.getAll().catch(() => []),
-          concessionariasService.getAll().catch(() => [])
+          concessionairesService.getAll().catch(() => [])
         ]);
         setServico(serviceData);
         setClientes(customersData);

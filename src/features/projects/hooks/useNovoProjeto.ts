@@ -17,13 +17,13 @@ import type {
 import {
   ApiError,
   addressService,
-  concessionariasService,
+  concessionairesService,
   customersService,
   filesService,
   projectsService,
   usersService,
   viaCepService,
-  type Concessionaria,
+  type Concessionaire,
   type CreateProjectData,
   type Customer,
   type User
@@ -220,7 +220,7 @@ export const useNovoProjeto = () => {
   const [modoCliente, setModoCliente] = useState<ModoCliente | null>(null);
   const [clientes, setClientes] = useState<Customer[]>([]);
   const [clientesLoading, setClientesLoading] = useState(false);
-  const [concessionarias, setConcessionarias] = useState<Concessionaria[]>([]);
+  const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
   const [concessionariasLoading, setConcessionariasLoading] = useState(false);
   const [integradores, setIntegradores] = useState<string[]>(integradoresPadrao);
   const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
@@ -386,7 +386,7 @@ export const useNovoProjeto = () => {
     const loadConcessionarias = async () => {
       setConcessionariasLoading(true);
       try {
-        setConcessionarias(await concessionariasService.getAll());
+        setConcessionarias(await concessionairesService.getAll());
       } catch (loadError) {
         console.error('Erro ao carregar concessionarias:', loadError);
         setErro('Nao foi possivel carregar as concessionarias disponiveis.');

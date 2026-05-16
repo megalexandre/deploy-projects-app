@@ -3,7 +3,7 @@ import { ArrowLeft, FloppyDisk, PlusCircle } from '@phosphor-icons/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
-import { concessionariasService, customersService, filesService, servicosService, viaCepService, type Concessionaria, type Customer } from '@/services';
+import { concessionairesService, customersService, filesService, servicosService, viaCepService, type Concessionaire, type Customer } from '@/services';
 import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, TipoServico } from '@/types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskCep, maskLatitude, maskLongitude, maskNumeric, onlyDigits, parseCoordinate } from '@/core/utils/masks';
@@ -143,7 +143,7 @@ const buildSelectedDocumentFiles = (filesByCategory: Record<string, File[]>, cat
 export const NovoServicoPage: React.FC = () => {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState<Customer[]>([]);
-  const [concessionarias, setConcessionarias] = useState<Concessionaria[]>([]);
+  const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +158,7 @@ export const NovoServicoPage: React.FC = () => {
       try {
         const [clientesData, concessionariasData] = await Promise.all([
           customersService.getAll().catch(() => []),
-          concessionariasService.getAll().catch(() => [])
+          concessionairesService.getAll().catch(() => [])
         ]);
         setClientes(clientesData);
         setConcessionarias(concessionariasData);
