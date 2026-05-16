@@ -13,7 +13,7 @@ import type {
   PadraoEntradaItemForm,
   Passo,
   TipoDocumento
-} from '@/features/projetos/domain/types';
+} from '@/features/projects/domain/types';
 import {
   ApiError,
   addressService,

@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { ClientesPage } from '@/features/clientes/pages/ClientesPage';
-import { ProjetosPage } from '@/features/projetos/pages/ProjetosPage';
-import { ProjetoDetailPage } from '@/features/projetos/pages/ProjetoDetailPage';
-import { NovoProjetoPage } from '@/features/projetos/pages/NovoProjetoPage';
+import { ProjetosPage } from '@/features/projects/pages/ProjetosPage';
+import { ProjetoDetailPage } from '@/features/projects/pages/ProjetoDetailPage';
+import { NovoProjetoPage } from '@/features/projects/pages/NovoProjetoPage';
 import { ServicosPage } from '@/features/servicos/pages/ServicosPage';
 import { ServicoDetailPage } from '@/features/servicos/pages/ServicoDetailPage';
 import { NovoServicoPage } from '@/features/servicos/pages/NovoServicoPage';

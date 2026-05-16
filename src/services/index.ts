@@ -5,7 +5,7 @@ export type { ApiRequestOptions } from '@/shared/api/apiClient';
 // New API services
 export { authService } from '@/features/auth/services/authService';
 export { usersService } from '@/features/admin/services/usersService';
-export { projectsService } from '@/features/projetos/services/projectsService';
+export { projectsService } from '@/features/projects/services/projectsService';
 export { customersService } from '@/features/clientes/services/customersService';
 export { addressService } from '@/shared/api/addressService';
 export { auditService } from '@/shared/api/auditService';
@@ -30,7 +30,7 @@ export type {
   Project, 
   CreateProjectData, 
   UpdateProjectData 
-} from '@/features/projetos/services/projectsService';
+} from '@/features/projects/services/projectsService';
 
 export type {
   Customer,

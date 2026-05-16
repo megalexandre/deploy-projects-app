@@ -26,4 +26,4 @@ export type {
   ConfiguracoesSistema
 } from '../core/entities';
 
-export { StatusProjeto, TipoServico, StatusServico } from '../core/entities';
+export { StatusProjeto, TipoServico, StatusServico, getSequencia } from '../core/entities';

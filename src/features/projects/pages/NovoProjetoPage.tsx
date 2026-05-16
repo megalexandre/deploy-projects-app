@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { formatCurrencyBRL, maskCep, maskCnpj, maskCpf, maskLatitude, maskLongitude, maskNumeric, maskPhoneBR } from '@/core/utils/masks';
-import type { TipoDocumento, DadosDetalhesForm } from '@/features/projetos/domain/types';
+import type { TipoDocumento, DadosDetalhesForm } from '@/features/projects/domain/types';
 import {
   useNovoProjeto,
   buildItemVazio,
@@ -13,7 +13,7 @@ import {
   servicosDisponiveis,
   formatDocumento,
   formatTelefone
-} from '@/features/projetos/hooks/useNovoProjeto';
+} from '@/features/projects/hooks/useNovoProjeto';
 
 export const NovoProjetoPage: React.FC = () => {
   const {

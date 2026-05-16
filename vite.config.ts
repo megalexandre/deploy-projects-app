@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite'
+/// <reference types="vitest" />
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
@@ -18,6 +19,11 @@ export default defineConfig(({ command, mode }) => {
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
+    },
+    test: {
+      environment: 'jsdom',
+      globals: true,
+      setupFiles: ['./src/test/setup.ts'],
     },
     server: apiProxyTarget
       ? {

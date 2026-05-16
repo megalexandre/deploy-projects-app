@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent } from '@/shared/components/Card';
 import { approvalsService, type ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
-import { projectStatusFlow, projectsService } from '@/features/projetos/services/projectsService';
+import { projectStatusFlow, projectsService } from '@/features/projects/services/projectsService';
 import { servicosService } from '@/features/servicos/services/servicosService';
 import { getSessionUser, isAdminSessionUser } from '@/shared/session/sessionUser';
 import type { Projeto, Servico, StatusProjeto, StatusServico } from '@/types';

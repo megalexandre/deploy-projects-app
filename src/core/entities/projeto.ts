@@ -59,6 +59,8 @@ export interface Cliente {
 export interface Projeto {
   id: string;
   protocolo: string;
+  sequence: number;
+  subsequente: string;
   cliente: Cliente;
   endereco: Endereco;
   dadosProjeto: DadosProjeto;
