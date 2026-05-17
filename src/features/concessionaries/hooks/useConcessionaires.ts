@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { type Concessionaire } from '../domain/concessionaire';
-import { concessionairesService, type ConcessionaireInput } from '../services/concessionairesService';
+import { type Concessionaire, type ConcessionaireData } from '../domain/concessionaire';
+import { concessionairesService } from '../services/concessionairesService';
 
-type ConcessionaireForm = ConcessionaireInput;
+type ConcessionaireForm = Omit<ConcessionaireData, 'id'>;
 
 const createEmptyForm = (): ConcessionaireForm => ({
   name: '',
@@ -82,7 +82,7 @@ export const useConcessionaires = () => {
     setError(null);
 
     try {
-      const input: ConcessionaireInput = {
+      const input: ConcessionaireForm = {
         ...form,
         name: form.name.trim(),
         logo: form.logo?.trim() || null,

@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { type ConcessionaireInput } from '../services/concessionairesService';
+import { type ConcessionaireData } from '../domain/concessionaire';
 import { ConcessionaireFormCard } from './ConcessionaireFormCard';
 
-const emptyForm = (): ConcessionaireInput => ({
+const emptyForm = (): Omit<ConcessionaireData, 'id'> => ({
   name: '',
   acronym: '',
   code: '',

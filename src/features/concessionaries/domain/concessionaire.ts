@@ -33,3 +33,4 @@ export class Concessionaire {
     this.logo = data.logo;
   }
 }
+

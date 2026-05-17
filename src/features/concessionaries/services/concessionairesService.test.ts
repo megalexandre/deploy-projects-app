@@ -2,7 +2,7 @@ import { apiClient } from '@/shared/api/apiClient';
 import { ENDPOINTS } from '@/shared/config/endpoints';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Concessionaire, type ConcessionaireData } from '../domain/concessionaire';
-import { concessionairesService, type ConcessionaireInput } from './concessionairesService';
+import { concessionairesService } from './concessionairesService';
 
 vi.mock('@/shared/api/apiClient', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() },
@@ -21,7 +21,7 @@ const makeData = (overrides: Partial<ConcessionaireData> = {}): ConcessionaireDa
   ...overrides,
 });
 
-const makeInput = (overrides: Partial<ConcessionaireInput> = {}): ConcessionaireInput => ({
+const makeInput = (overrides: Partial<Omit<ConcessionaireData, 'id'>> = {}): Omit<ConcessionaireData, 'id'> => ({
   name: 'Enel',
   acronym: 'EN',
   code: 'C01',

@@ -4,9 +4,9 @@ import { Input } from '@/shared/components/Input';
 import { LogoUpload } from '@/shared/components/LogoUpload';
 import { CheckCircle, PlusCircle } from '@phosphor-icons/react';
 import React from 'react';
-import { type ConcessionaireInput } from '../services/concessionairesService';
+import { type ConcessionaireData } from '../domain/concessionaire';
 
-type ConcessionaireForm = ConcessionaireInput;
+type ConcessionaireForm = Omit<ConcessionaireData, 'id'>;
 
 interface ConcessionaireFormCardProps {
   form: ConcessionaireForm;
