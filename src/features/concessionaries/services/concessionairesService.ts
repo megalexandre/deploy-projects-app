@@ -3,10 +3,29 @@ import { ENDPOINTS } from '@/shared/config/endpoints';
 import { Concessionaire, type ConcessionaireData } from '../domain/concessionaire';
 
 class ConcessionairesService {
-  
+
   async getAll(): Promise<Concessionaire[]> {
     const data = await apiClient.get<ConcessionaireData[]>(ENDPOINTS.concessionaires);
-    return data.map((raw) => new Concessionaire(raw));
+
+
+
+
+
+
+
+
+
+
+    return data.map((raw) =>
+      
+      
+      
+      
+      
+      
+      
+      
+      new Concessionaire(raw));
   }
 
   async create(input: Omit<ConcessionaireData, 'id'>): Promise<Concessionaire> {
