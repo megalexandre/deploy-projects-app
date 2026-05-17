@@ -15,7 +15,10 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["prettier --write", "eslint --max-warnings=0"]
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --max-warnings=0"
+    ]
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -26,6 +29,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^11.1.0",
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.10.1",
