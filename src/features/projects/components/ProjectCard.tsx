@@ -21,13 +21,11 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
   onDragEnd,
   onStatusChange,
 }) => {
-
   const currentUser = useCurrentUser();
   const canManageStatus = currentUser?.isAdmin === true;
-  const identifier = useIdentifier({project: projeto, isAdmin: canManageStatus});
+  const identifier = useIdentifier({ project: projeto, isAdmin: canManageStatus });
 
   return (
-
     <div
       draggable={canManageStatus}
       onDragStart={(event) => {

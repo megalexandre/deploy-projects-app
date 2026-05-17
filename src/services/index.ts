@@ -14,40 +14,29 @@ export { viaCepService } from '@/shared/api/viaCepService';
 export { filesService } from '@/shared/api/filesService';
 
 // Export types for new services
-export type { 
-  LoginCredentials, 
-  RegisterData, 
-  LoginResponse 
+export type {
+  LoginCredentials,
+  RegisterData,
+  LoginResponse,
 } from '@/features/auth/services/authService';
 
-export type { 
-  User, 
-  CreateUserData, 
-  UpdateUserData 
-} from '@/features/admin/services/usersService';
+export type { User, CreateUserData, UpdateUserData } from '@/features/admin/services/usersService';
 
-export type { 
-  Project, 
-  CreateProjectData, 
-  UpdateProjectData 
+export type {
+  Project,
+  CreateProjectData,
+  UpdateProjectData,
 } from '@/features/projects/services/projectsService';
 
 export type {
   Customer,
   CreateCustomerData,
-  UpdateCustomerData
+  UpdateCustomerData,
 } from '@/features/clientes/services/customersService';
 
-export type {
-  Address,
-  CreateAddressData,
-  UpdateAddressData
-} from '@/shared/api/addressService';
+export type { Address, CreateAddressData, UpdateAddressData } from '@/shared/api/addressService';
 
-export type { 
-  AuditLog, 
-  AuditFilters 
-} from '@/shared/api/auditService';
+export type { AuditLog, AuditFilters } from '@/shared/api/auditService';
 
 export type { Concessionaire } from '@/features/concessionaries/domain/concessionaire';
 export type { UploadedFileResponse } from '@/shared/api/filesService';

@@ -28,7 +28,8 @@ export const StatusChangeDialog: React.FC<Props> = ({
     <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
       <h2 className="text-xl font-semibold text-slate-100">Atualizar status</h2>
       <p className="mt-2 text-sm text-slate-400">
-        Novo status: <span className="text-slate-200">{getStatusLabel(pendingStatusChange.nextStatus)}</span>
+        Novo status:{' '}
+        <span className="text-slate-200">{getStatusLabel(pendingStatusChange.nextStatus)}</span>
       </p>
 
       <div className="mt-4">
@@ -46,7 +47,9 @@ export const StatusChangeDialog: React.FC<Props> = ({
         <Button
           variant="outline"
           type="button"
-          onClick={() => { if (!updatingStatus) onCancel(); }}
+          onClick={() => {
+            if (!updatingStatus) onCancel();
+          }}
         >
           Cancelar
         </Button>

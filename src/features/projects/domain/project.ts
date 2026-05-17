@@ -57,9 +57,21 @@ export interface ProjectResponse {
   updated_by: string;
 }
 
-const EMPTY_ENDERECO: Endereco = { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '' };
+const EMPTY_ENDERECO: Endereco = {
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  estado: '',
+};
 
-export const toProjeto = (r: ProjectResponse, customer?: Customer, endereco?: Endereco): Projeto => ({
+export const toProjeto = (
+  r: ProjectResponse,
+  customer?: Customer,
+  endereco?: Endereco,
+): Projeto => ({
   id: r.id,
   protocolo: r.utility_protocol,
   sequence: r.sequence,
@@ -75,7 +87,7 @@ export const toProjeto = (r: ProjectResponse, customer?: Customer, endereco?: En
   },
 
   endereco: endereco ?? EMPTY_ENDERECO,
-  
+
   dadosProjeto: {
     concessionaria: r.utility_company,
     classe: r.customer_class,
@@ -85,7 +97,16 @@ export const toProjeto = (r: ProjectResponse, customer?: Customer, endereco?: En
     potenciaSistema: r.system_power,
     protecaoCC: r.dc_protection,
   },
-  dadosTecnicos: { tensao: 0, numeroFases: 0, ramal: '', disjuntor: '', cargaInstalada: 0, modulos: [], inversores: [], divisaoCreditos: [] },
+  dadosTecnicos: {
+    tensao: 0,
+    numeroFases: 0,
+    ramal: '',
+    disjuntor: '',
+    cargaInstalada: 0,
+    modulos: [],
+    inversores: [],
+    divisaoCreditos: [],
+  },
   modulos: [],
   inversores: [],
   divisaoCreditos: [],

@@ -23,7 +23,7 @@ export type {
   FaixaPrecoFotovoltaico,
   PrecoPadraoEntrada,
   CupomDesconto,
-  ConfiguracoesSistema
+  ConfiguracoesSistema,
 } from '../core/entities';
 
 export { StatusProjeto, TipoServico, StatusServico } from '../core/entities';

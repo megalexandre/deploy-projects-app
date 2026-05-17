@@ -1,5 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Plus, MagnifyingGlass, Shield, User, EnvelopeSimple, X, Eye, EyeSlash } from '@phosphor-icons/react';
+import {
+  Users,
+  Plus,
+  MagnifyingGlass,
+  Shield,
+  User,
+  EnvelopeSimple,
+  X,
+  Eye,
+  EyeSlash,
+} from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
@@ -18,7 +28,7 @@ const createEmptyForm = (): UserForm => ({
   email: '',
   password: '',
   passwordConfirmation: '',
-  role: 'user'
+  role: 'user',
 });
 
 const formatRoleLabel = (role?: string) => {
@@ -97,8 +107,11 @@ export const UsuariosPage: React.FC = () => {
   }, [searchTerm, selectedRole, usuarios]);
 
   const roleOptions = useMemo(
-    () => ['todos', ...Array.from(new Set(usuarios.map((usuario) => (usuario.role ?? 'user').toLowerCase())))],
-    [usuarios]
+    () => [
+      'todos',
+      ...Array.from(new Set(usuarios.map((usuario) => (usuario.role ?? 'user').toLowerCase()))),
+    ],
+    [usuarios],
   );
 
   const adminUsers = usuarios.filter((usuario) => {
@@ -141,11 +154,13 @@ export const UsuariosPage: React.FC = () => {
         email: form.email,
         password: form.password,
         passwordConfirmation: form.passwordConfirmation,
-        role: form.role
+        role: form.role,
       } satisfies CreateUserData);
 
       setUsuarios((current) =>
-        [...current, createdUser].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'))
+        [...current, createdUser].sort((left, right) =>
+          left.name.localeCompare(right.name, 'pt-BR'),
+        ),
       );
       setFormOpen(false);
       resetForm();
@@ -230,7 +245,9 @@ export const UsuariosPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-400">Perfis</p>
-                <p className="text-2xl font-bold text-purple-400">{roleOptions.filter((item) => item !== 'todos').length}</p>
+                <p className="text-2xl font-bold text-purple-400">
+                  {roleOptions.filter((item) => item !== 'todos').length}
+                </p>
               </div>
               <Users className="h-8 w-8 text-purple-400" />
             </div>
@@ -332,7 +349,9 @@ export const UsuariosPage: React.FC = () => {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-slate-100">Novo Usuario</h2>
-                <p className="mt-1 text-sm text-slate-400">Cadastro enviado para `POST /auth/register`.</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  Cadastro enviado para `POST /auth/register`.
+                </p>
               </div>
               <button
                 type="button"
@@ -351,7 +370,9 @@ export const UsuariosPage: React.FC = () => {
                 <label className="mb-2 block text-sm text-slate-300">Nome</label>
                 <input
                   value={form.name}
-                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, name: event.target.value }))
+                  }
                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                 />
               </div>
@@ -361,7 +382,9 @@ export const UsuariosPage: React.FC = () => {
                 <input
                   type="email"
                   value={form.email}
-                  onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, email: event.target.value }))
+                  }
                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                 />
               </div>
@@ -370,7 +393,9 @@ export const UsuariosPage: React.FC = () => {
                 <label className="mb-2 block text-sm text-slate-300">Perfil</label>
                 <select
                   value={form.role}
-                  onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, role: event.target.value }))
+                  }
                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                 >
                   <option value="user">Usuario</option>
@@ -385,7 +410,9 @@ export const UsuariosPage: React.FC = () => {
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={form.password}
-                      onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, password: event.target.value }))
+                      }
                       className="password-visibility-input w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 pr-12 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                     />
                     <button
@@ -394,7 +421,11 @@ export const UsuariosPage: React.FC = () => {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 transition hover:text-white"
                       aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                     >
-                      {showPassword ? <EyeSlash className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? (
+                        <EyeSlash className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -406,7 +437,10 @@ export const UsuariosPage: React.FC = () => {
                       type={showPasswordConfirmation ? 'text' : 'password'}
                       value={form.passwordConfirmation}
                       onChange={(event) =>
-                        setForm((current) => ({ ...current, passwordConfirmation: event.target.value }))
+                        setForm((current) => ({
+                          ...current,
+                          passwordConfirmation: event.target.value,
+                        }))
                       }
                       className="password-visibility-input w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 pr-12 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                     />
@@ -414,9 +448,17 @@ export const UsuariosPage: React.FC = () => {
                       type="button"
                       onClick={() => setShowPasswordConfirmation((current) => !current)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 transition hover:text-white"
-                      aria-label={showPasswordConfirmation ? 'Ocultar confirmacao de senha' : 'Mostrar confirmacao de senha'}
+                      aria-label={
+                        showPasswordConfirmation
+                          ? 'Ocultar confirmacao de senha'
+                          : 'Mostrar confirmacao de senha'
+                      }
                     >
-                      {showPasswordConfirmation ? <EyeSlash className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPasswordConfirmation ? (
+                        <EyeSlash className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                 </div>

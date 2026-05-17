@@ -5,7 +5,6 @@ import { Concessionaire, type ConcessionaireData } from '../domain/concessionair
 class ConcessionairesService {
   async getAll(): Promise<Concessionaire[]> {
     const data = await apiClient.get<ConcessionaireData[]>(ENDPOINTS.concessionaires);
-
     return data.map((raw) => new Concessionaire(raw));
   }
 

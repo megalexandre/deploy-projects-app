@@ -70,5 +70,3 @@ export interface PadraoEntradaItemForm {
   quantidade: string;
   disjuntor: string;
 }
-
-

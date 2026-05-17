@@ -1,4 +1,12 @@
-import type { Documento, DivisaoCreditos, Endereco, Inversor, Modulo, PadraoEntradaItem, TimelineItem } from './comum';
+import type {
+  Documento,
+  DivisaoCreditos,
+  Endereco,
+  Inversor,
+  Modulo,
+  PadraoEntradaItem,
+  TimelineItem,
+} from './comum';
 
 export interface DadosProjeto {
   concessionaria: string;
@@ -25,7 +33,8 @@ export const StatusProjeto = {
   EM_ANALISE_DOCUMENTACAO: 'em_analise_documentacao',
   ELABORACAO_DOCUMENTACAO_TECNICA: 'elaboracao_documentacao_tecnica',
   AGUARDANDO_ASSINATURA_CLIENTE: 'aguardando_assinatura_cliente',
-  PROJETO_ENVIADO_AGUARDANDO_PROTOCOLO_CONCESSIONARIA: 'projeto_enviado_aguardando_protocolo_concessionaria',
+  PROJETO_ENVIADO_AGUARDANDO_PROTOCOLO_CONCESSIONARIA:
+    'projeto_enviado_aguardando_protocolo_concessionaria',
   EM_ANALISE_CONCESSIONARIA: 'em_analise_concessionaria',
   RESSALVAS_PROJETOS: 'ressalvas_projetos',
   OBRAS_CONCESSIONARIA: 'obras_concessionaria',
@@ -41,7 +50,7 @@ export const StatusProjeto = {
   APROVADO: 'aprovado',
   INSTALACAO: 'instalacao',
   CONCLUIDO: 'concluido',
-  CANCELADO: 'cancelado'
+  CANCELADO: 'cancelado',
 } as const;
 
 export type StatusProjeto = (typeof StatusProjeto)[keyof typeof StatusProjeto];

@@ -11,7 +11,7 @@ export const useTheme = () => {
 
   useEffect(() => {
     const body = document.body;
-    
+
     if (theme === 'dark') {
       body.classList.remove('light');
       body.classList.add('dark');
@@ -23,7 +23,7 @@ export const useTheme = () => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+    setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
   };
 
   return { theme, toggleTheme };

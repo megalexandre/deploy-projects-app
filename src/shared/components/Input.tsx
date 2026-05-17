@@ -15,7 +15,12 @@ export const Input: React.FC<InputProps> = ({
   id,
   ...props
 }) => {
-  const inputId = id ?? label?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const inputId =
+    id ??
+    label
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
 
   const baseClasses =
     'block w-full rounded-xl border border-white/20 bg-slate-900/50 text-slate-100 placeholder-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/35 focus:outline-none transition-colors duration-200';
@@ -31,22 +36,12 @@ export const Input: React.FC<InputProps> = ({
       <div className="relative">
         {icon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <div className="h-5 w-5 text-slate-400">
-              {icon}
-            </div>
+            <div className="h-5 w-5 text-slate-400">{icon}</div>
           </div>
         )}
-        <input
-          id={inputId}
-          className={classes}
-          {...props}
-        />
+        <input id={inputId} className={classes} {...props} />
       </div>
-      {error && (
-        <p className="mt-1 text-sm text-red-400">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
     </div>
   );
 };

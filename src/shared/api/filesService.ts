@@ -23,7 +23,7 @@ const normalizeUpload = (payload: BackendUploadResponse): UploadedFileResponse =
   fileName: payload.filename ?? 'Arquivo',
   urlS3: payload.url_s3 ?? '',
   size: typeof payload.size === 'number' ? payload.size : 0,
-  createdAt: payload.created_at
+  createdAt: payload.created_at,
 });
 
 const buildUrl = (path: string) => {
@@ -61,7 +61,7 @@ export const filesService = {
     const response = await fetch(buildUrl(FILES_ENDPOINT), {
       method: 'POST',
       headers: buildHeaders(),
-      body: formData
+      body: formData,
     });
 
     const contentType = response.headers.get('content-type');
@@ -69,38 +69,57 @@ export const filesService = {
     const payload = isJson ? await response.json() : await response.text();
 
     if (!response.ok) {
-      throw new ApiError(resolveErrorMessage(payload, 'Erro ao enviar arquivos'), response.status, payload);
+      throw new ApiError(
+        resolveErrorMessage(payload, 'Erro ao enviar arquivos'),
+        response.status,
+        payload,
+      );
     }
 
-    return Array.isArray(payload) ? payload.map((item) => normalizeUpload(item as BackendUploadResponse)) : [];
+    return Array.isArray(payload)
+      ? payload.map((item) => normalizeUpload(item as BackendUploadResponse))
+      : [];
   },
 
   async listByItem(itemId: string): Promise<UploadedFileResponse[]> {
-    const response = await fetch(buildUrl(`${FILES_ENDPOINT}?item_id=${encodeURIComponent(itemId)}`), {
-      method: 'GET',
-      headers: buildHeaders()
-    });
+    const response = await fetch(
+      buildUrl(`${FILES_ENDPOINT}?item_id=${encodeURIComponent(itemId)}`),
+      {
+        method: 'GET',
+        headers: buildHeaders(),
+      },
+    );
 
     const contentType = response.headers.get('content-type');
     const isJson = contentType?.includes('application/json');
     const payload = isJson ? await response.json() : await response.text();
 
     if (!response.ok) {
-      throw new ApiError(resolveErrorMessage(payload, 'Erro ao carregar arquivos'), response.status, payload);
+      throw new ApiError(
+        resolveErrorMessage(payload, 'Erro ao carregar arquivos'),
+        response.status,
+        payload,
+      );
     }
 
-    return Array.isArray(payload) ? payload.map((item) => normalizeUpload(item as BackendUploadResponse)) : [];
+    return Array.isArray(payload)
+      ? payload.map((item) => normalizeUpload(item as BackendUploadResponse))
+      : [];
   },
 
   async downloadFile(fileId: string) {
     const response = await fetch(buildUrl(`${FILES_ENDPOINT}/${fileId}/download`), {
       method: 'GET',
-      headers: buildHeaders()
+      headers: buildHeaders(),
     });
 
     if (!response.ok) {
       const payload = await response.text();
-      throw new ApiError(resolveErrorMessage(payload, 'Erro ao baixar arquivo'), response.status, payload);
+      throw new ApiError(
+        resolveErrorMessage(payload, 'Erro ao baixar arquivo'),
+        response.status,
+        payload,
+      );
     }
 
     // O download e disparado por blob para respeitar autenticacao e preservar o nome vindo do backend.
@@ -117,5 +136,5 @@ export const filesService = {
     anchor.click();
     anchor.remove();
     window.URL.revokeObjectURL(objectUrl);
-  }
+  },
 };

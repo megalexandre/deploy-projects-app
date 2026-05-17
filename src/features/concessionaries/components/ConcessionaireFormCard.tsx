@@ -87,10 +87,7 @@ export const ConcessionaireFormCard: React.FC<ConcessionaireFormCardProps> = ({
             </div>
           </div>
 
-          <LogoUpload
-            value={form.logo}
-            onChange={(base64) => setField('logo', base64)}
-          />
+          <LogoUpload value={form.logo} onChange={(base64) => setField('logo', base64)} />
 
           <div className="flex justify-end">
             <Button type="submit" loading={saving}>

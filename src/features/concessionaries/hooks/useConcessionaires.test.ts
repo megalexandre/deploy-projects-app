@@ -200,7 +200,10 @@ describe('useConcessionaires', () => {
       act(() => result.current.setField('name', 'Enel Atualizada'));
       await act(() => result.current.handleSubmit(fakeEvent));
 
-      expect(concessionairesService.update).toHaveBeenCalledWith('1', expect.objectContaining({ name: 'Enel Atualizada' }));
+      expect(concessionairesService.update).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({ name: 'Enel Atualizada' }),
+      );
       expect(result.current.filteredItems[0].name).toBe('Enel Atualizada');
       expect(result.current.editingId).toBeNull();
     });

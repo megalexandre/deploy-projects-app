@@ -39,7 +39,8 @@ export const ProjetosPage: React.FC = () => {
           const knownCustomer = customersById.get(projeto.cliente.id);
           if (!knownCustomer) return projeto;
 
-          const shouldReplaceName = !projeto.cliente.nome || projeto.cliente.nome === 'Cliente sem nome';
+          const shouldReplaceName =
+            !projeto.cliente.nome || projeto.cliente.nome === 'Cliente sem nome';
           if (!shouldReplaceName) return projeto;
 
           return {
@@ -84,16 +85,20 @@ export const ProjetosPage: React.FC = () => {
   );
 
   const groupedProjetos = useMemo(() => {
-    const grouped = columns.reduce<Record<KanbanStatus, Projeto[]>>((acc, column) => {
-      acc[column.id] = [];
-      return acc;
-    }, {} as Record<KanbanStatus, Projeto[]>);
+    const grouped = columns.reduce<Record<KanbanStatus, Projeto[]>>(
+      (acc, column) => {
+        acc[column.id] = [];
+        return acc;
+      },
+      {} as Record<KanbanStatus, Projeto[]>,
+    );
     filteredProjetos.forEach((item) => grouped[toKanbanStatus(item.status)].push(item));
     return grouped;
   }, [filteredProjetos]);
 
   const visibleColumns = useMemo(
-    () => (statusFilter === 'todos' ? columns : columns.filter((column) => column.id === statusFilter)),
+    () =>
+      statusFilter === 'todos' ? columns : columns.filter((column) => column.id === statusFilter),
     [statusFilter],
   );
 
@@ -128,7 +133,11 @@ export const ProjetosPage: React.FC = () => {
 
   const confirmStatusChange = async () => {
     if (!pendingStatusChange) return;
-    await updateProjetoStatus(pendingStatusChange.projectId, pendingStatusChange.nextStatus, statusComment);
+    await updateProjetoStatus(
+      pendingStatusChange.projectId,
+      pendingStatusChange.nextStatus,
+      statusComment,
+    );
     setPendingStatusChange(null);
     setStatusComment('');
   };
@@ -192,7 +201,10 @@ export const ProjetosPage: React.FC = () => {
           updatingStatus={updatingStatus}
           onCommentChange={setStatusComment}
           onConfirm={() => void confirmStatusChange()}
-          onCancel={() => { setPendingStatusChange(null); setStatusComment(''); }}
+          onCancel={() => {
+            setPendingStatusChange(null);
+            setStatusComment('');
+          }}
         />
       )}
     </div>

@@ -11,7 +11,12 @@ type Props = {
   onStatusChange: (value: 'todos' | KanbanStatus) => void;
 };
 
-export const ProjetosFilter: React.FC<Props> = ({ searchTerm, statusFilter, onSearchChange, onStatusChange }) => (
+export const ProjetosFilter: React.FC<Props> = ({
+  searchTerm,
+  statusFilter,
+  onSearchChange,
+  onStatusChange,
+}) => (
   <Card>
     <CardContent className="p-6">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_280px]">

@@ -29,42 +29,44 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   const canManageStatus = useCurrentUser()?.isAdmin === true;
 
   return (
-  <Card className={`w-[340px] shrink-0 border ${column.className}`}>
-    <CardContent className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">{column.label}</h2>
-        <span className="rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">
-          {projetos.length}
-        </span>
-      </div>
+    <Card className={`w-[340px] shrink-0 border ${column.className}`}>
+      <CardContent className="p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+            {column.label}
+          </h2>
+          <span className="rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">
+            {projetos.length}
+          </span>
+        </div>
 
-      <div
-        className="space-y-3"
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => {
-          if (!canManageStatus) return;
-          event.preventDefault();
-          onDrop(column.id, event);
-        }}
-      >
-        {projetos.map((projeto) => (
-          <ProjetoCard
-            key={projeto.id}
-            projeto={projeto}
-            draggedId={draggedId}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            onStatusChange={onStatusChange}
-          />
-        ))}
+        <div
+          className="space-y-3"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            if (!canManageStatus) return;
+            event.preventDefault();
+            onDrop(column.id, event);
+          }}
+        >
+          {projetos.map((projeto) => (
+            <ProjetoCard
+              key={projeto.id}
+              projeto={projeto}
+              draggedId={draggedId}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onStatusChange={onStatusChange}
+            />
+          ))}
 
-        {projetos.length === 0 && (
-          <div className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-slate-400">
-            Nenhum projeto nesta coluna.
-          </div>
-        )}
-      </div>
-    </CardContent>
-  </Card>
+          {projetos.length === 0 && (
+            <div className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-slate-400">
+              Nenhum projeto nesta coluna.
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

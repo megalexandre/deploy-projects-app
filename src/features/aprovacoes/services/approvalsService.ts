@@ -24,7 +24,11 @@ const storage = createArrayStorage<ApprovalRequest>('opj_approval_requests');
 
 export const approvalsService = {
   list(): ApprovalRequest[] {
-    return storage.read().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+    return storage
+      .read()
+      .sort(
+        (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+      );
   },
 
   listPending(): ApprovalRequest[] {
@@ -44,7 +48,7 @@ export const approvalsService = {
 
     const current = storage.read();
     const existingIndex = current.findIndex(
-      (item) => item.entityType === input.entityType && item.entityId === input.entityId
+      (item) => item.entityType === input.entityType && item.entityId === input.entityId,
     );
 
     const request: ApprovalRequest = {
@@ -57,7 +61,7 @@ export const approvalsService = {
       createdByUserId: sessionUser.id,
       createdByName: sessionUser.name,
       createdByRole: sessionUser.role,
-      status: 'pendente'
+      status: 'pendente',
     };
 
     if (existingIndex >= 0) {
@@ -81,7 +85,7 @@ export const approvalsService = {
   }) {
     const current = storage.read();
     const existingIndex = current.findIndex(
-      (item) => item.entityType === input.entityType && item.entityId === input.entityId
+      (item) => item.entityType === input.entityType && item.entityId === input.entityId,
     );
 
     if (existingIndex >= 0) {
@@ -98,7 +102,7 @@ export const approvalsService = {
       createdByUserId: input.createdByUserId || 'desconhecido',
       createdByName: input.createdByName || 'Usuario do sistema',
       createdByRole: input.createdByRole || 'user',
-      status: 'pendente'
+      status: 'pendente',
     };
 
     current.unshift(request);
@@ -119,9 +123,9 @@ export const approvalsService = {
       status,
       decidedAt: new Date().toISOString(),
       decidedByUserId: sessionUser?.id,
-      decidedByName: sessionUser?.name
+      decidedByName: sessionUser?.name,
     };
 
     storage.write(current);
-  }
+  },
 };

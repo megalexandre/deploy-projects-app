@@ -45,7 +45,7 @@ const normalizeAddress = (raw: unknown): Address => {
     neighborhood: asString(address.neighborhood),
     city: asString(address.city),
     state: asString(address.state),
-    link: asString(address.link) || undefined
+    link: asString(address.link) || undefined,
   };
 };
 
@@ -61,7 +61,7 @@ const buildMapsLink = (addressData: CreateAddressData | UpdateAddressData) => {
     asString(addressData.neighborhood).trim(),
     asString(addressData.city).trim(),
     asString(addressData.state).trim(),
-    asString(addressData.cep).trim()
+    asString(addressData.cep).trim(),
   ]
     .filter(Boolean)
     .join(', ');
@@ -79,7 +79,7 @@ const buildAddressPayload = (addressData: CreateAddressData | UpdateAddressData)
     complement: asString(addressData.complement).trim(),
     neighborhood: asString(addressData.neighborhood).trim(),
     city: asString(addressData.city).trim(),
-    state: asString(addressData.state).trim()
+    state: asString(addressData.state).trim(),
   };
 
   if ('id' in addressData) {
@@ -91,17 +91,23 @@ const buildAddressPayload = (addressData: CreateAddressData | UpdateAddressData)
 
 export const addressService = {
   async create(addressData: CreateAddressData): Promise<Address> {
-    const response = await apiClient.post<unknown>(ADDRESS_ENDPOINT, buildAddressPayload(addressData));
+    const response = await apiClient.post<unknown>(
+      ADDRESS_ENDPOINT,
+      buildAddressPayload(addressData),
+    );
     return normalizeAddress(response);
   },
 
   async update(addressData: UpdateAddressData): Promise<Address> {
-    const response = await apiClient.put<unknown>(ADDRESS_ENDPOINT, buildAddressPayload(addressData));
+    const response = await apiClient.put<unknown>(
+      ADDRESS_ENDPOINT,
+      buildAddressPayload(addressData),
+    );
     return normalizeAddress(response);
   },
 
   async getById(id: string): Promise<Address> {
     const response = await apiClient.get<unknown>(`${ADDRESS_ENDPOINT}/${id}`);
     return normalizeAddress(response);
-  }
+  },
 };

@@ -1,8 +1,8 @@
 import type { Projeto } from '@/types';
 
-interface UseIdentifierProps { 
+interface UseIdentifierProps {
   project: Projeto;
-  isAdmin: boolean
+  isAdmin: boolean;
 }
 
 export const useIdentifier = ({ project, isAdmin }: UseIdentifierProps): string => {

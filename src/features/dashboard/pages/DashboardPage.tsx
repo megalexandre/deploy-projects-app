@@ -1,19 +1,22 @@
 /** Pagina 'DashboardPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FolderOpen, 
-  TrendUp, 
-  CheckCircle, 
+import {
+  FolderOpen,
+  TrendUp,
+  CheckCircle,
   Clock,
   PlusCircle,
   Eye,
-  ClipboardText
+  ClipboardText,
 } from '@phosphor-icons/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { Button } from '@/shared/components/Button';
 import { projectsService } from '@/services';
-import { approvalsService, type ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
+import {
+  approvalsService,
+  type ApprovalRequest,
+} from '@/features/aprovacoes/services/approvalsService';
 import type { DashboardStats, Projeto } from '@/types';
 
 export const DashboardPage: React.FC = () => {
@@ -27,9 +30,9 @@ export const DashboardPage: React.FC = () => {
       try {
         const [statsData, projectsData] = await Promise.all([
           projectsService.getDashboardStats(),
-          projectsService.getProjetos()
+          projectsService.getProjetos(),
         ]);
-        
+
         setStats(statsData);
         setRecentProjects(projectsData.slice(0, 5));
         setRecentApprovals(approvalsService.listPending().slice(0, 5));
@@ -88,9 +91,7 @@ export const DashboardPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-alumni-bold text-gray-100">Dashboard</h1>
-          <p className="text-gray-400 mt-1">
-            Visão geral dos projetos fotovoltaicos
-          </p>
+          <p className="text-gray-400 mt-1">Visão geral dos projetos fotovoltaicos</p>
         </div>
         <Link to="/projetos/novo">
           <Button>
@@ -124,7 +125,9 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-400">Em Andamento</p>
-                <p className="text-2xl font-bold text-gray-100">{stats?.projetosEmAndamento || 0}</p>
+                <p className="text-2xl font-bold text-gray-100">
+                  {stats?.projetosEmAndamento || 0}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -138,7 +141,9 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-400">Concluídos</p>
-                <p className="text-2xl font-bold text-gray-100">{stats?.projetosFinalizados || 0}</p>
+                <p className="text-2xl font-bold text-gray-100">
+                  {stats?.projetosFinalizados || 0}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -179,21 +184,28 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {recentApprovals.map((approval) => {
-                const destinationPath = approval.entityType === 'projeto'
-                  ? `/projetos/${approval.entityId}`
-                  : `/servicos/${approval.entityId}`;
+                const destinationPath =
+                  approval.entityType === 'projeto'
+                    ? `/projetos/${approval.entityId}`
+                    : `/servicos/${approval.entityId}`;
 
                 return (
-                  <div key={approval.id} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                  <div
+                    key={approval.id}
+                    className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-4 md:flex-row md:items-center md:justify-between"
+                  >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-sm text-cyan-200">
                         <ClipboardText className="h-4 w-4" />
                         <span>{getApprovalTypeText(approval.entityType)}</span>
                       </div>
-                      <p className="mt-1 text-sm font-semibold text-gray-100">{approval.entityLabel}</p>
+                      <p className="mt-1 text-sm font-semibold text-gray-100">
+                        {approval.entityLabel}
+                      </p>
                       <p className="mt-1 text-sm text-gray-300">{approval.clientName}</p>
                       <p className="mt-1 text-xs text-gray-400">
-                        Solicitado por {approval.createdByName} em {new Date(approval.createdAt).toLocaleString('pt-BR')}
+                        Solicitado por {approval.createdByName} em{' '}
+                        {new Date(approval.createdAt).toLocaleString('pt-BR')}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -286,7 +298,3 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
-
-
-
-

@@ -21,7 +21,9 @@ const makeData = (overrides: Partial<ConcessionaireData> = {}): ConcessionaireDa
   ...overrides,
 });
 
-const makeInput = (overrides: Partial<Omit<ConcessionaireData, 'id'>> = {}): Omit<ConcessionaireData, 'id'> => ({
+const makeInput = (
+  overrides: Partial<Omit<ConcessionaireData, 'id'>> = {},
+): Omit<ConcessionaireData, 'id'> => ({
   name: 'Enel',
   acronym: 'EN',
   code: 'C01',
@@ -48,7 +50,10 @@ describe('concessionairesService', () => {
     });
 
     it('retorna instâncias de Concessionaire', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce([makeData(), makeData({ id: '2', name: 'CPFL' })]);
+      vi.mocked(apiClient.get).mockResolvedValueOnce([
+        makeData(),
+        makeData({ id: '2', name: 'CPFL' }),
+      ]);
       const result = await concessionairesService.getAll();
       expect(result).toHaveLength(2);
       expect(result[0]).toBeInstanceOf(Concessionaire);

@@ -19,7 +19,7 @@ export const createArrayStorage = <T>(key: string) => ({
     } catch {
       // ignore storage errors
     }
-  }
+  },
 });
 
 export const createRecordStorage = <T>(key: string) => ({
@@ -43,5 +43,5 @@ export const createRecordStorage = <T>(key: string) => ({
     } catch {
       // ignore storage errors
     }
-  }
+  },
 });

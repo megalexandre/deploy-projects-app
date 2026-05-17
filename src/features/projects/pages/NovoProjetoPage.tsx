@@ -4,7 +4,16 @@ import { ArrowLeft, Calendar, MagnifyingGlass, UploadSimple, Plus } from '@phosp
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
-import { formatCurrencyBRL, maskCep, maskCnpj, maskCpf, maskLatitude, maskLongitude, maskNumeric, maskPhoneBR } from '@/core/utils/masks';
+import {
+  formatCurrencyBRL,
+  maskCep,
+  maskCnpj,
+  maskCpf,
+  maskLatitude,
+  maskLongitude,
+  maskNumeric,
+  maskPhoneBR,
+} from '@/core/utils/masks';
 import type { TipoDocumento, DadosDetalhesForm } from '@/features/projects/domain/types';
 import {
   useNovoProjeto,
@@ -12,7 +21,7 @@ import {
   tiposProjeto,
   servicosDisponiveis,
   formatDocumento,
-  formatTelefone
+  formatTelefone,
 } from '@/features/projects/hooks/useNovoProjeto';
 
 export const NovoProjetoPage: React.FC = () => {
@@ -79,7 +88,7 @@ export const NovoProjetoPage: React.FC = () => {
     handleInversorChange,
     handlePadraoEntradaChange,
     handleDocumentosChange,
-    handleCriarProjeto
+    handleCriarProjeto,
   } = useNovoProjeto();
 
   return (
@@ -155,7 +164,9 @@ export const NovoProjetoPage: React.FC = () => {
                     }`}
                   >
                     <p className="text-base font-semibold">Novo cliente</p>
-                    <p className="text-sm opacity-80">Cadastrar cliente e criar projeto em seguida.</p>
+                    <p className="text-sm opacity-80">
+                      Cadastrar cliente e criar projeto em seguida.
+                    </p>
                   </button>
                   <button
                     type="button"
@@ -183,7 +194,9 @@ export const NovoProjetoPage: React.FC = () => {
                       <label className="block text-sm text-gray-300 mb-2">Nome Completo</label>
                       <input
                         value={clienteForm.nome}
-                        onChange={(e) => setClienteForm((prev) => ({ ...prev, nome: e.target.value }))}
+                        onChange={(e) =>
+                          setClienteForm((prev) => ({ ...prev, nome: e.target.value }))
+                        }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                       />
                     </div>
@@ -208,10 +221,15 @@ export const NovoProjetoPage: React.FC = () => {
                           onChange={(e) =>
                             setClienteForm((prev) => ({
                               ...prev,
-                              cpfCnpj: tipoDocumento === 'cpf' ? maskCpf(e.target.value) : maskCnpj(e.target.value)
+                              cpfCnpj:
+                                tipoDocumento === 'cpf'
+                                  ? maskCpf(e.target.value)
+                                  : maskCnpj(e.target.value),
                             }))
                           }
-                          placeholder={tipoDocumento === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
+                          placeholder={
+                            tipoDocumento === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'
+                          }
                           inputMode="numeric"
                           className="col-span-2 rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
@@ -223,7 +241,10 @@ export const NovoProjetoPage: React.FC = () => {
                       <input
                         value={clienteForm.telefone}
                         onChange={(e) =>
-                          setClienteForm((prev) => ({ ...prev, telefone: maskPhoneBR(e.target.value) }))
+                          setClienteForm((prev) => ({
+                            ...prev,
+                            telefone: maskPhoneBR(e.target.value),
+                          }))
                         }
                         inputMode="numeric"
                         placeholder="(00) 00000-0000"
@@ -236,14 +257,17 @@ export const NovoProjetoPage: React.FC = () => {
                       <input
                         type="email"
                         value={clienteForm.email}
-                        onChange={(e) => setClienteForm((prev) => ({ ...prev, email: e.target.value }))}
+                        onChange={(e) =>
+                          setClienteForm((prev) => ({ ...prev, email: e.target.value }))
+                        }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                       />
                     </div>
 
-
                     <div className="md:col-span-2 border-t border-gray-700 pt-4">
-                      <h4 className="mb-3 text-base font-semibold text-gray-100">Endereco do cliente</h4>
+                      <h4 className="mb-3 text-base font-semibold text-gray-100">
+                        Endereco do cliente
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-gray-300 mb-2">CEP</label>
@@ -252,7 +276,7 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, cep: maskCep(e.target.value) }
+                                endereco: { ...prev.endereco, cep: maskCep(e.target.value) },
                               }))
                             }
                             onBlur={() =>
@@ -266,9 +290,9 @@ export const NovoProjetoPage: React.FC = () => {
                                     complemento: prev.endereco.complemento || endereco.complemento,
                                     bairro: endereco.bairro || prev.endereco.bairro,
                                     cidade: endereco.cidade || prev.endereco.cidade,
-                                    estado: endereco.estado || prev.endereco.estado
-                                  }
-                                }))
+                                    estado: endereco.estado || prev.endereco.estado,
+                                  },
+                                })),
                               )
                             }
                             inputMode="numeric"
@@ -284,7 +308,7 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, numero: e.target.value }
+                                endereco: { ...prev.endereco, numero: e.target.value },
                               }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -298,7 +322,7 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, logradouro: e.target.value }
+                                endereco: { ...prev.endereco, logradouro: e.target.value },
                               }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -312,7 +336,7 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, complemento: e.target.value }
+                                endereco: { ...prev.endereco, complemento: e.target.value },
                               }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -326,7 +350,7 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, bairro: e.target.value }
+                                endereco: { ...prev.endereco, bairro: e.target.value },
                               }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -340,7 +364,7 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, cidade: e.target.value }
+                                endereco: { ...prev.endereco, cidade: e.target.value },
                               }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -355,7 +379,10 @@ export const NovoProjetoPage: React.FC = () => {
                             onChange={(e) =>
                               setClienteForm((prev) => ({
                                 ...prev,
-                                endereco: { ...prev.endereco, estado: e.target.value.toUpperCase() }
+                                endereco: {
+                                  ...prev.endereco,
+                                  estado: e.target.value.toUpperCase(),
+                                },
                               }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -369,7 +396,9 @@ export const NovoProjetoPage: React.FC = () => {
 
               {modoCliente === 'existente' && (
                 <div className="rounded-lg border border-gray-700 p-4 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-100">Selecionar cliente cadastrado</h3>
+                  <h3 className="text-lg font-semibold text-gray-100">
+                    Selecionar cliente cadastrado
+                  </h3>
 
                   <div className="relative">
                     <input
@@ -399,13 +428,19 @@ export const NovoProjetoPage: React.FC = () => {
                           }`}
                         >
                           <p className="font-semibold">{cliente.nome}</p>
-                          <p className="text-sm text-gray-300">{formatDocumento(cliente.cpfCnpj)}</p>
-                          <p className="text-sm text-gray-300">{formatTelefone(cliente.telefone)}</p>
+                          <p className="text-sm text-gray-300">
+                            {formatDocumento(cliente.cpfCnpj)}
+                          </p>
+                          <p className="text-sm text-gray-300">
+                            {formatTelefone(cliente.telefone)}
+                          </p>
                           <p className="text-sm text-gray-300">{cliente.email}</p>
                         </button>
                       ))}
                       {clientesFiltrados.length === 0 && (
-                        <p className="text-sm text-gray-300">Nenhum cliente encontrado para o filtro informado.</p>
+                        <p className="text-sm text-gray-300">
+                          Nenhum cliente encontrado para o filtro informado.
+                        </p>
                       )}
                     </div>
                   )}
@@ -416,7 +451,9 @@ export const NovoProjetoPage: React.FC = () => {
                 <Button
                   onClick={() => {
                     if (!validarPasso1()) {
-                      setErro('Preencha os campos obrigatorios do cliente para avancar ao Passo 2.');
+                      setErro(
+                        'Preencha os campos obrigatorios do cliente para avancar ao Passo 2.',
+                      );
                       return;
                     }
                     setErro(null);
@@ -487,7 +524,10 @@ export const NovoProjetoPage: React.FC = () => {
                   <input
                     value={dadosBasicos.numeroUc}
                     onChange={(e) =>
-                      setDadosBasicos((prev) => ({ ...prev, numeroUc: maskNumeric(e.target.value, 20) }))
+                      setDadosBasicos((prev) => ({
+                        ...prev,
+                        numeroUc: maskNumeric(e.target.value, 20),
+                      }))
                     }
                     inputMode="numeric"
                     className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -504,7 +544,7 @@ export const NovoProjetoPage: React.FC = () => {
                         onClick={() =>
                           setDadosBasicos((prev) => ({
                             ...prev,
-                            tipoProjeto: tipo.value
+                            tipoProjeto: tipo.value,
                           }))
                         }
                         className={`rounded border px-4 py-3 text-left transition-colors ${
@@ -533,7 +573,9 @@ export const NovoProjetoPage: React.FC = () => {
                       }`}
                     >
                       <p className="text-base font-semibold">Usar endereco do cliente</p>
-                      <p className="text-sm opacity-80">Reaproveita o endereco cadastrado no cliente.</p>
+                      <p className="text-sm opacity-80">
+                        Reaproveita o endereco cadastrado no cliente.
+                      </p>
                     </button>
                     <button
                       type="button"
@@ -545,7 +587,9 @@ export const NovoProjetoPage: React.FC = () => {
                       }`}
                     >
                       <p className="text-base font-semibold">Cadastrar novo endereco</p>
-                      <p className="text-sm opacity-80">Informar um endereco diferente para este projeto.</p>
+                      <p className="text-sm opacity-80">
+                        Informar um endereco diferente para este projeto.
+                      </p>
                     </button>
                   </div>
 
@@ -553,8 +597,8 @@ export const NovoProjetoPage: React.FC = () => {
                     <div className="space-y-3">
                       {!enderecoClienteDisponivel && (
                         <p className="rounded border border-yellow-700 bg-yellow-900/20 px-3 py-3 text-sm text-yellow-200">
-                          O cliente selecionado nao possui endereco completo cadastrado. Escolha "Cadastrar novo endereco"
-                          para continuar.
+                          O cliente selecionado nao possui endereco completo cadastrado. Escolha
+                          "Cadastrar novo endereco" para continuar.
                         </p>
                       )}
 
@@ -613,8 +657,6 @@ export const NovoProjetoPage: React.FC = () => {
                           />
                         </div>
 
-                        
-
                         <div className="md:col-span-2 grid grid-cols-1 gap-4 md:grid-cols-12">
                           <div className="md:col-span-2">
                             <label className="block text-sm text-gray-300 mb-2">UF</label>
@@ -634,8 +676,8 @@ export const NovoProjetoPage: React.FC = () => {
                                   ...prev,
                                   coordenadas: {
                                     ...prev.coordenadas,
-                                    latitude: maskLatitude(e.target.value)
-                                  }
+                                    latitude: maskLatitude(e.target.value),
+                                  },
                                 }))
                               }
                               inputMode="decimal"
@@ -653,8 +695,8 @@ export const NovoProjetoPage: React.FC = () => {
                                   ...prev,
                                   coordenadas: {
                                     ...prev.coordenadas,
-                                    longitude: maskLongitude(e.target.value)
-                                  }
+                                    longitude: maskLongitude(e.target.value),
+                                  },
                                 }))
                               }
                               inputMode="decimal"
@@ -662,14 +704,17 @@ export const NovoProjetoPage: React.FC = () => {
                               className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                             />
                           </div>
-
                         </div>
 
                         <div className="md:col-span-2">
-                          <label className="block text-sm text-gray-300 mb-2">Link do Google Maps</label>
+                          <label className="block text-sm text-gray-300 mb-2">
+                            Link do Google Maps
+                          </label>
                           <input
                             value={detalhesProjeto.linkMapa}
-                            onChange={(e) => setDetalhesProjeto((prev) => ({ ...prev, linkMapa: e.target.value }))}
+                            onChange={(e) =>
+                              setDetalhesProjeto((prev) => ({ ...prev, linkMapa: e.target.value }))
+                            }
                             placeholder="https://maps.google.com/..."
                             className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
@@ -685,7 +730,10 @@ export const NovoProjetoPage: React.FC = () => {
                         <input
                           value={enderecoProjeto.cep}
                           onChange={(e) =>
-                            setEnderecoProjeto((prev) => ({ ...prev, cep: maskCep(e.target.value) }))
+                            setEnderecoProjeto((prev) => ({
+                              ...prev,
+                              cep: maskCep(e.target.value),
+                            }))
                           }
                           onBlur={() =>
                             void fillAddressFromCep(enderecoProjeto.cep, (endereco) =>
@@ -696,8 +744,8 @@ export const NovoProjetoPage: React.FC = () => {
                                 complemento: prev.complemento || endereco.complemento,
                                 bairro: endereco.bairro || prev.bairro,
                                 cidade: endereco.cidade || prev.cidade,
-                                estado: endereco.estado || prev.estado
-                              }))
+                                estado: endereco.estado || prev.estado,
+                              })),
                             )
                           }
                           inputMode="numeric"
@@ -710,7 +758,9 @@ export const NovoProjetoPage: React.FC = () => {
                         <label className="block text-sm text-gray-300 mb-2">Numero</label>
                         <input
                           value={enderecoProjeto.numero}
-                          onChange={(e) => setEnderecoProjeto((prev) => ({ ...prev, numero: e.target.value }))}
+                          onChange={(e) =>
+                            setEnderecoProjeto((prev) => ({ ...prev, numero: e.target.value }))
+                          }
                           className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
                       </div>
@@ -719,7 +769,9 @@ export const NovoProjetoPage: React.FC = () => {
                         <label className="block text-sm text-gray-300 mb-2">Logradouro</label>
                         <input
                           value={enderecoProjeto.logradouro}
-                          onChange={(e) => setEnderecoProjeto((prev) => ({ ...prev, logradouro: e.target.value }))}
+                          onChange={(e) =>
+                            setEnderecoProjeto((prev) => ({ ...prev, logradouro: e.target.value }))
+                          }
                           className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
                       </div>
@@ -728,7 +780,9 @@ export const NovoProjetoPage: React.FC = () => {
                         <label className="block text-sm text-gray-300 mb-2">Complemento</label>
                         <input
                           value={enderecoProjeto.complemento}
-                          onChange={(e) => setEnderecoProjeto((prev) => ({ ...prev, complemento: e.target.value }))}
+                          onChange={(e) =>
+                            setEnderecoProjeto((prev) => ({ ...prev, complemento: e.target.value }))
+                          }
                           className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
                       </div>
@@ -737,7 +791,9 @@ export const NovoProjetoPage: React.FC = () => {
                         <label className="block text-sm text-gray-300 mb-2">Bairro</label>
                         <input
                           value={enderecoProjeto.bairro}
-                          onChange={(e) => setEnderecoProjeto((prev) => ({ ...prev, bairro: e.target.value }))}
+                          onChange={(e) =>
+                            setEnderecoProjeto((prev) => ({ ...prev, bairro: e.target.value }))
+                          }
                           className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
                       </div>
@@ -746,7 +802,9 @@ export const NovoProjetoPage: React.FC = () => {
                         <label className="block text-sm text-gray-300 mb-2">Cidade</label>
                         <input
                           value={enderecoProjeto.cidade}
-                          onChange={(e) => setEnderecoProjeto((prev) => ({ ...prev, cidade: e.target.value }))}
+                          onChange={(e) =>
+                            setEnderecoProjeto((prev) => ({ ...prev, cidade: e.target.value }))
+                          }
                           className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
                       </div>
@@ -758,7 +816,10 @@ export const NovoProjetoPage: React.FC = () => {
                             maxLength={2}
                             value={enderecoProjeto.estado}
                             onChange={(e) =>
-                              setEnderecoProjeto((prev) => ({ ...prev, estado: e.target.value.toUpperCase() }))
+                              setEnderecoProjeto((prev) => ({
+                                ...prev,
+                                estado: e.target.value.toUpperCase(),
+                              }))
                             }
                             className="w-full rounded border border-gray-600 bg-gray-800 text-center text-gray-100 px-2 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
@@ -773,8 +834,8 @@ export const NovoProjetoPage: React.FC = () => {
                                 ...prev,
                                 coordenadas: {
                                   ...prev.coordenadas,
-                                  latitude: maskLatitude(e.target.value)
-                                }
+                                  latitude: maskLatitude(e.target.value),
+                                },
                               }))
                             }
                             inputMode="decimal"
@@ -792,8 +853,8 @@ export const NovoProjetoPage: React.FC = () => {
                                 ...prev,
                                 coordenadas: {
                                   ...prev.coordenadas,
-                                  longitude: maskLongitude(e.target.value)
-                                }
+                                  longitude: maskLongitude(e.target.value),
+                                },
                               }))
                             }
                             inputMode="decimal"
@@ -804,10 +865,14 @@ export const NovoProjetoPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-gray-300 mb-2">Link do Google Maps</label>
+                        <label className="block text-sm text-gray-300 mb-2">
+                          Link do Google Maps
+                        </label>
                         <input
                           value={detalhesProjeto.linkMapa}
-                          onChange={(e) => setDetalhesProjeto((prev) => ({ ...prev, linkMapa: e.target.value }))}
+                          onChange={(e) =>
+                            setDetalhesProjeto((prev) => ({ ...prev, linkMapa: e.target.value }))
+                          }
                           placeholder="https://maps.google.com/..."
                           className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                         />
@@ -840,7 +905,9 @@ export const NovoProjetoPage: React.FC = () => {
           {passoAtual === 3 && (
             <div className="space-y-8">
               <h2 className="text-2xl font-bold text-gray-100">
-                {dadosBasicos.tipoProjeto === 'fotovoltaico' ? 'Detalhes do Projeto Fotovoltaico' : 'Detalhes do Projeto'}
+                {dadosBasicos.tipoProjeto === 'fotovoltaico'
+                  ? 'Detalhes do Projeto Fotovoltaico'
+                  : 'Detalhes do Projeto'}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -848,7 +915,9 @@ export const NovoProjetoPage: React.FC = () => {
                   <label className="block text-sm text-gray-300 mb-2">Integrador</label>
                   <select
                     value={dadosBasicos.integrador}
-                    onChange={(e) => setDadosBasicos((prev) => ({ ...prev, integrador: e.target.value }))}
+                    onChange={(e) =>
+                      setDadosBasicos((prev) => ({ ...prev, integrador: e.target.value }))
+                    }
                     className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                   >
                     <option value="">Selecione...</option>
@@ -876,7 +945,9 @@ export const NovoProjetoPage: React.FC = () => {
                             checked={checked}
                             onChange={(e) =>
                               setServicosSelecionados((prev) =>
-                                e.target.checked ? [...prev, servico] : prev.filter((item) => item !== servico)
+                                e.target.checked
+                                  ? [...prev, servico]
+                                  : prev.filter((item) => item !== servico),
                               )
                             }
                             className="h-4 w-4 rounded border-gray-500 bg-gray-900 text-blue-500 focus:ring-blue-500"
@@ -893,13 +964,16 @@ export const NovoProjetoPage: React.FC = () => {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-300 mb-2">Modalidade de Geracao</label>
+                      <label className="block text-sm text-gray-300 mb-2">
+                        Modalidade de Geracao
+                      </label>
                       <select
                         value={detalhesProjeto.modalidadeGeracao}
                         onChange={(e) =>
                           setDetalhesProjeto((prev) => ({
                             ...prev,
-                            modalidadeGeracao: e.target.value as DadosDetalhesForm['modalidadeGeracao']
+                            modalidadeGeracao: e.target
+                              .value as DadosDetalhesForm['modalidadeGeracao'],
                           }))
                         }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -917,7 +991,7 @@ export const NovoProjetoPage: React.FC = () => {
                         onChange={(e) =>
                           setDetalhesProjeto((prev) => ({
                             ...prev,
-                            projetoNovo: e.target.value as DadosDetalhesForm['projetoNovo']
+                            projetoNovo: e.target.value as DadosDetalhesForm['projetoNovo'],
                           }))
                         }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -936,8 +1010,8 @@ export const NovoProjetoPage: React.FC = () => {
                         onChange={(e) =>
                           setDetalhesProjeto((prev) => ({
                             ...prev,
-                            zeroGridControleExportacao:
-                              e.target.value as DadosDetalhesForm['zeroGridControleExportacao']
+                            zeroGridControleExportacao: e.target
+                              .value as DadosDetalhesForm['zeroGridControleExportacao'],
                           }))
                         }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -954,7 +1028,8 @@ export const NovoProjetoPage: React.FC = () => {
                         onChange={(e) =>
                           setDetalhesProjeto((prev) => ({
                             ...prev,
-                            projetoFastTrack: e.target.value as DadosDetalhesForm['projetoFastTrack']
+                            projetoFastTrack: e.target
+                              .value as DadosDetalhesForm['projetoFastTrack'],
                           }))
                         }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -967,8 +1042,14 @@ export const NovoProjetoPage: React.FC = () => {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-3xl font-semibold text-gray-100">Modulos Fotovoltaicos</h3>
-                      <Button variant="secondary" size="sm" onClick={() => setModulos((prev) => [...prev, buildItemVazio()])}>
+                      <h3 className="text-3xl font-semibold text-gray-100">
+                        Modulos Fotovoltaicos
+                      </h3>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setModulos((prev) => [...prev, buildItemVazio()])}
+                      >
                         <Plus className="h-4 w-4 mr-1" />
                         Adicionar
                       </Button>
@@ -984,13 +1065,25 @@ export const NovoProjetoPage: React.FC = () => {
                         <div key={item.id} className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           <input
                             value={item.quantidade}
-                            onChange={(e) => handleModuloChange(item.id, 'quantidade', maskNumeric(e.target.value, 5))}
+                            onChange={(e) =>
+                              handleModuloChange(
+                                item.id,
+                                'quantidade',
+                                maskNumeric(e.target.value, 5),
+                              )
+                            }
                             inputMode="numeric"
                             className="rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
                           <input
                             value={item.potencia}
-                            onChange={(e) => handleModuloChange(item.id, 'potencia', maskNumeric(e.target.value, 6))}
+                            onChange={(e) =>
+                              handleModuloChange(
+                                item.id,
+                                'potencia',
+                                maskNumeric(e.target.value, 6),
+                              )
+                            }
                             inputMode="numeric"
                             className="rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
@@ -1011,7 +1104,9 @@ export const NovoProjetoPage: React.FC = () => {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-3xl font-semibold text-gray-100">Inversores Fotovoltaicos</h3>
+                      <h3 className="text-3xl font-semibold text-gray-100">
+                        Inversores Fotovoltaicos
+                      </h3>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1032,13 +1127,25 @@ export const NovoProjetoPage: React.FC = () => {
                         <div key={item.id} className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           <input
                             value={item.quantidade}
-                            onChange={(e) => handleInversorChange(item.id, 'quantidade', maskNumeric(e.target.value, 5))}
+                            onChange={(e) =>
+                              handleInversorChange(
+                                item.id,
+                                'quantidade',
+                                maskNumeric(e.target.value, 5),
+                              )
+                            }
                             inputMode="numeric"
                             className="rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
                           <input
                             value={item.potencia}
-                            onChange={(e) => handleInversorChange(item.id, 'potencia', maskNumeric(e.target.value, 6))}
+                            onChange={(e) =>
+                              handleInversorChange(
+                                item.id,
+                                'potencia',
+                                maskNumeric(e.target.value, 6),
+                              )
+                            }
                             inputMode="numeric"
                             className="rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
@@ -1049,7 +1156,9 @@ export const NovoProjetoPage: React.FC = () => {
                           />
                           <input
                             value={item.modelo}
-                            onChange={(e) => handleInversorChange(item.id, 'modelo', e.target.value)}
+                            onChange={(e) =>
+                              handleInversorChange(item.id, 'modelo', e.target.value)
+                            }
                             className="rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
                         </div>
@@ -1060,17 +1169,25 @@ export const NovoProjetoPage: React.FC = () => {
                   <div className="rounded bg-blue-900/20 border border-blue-800/40 px-4 py-4">
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                       <div>
-                        <p className="text-sm uppercase tracking-wide text-blue-300">Potencia total dos modulos</p>
+                        <p className="text-sm uppercase tracking-wide text-blue-300">
+                          Potencia total dos modulos
+                        </p>
                         <p className="text-blue-100 text-2xl mt-1">{potenciaTotalModulosW} W</p>
                       </div>
                       <div>
-                        <p className="text-sm uppercase tracking-wide text-blue-300">Potencia total dos inversores</p>
+                        <p className="text-sm uppercase tracking-wide text-blue-300">
+                          Potencia total dos inversores
+                        </p>
                         <p className="text-blue-100 text-2xl mt-1">{potenciaTotalInversoresW} W</p>
                       </div>
                       <div>
-                        <p className="text-sm uppercase tracking-wide text-blue-300">Potencia total do sistema</p>
+                        <p className="text-sm uppercase tracking-wide text-blue-300">
+                          Potencia total do sistema
+                        </p>
                         <p className="text-blue-100 text-2xl mt-1">{potenciaTotalSistemaW} W</p>
-                        <p className="mt-1 text-xs text-blue-200/80">Resultado considera a menor potencia entre modulos e inversores.</p>
+                        <p className="mt-1 text-xs text-blue-200/80">
+                          Resultado considera a menor potencia entre modulos e inversores.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1087,7 +1204,7 @@ export const NovoProjetoPage: React.FC = () => {
                         onChange={(e) =>
                           setDetalhesProjeto((prev) => ({
                             ...prev,
-                            projetoNovo: e.target.value as DadosDetalhesForm['projetoNovo']
+                            projetoNovo: e.target.value as DadosDetalhesForm['projetoNovo'],
                           }))
                         }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -1098,13 +1215,16 @@ export const NovoProjetoPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-gray-300 mb-2">Tensao de Fornecimento</label>
+                      <label className="block text-sm text-gray-300 mb-2">
+                        Tensao de Fornecimento
+                      </label>
                       <select
                         value={detalhesProjeto.tensaoFornecimento}
                         onChange={(e) =>
                           setDetalhesProjeto((prev) => ({
                             ...prev,
-                            tensaoFornecimento: e.target.value as DadosDetalhesForm['tensaoFornecimento']
+                            tensaoFornecimento: e.target
+                              .value as DadosDetalhesForm['tensaoFornecimento'],
                           }))
                         }
                         className="w-full rounded border border-gray-600 bg-gray-800 text-gray-100 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -1114,13 +1234,16 @@ export const NovoProjetoPage: React.FC = () => {
                         <option value="380/220V">380/220V</option>
                       </select>
                     </div>
-
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-2xl font-semibold text-gray-100">Quadro de Padrao de Entrada</h3>
-                      <p className="text-sm text-gray-400">Preencha quantidade e disjuntor nas linhas necessarias para o projeto EMUC.</p>
+                      <h3 className="text-2xl font-semibold text-gray-100">
+                        Quadro de Padrao de Entrada
+                      </h3>
+                      <p className="text-sm text-gray-400">
+                        Preencha quantidade e disjuntor nas linhas necessarias para o projeto EMUC.
+                      </p>
                     </div>
 
                     <div className="overflow-x-auto rounded border border-gray-700">
@@ -1138,16 +1261,28 @@ export const NovoProjetoPage: React.FC = () => {
                         <tbody className="divide-y divide-gray-800">
                           {padraoEntradaItens.map((item) => (
                             <tr key={item.id}>
-                              <td className="px-4 py-3 text-sm text-gray-200">{item.tipoLigacao}</td>
-                              <td className="px-4 py-3 text-sm text-gray-300">{item.classificacao}</td>
+                              <td className="px-4 py-3 text-sm text-gray-200">
+                                {item.tipoLigacao}
+                              </td>
                               <td className="px-4 py-3 text-sm text-gray-300">
-                                {formatCurrencyBRL(tabelaPrecoPadraoEntradaMap[`${item.classificacao}|${item.tipoLigacao}`] ?? 0)}
+                                {item.classificacao}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-300">
+                                {formatCurrencyBRL(
+                                  tabelaPrecoPadraoEntradaMap[
+                                    `${item.classificacao}|${item.tipoLigacao}`
+                                  ] ?? 0,
+                                )}
                               </td>
                               <td className="px-4 py-3">
                                 <input
                                   value={item.quantidade}
                                   onChange={(e) =>
-                                    handlePadraoEntradaChange(item.id, 'quantidade', maskNumeric(e.target.value, 4))
+                                    handlePadraoEntradaChange(
+                                      item.id,
+                                      'quantidade',
+                                      maskNumeric(e.target.value, 4),
+                                    )
                                   }
                                   inputMode="numeric"
                                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -1156,7 +1291,9 @@ export const NovoProjetoPage: React.FC = () => {
                               <td className="px-4 py-3">
                                 <input
                                   value={item.disjuntor}
-                                  onChange={(e) => handlePadraoEntradaChange(item.id, 'disjuntor', e.target.value)}
+                                  onChange={(e) =>
+                                    handlePadraoEntradaChange(item.id, 'disjuntor', e.target.value)
+                                  }
                                   placeholder="Ex: 63A"
                                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                                 />
@@ -1164,7 +1301,9 @@ export const NovoProjetoPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-300">
                                 {formatCurrencyBRL(
                                   (Number(item.quantidade) || 0) *
-                                    (tabelaPrecoPadraoEntradaMap[`${item.classificacao}|${item.tipoLigacao}`] ?? 0)
+                                    (tabelaPrecoPadraoEntradaMap[
+                                      `${item.classificacao}|${item.tipoLigacao}`
+                                    ] ?? 0),
                                 )}
                               </td>
                             </tr>
@@ -1205,13 +1344,16 @@ export const NovoProjetoPage: React.FC = () => {
                 </p>
                 {valorProjetoEditado && (
                   <p className="mt-1 text-xs text-amber-300">
-                    Valor manual ativo. Alteracoes de potencia nao substituem o valor ate voce reaplicar o sugerido.
+                    Valor manual ativo. Alteracoes de potencia nao substituem o valor ate voce
+                    reaplicar o sugerido.
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm text-gray-300 mb-2">Observacoes / Comentarios</label>
+                <label className="block text-sm text-gray-300 mb-2">
+                  Observacoes / Comentarios
+                </label>
                 <textarea
                   value={detalhesProjeto.observacoes}
                   onChange={(e) =>
@@ -1228,9 +1370,12 @@ export const NovoProjetoPage: React.FC = () => {
                   <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <h4 className="text-lg font-semibold text-gray-100">Reaproveitar documentos do cliente</h4>
+                        <h4 className="text-lg font-semibold text-gray-100">
+                          Reaproveitar documentos do cliente
+                        </h4>
                         <p className="mt-1 text-sm text-gray-400">
-                          {clienteSelecionadoDetalhe.nome} ja possui {clienteSelecionadoDetalhe.documentos.length} documento(s) cadastrado(s).
+                          {clienteSelecionadoDetalhe.nome} ja possui{' '}
+                          {clienteSelecionadoDetalhe.documentos.length} documento(s) cadastrado(s).
                         </p>
                       </div>
                       <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs text-cyan-200">
@@ -1250,7 +1395,7 @@ export const NovoProjetoPage: React.FC = () => {
                               setSelectedCustomerDocumentIds((current) =>
                                 event.target.checked
                                   ? [...current, documento.id]
-                                  : current.filter((id) => id !== documento.id)
+                                  : current.filter((id) => id !== documento.id),
                               )
                             }
                             className="mt-1"
@@ -1294,7 +1439,11 @@ export const NovoProjetoPage: React.FC = () => {
                 <Button variant="outline" onClick={() => setPassoAtual(2)} disabled={salvando}>
                   Voltar
                 </Button>
-                <Button onClick={handleCriarProjeto} loading={salvando} disabled={!validarPasso3() && !salvando}>
+                <Button
+                  onClick={handleCriarProjeto}
+                  loading={salvando}
+                  disabled={!validarPasso3() && !salvando}
+                >
                   Criar Projeto
                 </Button>
               </div>

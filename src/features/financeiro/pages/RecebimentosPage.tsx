@@ -16,14 +16,39 @@ interface Recebimento {
 }
 
 const recebimentosMock: Recebimento[] = [
-  { id: '1', cliente: 'Carlos Santos', projeto: 'UFV Residencial 12kWp', previsao: '2026-02-20', valor: 7800, status: 'a_receber' },
-  { id: '2', cliente: 'Condominio Vale Verde', projeto: 'Sistema compartilhado 75kWp', previsao: '2026-02-12', valor: 24500, status: 'vencido' },
-  { id: '3', cliente: 'Mercado Nova Era', projeto: 'Retrofit comercial 30kWp', previsao: '2026-02-04', valor: 11200, status: 'recebido' }
+  {
+    id: '1',
+    cliente: 'Carlos Santos',
+    projeto: 'UFV Residencial 12kWp',
+    previsao: '2026-02-20',
+    valor: 7800,
+    status: 'a_receber',
+  },
+  {
+    id: '2',
+    cliente: 'Condominio Vale Verde',
+    projeto: 'Sistema compartilhado 75kWp',
+    previsao: '2026-02-12',
+    valor: 24500,
+    status: 'vencido',
+  },
+  {
+    id: '3',
+    cliente: 'Mercado Nova Era',
+    projeto: 'Retrofit comercial 30kWp',
+    previsao: '2026-02-04',
+    valor: 11200,
+    status: 'recebido',
+  },
 ];
 
 export const RecebimentosPage: React.FC = () => {
-  const totalPrevisto = recebimentosMock.filter((item) => item.status !== 'recebido').reduce((sum, item) => sum + item.valor, 0);
-  const totalRecebido = recebimentosMock.filter((item) => item.status === 'recebido').reduce((sum, item) => sum + item.valor, 0);
+  const totalPrevisto = recebimentosMock
+    .filter((item) => item.status !== 'recebido')
+    .reduce((sum, item) => sum + item.valor, 0);
+  const totalRecebido = recebimentosMock
+    .filter((item) => item.status === 'recebido')
+    .reduce((sum, item) => sum + item.valor, 0);
 
   const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
@@ -44,7 +69,9 @@ export const RecebimentosPage: React.FC = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Recebimentos</h1>
-          <p className="text-gray-400 mt-1">Esboco inicial para contas a receber por cliente e projeto.</p>
+          <p className="text-gray-400 mt-1">
+            Esboco inicial para contas a receber por cliente e projeto.
+          </p>
         </div>
         <div className="flex gap-2">
           <Link to="/financeiro">
@@ -74,7 +101,9 @@ export const RecebimentosPage: React.FC = () => {
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">Recebido no periodo</p>
-              <p className="text-2xl font-bold text-green-400">{formatCurrencyBRL(totalRecebido)}</p>
+              <p className="text-2xl font-bold text-green-400">
+                {formatCurrencyBRL(totalRecebido)}
+              </p>
             </div>
             <TrendUp className="h-8 w-8 text-green-400" />
           </CardContent>
@@ -82,7 +111,9 @@ export const RecebimentosPage: React.FC = () => {
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-400">Proximo passo</p>
-            <p className="text-gray-100 mt-2">Adicionar regras de cobranca, juros e comprovantes.</p>
+            <p className="text-gray-100 mt-2">
+              Adicionar regras de cobranca, juros e comprovantes.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -109,9 +140,13 @@ export const RecebimentosPage: React.FC = () => {
                     <td className="py-3 px-4 text-gray-100">{item.cliente}</td>
                     <td className="py-3 px-4 text-gray-100">{item.projeto}</td>
                     <td className="py-3 px-4 text-gray-100">{formatDateBR(item.previsao)}</td>
-                    <td className="py-3 px-4 text-gray-100 font-medium">{formatCurrencyBRL(item.valor)}</td>
+                    <td className="py-3 px-4 text-gray-100 font-medium">
+                      {formatCurrencyBRL(item.valor)}
+                    </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}
+                      >
                         {getStatusLabel(item.status)}
                       </span>
                     </td>
@@ -125,4 +160,3 @@ export const RecebimentosPage: React.FC = () => {
     </div>
   );
 };
-

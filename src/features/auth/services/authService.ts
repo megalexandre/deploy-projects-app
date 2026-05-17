@@ -59,7 +59,7 @@ const mapBackendCurrentUser = (response: BackendCurrentUserResponse): User => ({
   name: response.name,
   email: response.email,
   role: normalizeRole(response.profile),
-  isAdmin: isAdminRole(normalizeRole(response.profile))
+  isAdmin: isAdminRole(normalizeRole(response.profile)),
 });
 
 export const authService = {
@@ -77,7 +77,7 @@ export const authService = {
 
       return {
         user: currentUser,
-        token: loginResponse.token
+        token: loginResponse.token,
       };
     } catch (error) {
       clearPersistedSession();
@@ -90,14 +90,14 @@ export const authService = {
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      profile: userData.profile ?? 'admin'
+      profile: userData.profile ?? 'admin',
     };
 
     // @todo change all rotes do proper path and remove this endpoint
     await apiClient.post<BackendRegisterResponse>('/auth/register', registerPayload);
     return authService.login({
       email: userData.email,
-      password: userData.password
+      password: userData.password,
     });
   },
 
@@ -112,5 +112,5 @@ export const authService = {
     } catch {
       return null;
     }
-  }
+  },
 };

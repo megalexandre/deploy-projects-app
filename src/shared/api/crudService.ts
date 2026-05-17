@@ -11,19 +11,20 @@ export interface CrudService<TEntity, TCreate, TUpdate = Partial<TCreate>> {
 }
 
 export const createCrudService = <TEntity, TCreate, TUpdate = Partial<TCreate>>(
-  resourcePath: string
+  resourcePath: string,
 ): CrudService<TEntity, TCreate, TUpdate> => {
   const base = resourcePath.startsWith('/') ? resourcePath : `/${resourcePath}`;
   const toQueryRecord = (params?: ApiListParams) =>
     params as Record<string, string | number | boolean | undefined | null> | undefined;
 
   return {
-    list: (params) => apiClient.get<TEntity[] | PaginatedResponse<TEntity>>(base, { query: toQueryRecord(params) }),
+    list: (params) =>
+      apiClient.get<TEntity[] | PaginatedResponse<TEntity>>(base, { query: toQueryRecord(params) }),
     getById: (id) => apiClient.get<TEntity>(`${base}/${id}`),
     create: (payload) => apiClient.post<TEntity>(base, payload),
     update: (id, payload) => apiClient.put<TEntity>(`${base}/${id}`, payload),
     remove: async (id) => {
       await apiClient.delete(`${base}/${id}`);
-    }
+    },
   };
 };

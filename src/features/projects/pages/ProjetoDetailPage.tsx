@@ -195,11 +195,15 @@ export const ProjetoDetailPage: React.FC = () => {
   const formatTelefone = (value?: string) => (value ? maskPhoneBR(onlyDigits(value)) : '-');
   const reusedDocuments = useMemo(
     () =>
-      (clienteDetalhe?.documentos ?? []).filter((documento) => selectedCustomerDocumentIds.includes(documento.id)),
-    [clienteDetalhe?.documentos, selectedCustomerDocumentIds]
+      (clienteDetalhe?.documentos ?? []).filter((documento) =>
+        selectedCustomerDocumentIds.includes(documento.id),
+      ),
+    [clienteDetalhe?.documentos, selectedCustomerDocumentIds],
   );
-  const potenciaTotalModulos = projeto?.modulos.reduce((total, item) => total + item.quantidade * item.potencia, 0) ?? 0;
-  const potenciaTotalInversores = projeto?.inversores.reduce((total, item) => total + item.quantidade * item.potencia, 0) ?? 0;
+  const potenciaTotalModulos =
+    projeto?.modulos.reduce((total, item) => total + item.quantidade * item.potencia, 0) ?? 0;
+  const potenciaTotalInversores =
+    projeto?.inversores.reduce((total, item) => total + item.quantidade * item.potencia, 0) ?? 0;
   const potenciaTotalSistema =
     potenciaTotalModulos > 0 && potenciaTotalInversores > 0
       ? Math.min(potenciaTotalModulos, potenciaTotalInversores)
@@ -238,15 +242,20 @@ export const ProjetoDetailPage: React.FC = () => {
 
       if (selectedFiles.length > 0) {
         const uploadedFiles = await filesService.uploadFiles(projeto.id, selectedFiles);
-        nextDocuments = mergeDocuments(nextDocuments, uploadedFiles.map((uploadedFile): Documento => ({
-          id: uploadedFile.id,
-          fileId: uploadedFile.id,
-          nome: uploadedFile.fileName,
-          tipo: 'Documento',
-          dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
-          tamanho: uploadedFile.size,
-          url: uploadedFile.urlS3
-        })));
+        nextDocuments = mergeDocuments(
+          nextDocuments,
+          uploadedFiles.map(
+            (uploadedFile): Documento => ({
+              id: uploadedFile.id,
+              fileId: uploadedFile.id,
+              nome: uploadedFile.fileName,
+              tipo: 'Documento',
+              dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
+              tamanho: uploadedFile.size,
+              url: uploadedFile.urlS3,
+            }),
+          ),
+        );
       }
 
       if (reusedDocuments.length > 0) {
@@ -267,7 +276,7 @@ export const ProjetoDetailPage: React.FC = () => {
     { id: 'dados', label: 'Dados do Projeto' },
     { id: 'tecnicos', label: 'Dados Tecnicos' },
     { id: 'timeline', label: 'Linha do Tempo' },
-    { id: 'documentos', label: 'Documentos' }
+    { id: 'documentos', label: 'Documentos' },
   ];
 
   return (
@@ -285,7 +294,9 @@ export const ProjetoDetailPage: React.FC = () => {
             <p className="text-gray-400 mt-1">{projeto.cliente.nome}</p>
           </div>
         </div>
-        <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(projeto.status)}`}>
+        <span
+          className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(projeto.status)}`}
+        >
           {getStatusText(projeto.status)}
         </span>
       </div>
@@ -367,7 +378,9 @@ export const ProjetoDetailPage: React.FC = () => {
                   <label className="text-sm font-medium text-gray-400">Link / Coordenadas</label>
                   <div className="space-y-1">
                     <p className="text-gray-100">
-                      {projeto.coordenadas ? `${projeto.coordenadas.latitude}, ${projeto.coordenadas.longitude}` : '-'}
+                      {projeto.coordenadas
+                        ? `${projeto.coordenadas.latitude}, ${projeto.coordenadas.longitude}`
+                        : '-'}
                     </p>
                     {projeto.endereco.link && (
                       <a
@@ -403,7 +416,9 @@ export const ProjetoDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-400">Modalidade</label>
-                  <p className="text-gray-100">{formatModalidade(projeto.dadosProjeto.modalidade)}</p>
+                  <p className="text-gray-100">
+                    {formatModalidade(projeto.dadosProjeto.modalidade)}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-400">Potencia do Sistema</label>
@@ -419,13 +434,17 @@ export const ProjetoDetailPage: React.FC = () => {
                 </div>
                 {projeto.tensaoFornecimento && (
                   <div>
-                    <label className="text-sm font-medium text-gray-400">Tensao de Fornecimento</label>
+                    <label className="text-sm font-medium text-gray-400">
+                      Tensao de Fornecimento
+                    </label>
                     <p className="text-gray-100">{projeto.tensaoFornecimento}</p>
                   </div>
                 )}
                 <div>
                   <label className="text-sm font-medium text-gray-400">Servicos</label>
-                  <p className="text-gray-100">{projeto.servicos?.length ? projeto.servicos.join(', ') : '-'}</p>
+                  <p className="text-gray-100">
+                    {projeto.servicos?.length ? projeto.servicos.join(', ') : '-'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -460,21 +479,31 @@ export const ProjetoDetailPage: React.FC = () => {
                   <p className="text-gray-100">{formatBinaryChoice(projeto.projetoNovo)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Zero Grid / Controle de Exportacao</label>
-                  <p className="text-gray-100">{formatBinaryChoice(projeto.zeroGridControleExportacao)}</p>
+                  <label className="text-sm font-medium text-gray-400">
+                    Zero Grid / Controle de Exportacao
+                  </label>
+                  <p className="text-gray-100">
+                    {formatBinaryChoice(projeto.zeroGridControleExportacao)}
+                  </p>
                 </div>
                 {projeto.tipoProjeto === 'fotovoltaico' && (
                   <>
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Potencia total dos Modulos</label>
+                      <label className="text-sm font-medium text-gray-400">
+                        Potencia total dos Modulos
+                      </label>
                       <p className="text-gray-100">{potenciaTotalModulos} W</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Potencia total dos Inversores</label>
+                      <label className="text-sm font-medium text-gray-400">
+                        Potencia total dos Inversores
+                      </label>
                       <p className="text-gray-100">{potenciaTotalInversores} W</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Potencia total do Sistema</label>
+                      <label className="text-sm font-medium text-gray-400">
+                        Potencia total do Sistema
+                      </label>
                       <p className="text-gray-100">{potenciaTotalSistema} W</p>
                     </div>
                   </>
@@ -506,23 +535,41 @@ export const ProjetoDetailPage: React.FC = () => {
                 <h4 className="text-lg font-semibold text-gray-100">Resumo Eletrico</h4>
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Tensao (V)</label>
-                    <p className="mt-2 text-2xl font-semibold text-gray-100">{projeto.dadosTecnicos.tensao || 0}V</p>
+                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Tensao (V)
+                    </label>
+                    <p className="mt-2 text-2xl font-semibold text-gray-100">
+                      {projeto.dadosTecnicos.tensao || 0}V
+                    </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Numero de Fases</label>
-                    <p className="mt-2 text-2xl font-semibold text-gray-100">{projeto.dadosTecnicos.numeroFases || '-'}</p>
+                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Numero de Fases
+                    </label>
+                    <p className="mt-2 text-2xl font-semibold text-gray-100">
+                      {projeto.dadosTecnicos.numeroFases || '-'}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Tipo de Ramal</label>
-                    <p className="mt-2 text-lg font-semibold text-gray-100">{projeto.dadosTecnicos.ramal || '-'}</p>
+                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Tipo de Ramal
+                    </label>
+                    <p className="mt-2 text-lg font-semibold text-gray-100">
+                      {projeto.dadosTecnicos.ramal || '-'}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Disjuntor</label>
-                    <p className="mt-2 text-lg font-semibold text-gray-100">{projeto.dadosTecnicos.disjuntor || '-'}</p>
+                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Disjuntor
+                    </label>
+                    <p className="mt-2 text-lg font-semibold text-gray-100">
+                      {projeto.dadosTecnicos.disjuntor || '-'}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Carga Instalada</label>
+                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Carga Instalada
+                    </label>
                     <p className="mt-2 text-2xl font-semibold text-gray-100">
                       {projeto.dadosTecnicos.cargaInstalada.toLocaleString('pt-BR')} W
                     </p>
@@ -532,7 +579,9 @@ export const ProjetoDetailPage: React.FC = () => {
                       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
                         Tensao de Fornecimento
                       </label>
-                      <p className="mt-2 text-lg font-semibold text-gray-100">{projeto.tensaoFornecimento}</p>
+                      <p className="mt-2 text-lg font-semibold text-gray-100">
+                        {projeto.tensaoFornecimento}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -540,24 +589,42 @@ export const ProjetoDetailPage: React.FC = () => {
 
               {projeto.padraoEntradaItens && projeto.padraoEntradaItens.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                  <h4 className="text-lg font-semibold text-gray-100">Quadro de Padrao de Entrada</h4>
+                  <h4 className="text-lg font-semibold text-gray-100">
+                    Quadro de Padrao de Entrada
+                  </h4>
                   <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Tipo de Ligacao</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Classificacao</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Quantidade</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Disjuntor</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                            Tipo de Ligacao
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                            Classificacao
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                            Quantidade
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                            Disjuntor
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-700">
                         {projeto.padraoEntradaItens.map((item) => (
                           <tr key={item.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{item.tipoLigacao}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{item.classificacao}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{item.quantidade}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{item.disjuntor || '-'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {item.tipoLigacao}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {item.classificacao}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {item.quantidade}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {item.disjuntor || '-'}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -577,21 +644,41 @@ export const ProjetoDetailPage: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fabricante</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Modelo</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Potencia (W)</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Quantidade</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Potencia Total (kWp)</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Fabricante
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Modelo
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Potencia (W)
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Quantidade
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Potencia Total (kWp)
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-700">
                         {projeto.dadosTecnicos.modulos.map((modulo) => (
                           <tr key={modulo.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{modulo.fabricante}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{modulo.modelo}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{modulo.potencia}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{modulo.quantidade}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{modulo.potenciaPico}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {modulo.fabricante}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {modulo.modelo}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {modulo.potencia}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {modulo.quantidade}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {modulo.potenciaPico}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -611,21 +698,41 @@ export const ProjetoDetailPage: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fabricante</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Modelo</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Potencia (W)</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Quantidade</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Potencia Total (kW)</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Fabricante
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Modelo
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Potencia (W)
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Quantidade
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Potencia Total (kW)
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-700">
                         {projeto.dadosTecnicos.inversores.map((inversor) => (
                           <tr key={inversor.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{inversor.fabricante}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{inversor.modelo}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{inversor.potencia}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{inversor.quantidade}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{inversor.potenciaTotal}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {inversor.fabricante}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {inversor.modelo}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {inversor.potencia}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {inversor.quantidade}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {inversor.potenciaTotal}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -645,19 +752,35 @@ export const ProjetoDetailPage: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Percentual</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">UC</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Classe</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Endereco</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Percentual
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            UC
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Classe
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Endereco
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-700">
                         {projeto.dadosTecnicos.divisaoCreditos.map((credito, index) => (
                           <tr key={`${credito.uc}-${index}`}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">{credito.percentual}%</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{credito.uc}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{credito.classe}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{credito.endereco}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                              {credito.percentual}%
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {credito.uc}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {credito.classe}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                              {credito.endereco}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -687,7 +810,9 @@ export const ProjetoDetailPage: React.FC = () => {
                           <h4 className="text-lg font-medium text-gray-100">{item.etapa}</h4>
                           <span className="text-sm text-gray-400">{formatDate(item.data)}</span>
                         </div>
-                        {item.descricao && <p className="mt-1 text-sm text-gray-300">{item.descricao}</p>}
+                        {item.descricao && (
+                          <p className="mt-1 text-sm text-gray-300">{item.descricao}</p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -723,22 +848,38 @@ export const ProjetoDetailPage: React.FC = () => {
                 <div className="mb-6 rounded-xl border border-white/10 bg-slate-950/35 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-100">Reaproveitar documentos do cliente</h4>
-                      <p className="mt-1 text-xs text-slate-400">{clienteDetalhe.nome} possui {clienteDetalhe.documentos.length} documento(s) disponivel(is).</p>
+                      <h4 className="text-sm font-semibold text-slate-100">
+                        Reaproveitar documentos do cliente
+                      </h4>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {clienteDetalhe.nome} possui {clienteDetalhe.documentos.length} documento(s)
+                        disponivel(is).
+                      </p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => void handleSaveDocuments(null)} disabled={savingDocuments || reusedDocuments.length === 0}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void handleSaveDocuments(null)}
+                      disabled={savingDocuments || reusedDocuments.length === 0}
+                    >
                       Vincular selecionados
                     </Button>
                   </div>
                   <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                     {clienteDetalhe.documentos.map((documento) => (
-                      <label key={documento.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200">
+                      <label
+                        key={documento.id}
+                        className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200"
+                      >
                         <input
                           type="checkbox"
                           checked={selectedCustomerDocumentIds.includes(documento.id)}
                           onChange={(event) =>
                             setSelectedCustomerDocumentIds((current) =>
-                              event.target.checked ? [...current, documento.id] : current.filter((id) => id !== documento.id)
+                              event.target.checked
+                                ? [...current, documento.id]
+                                : current.filter((id) => id !== documento.id),
                             )
                           }
                           className="mt-1"
@@ -759,11 +900,21 @@ export const ProjetoDetailPage: React.FC = () => {
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead>
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Data de Upload</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tamanho</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Acoes</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Nome
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Tipo
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Data de Upload
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Tamanho
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Acoes
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
@@ -775,8 +926,12 @@ export const ProjetoDetailPage: React.FC = () => {
                               {documento.nome}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{documento.tipo}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{formatDate(documento.dataUpload)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            {documento.tipo}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            {formatDate(documento.dataUpload)}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             {(documento.tamanho / 1024 / 1024).toFixed(2)} MB
                           </td>

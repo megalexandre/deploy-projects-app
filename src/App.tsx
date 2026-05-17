@@ -40,7 +40,10 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={getIsAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route
+        path="/login"
+        element={getIsAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+      />
 
       <Route element={<ProtectedLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />

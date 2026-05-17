@@ -92,7 +92,12 @@ export const ConcessionairesPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button type="button" variant="outline" size="sm" onClick={() => handleEdit(item)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(item)}
+                      >
                         <PencilSimple className="mr-2 h-4 w-4" />
                         Editar
                       </Button>

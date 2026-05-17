@@ -1,5 +1,13 @@
 import { StatusProjeto } from '@/core/entities/projeto';
-import { maskCep, maskCpfOrCnpj, maskLatitude, maskLongitude, maskPhoneBR, onlyDigits, parseCoordinate } from '@/core/utils/masks';
+import {
+  maskCep,
+  maskCpfOrCnpj,
+  maskLatitude,
+  maskLongitude,
+  maskPhoneBR,
+  onlyDigits,
+  parseCoordinate,
+} from '@/core/utils/masks';
 import type {
   ClienteForm,
   DadosBasicosForm,
@@ -12,7 +20,7 @@ import type {
   ModoEnderecoProjeto,
   PadraoEntradaItemForm,
   Passo,
-  TipoDocumento
+  TipoDocumento,
 } from '@/features/projects/domain/types';
 import {
   ApiError,
@@ -26,9 +34,12 @@ import {
   type Concessionaire,
   type CreateProjectData,
   type Customer,
-  type User
+  type User,
 } from '@/services';
-import { buildTabelaPrecoPadraoEntradaMap, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import {
+  buildTabelaPrecoPadraoEntradaMap,
+  loadConfiguracoesSistema,
+} from '@/utils/configuracoesSistema';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,14 +47,14 @@ import { useNavigate } from 'react-router-dom';
 const integradoresPadrao = ['OPJ Engenharia', 'Parceiro Externo'];
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
-  { value: 'padrao_entrada' as const, label: 'Padrao de entrada' }
+  { value: 'padrao_entrada' as const, label: 'Padrao de entrada' },
 ];
 export const servicosDisponiveis = [
   'Ligacao Nova',
   'Aumento de Carga',
   'Troca de Titularidade',
   'Alteracao no Compartilhamento de creditos',
-  'Projeto Eletrico'
+  'Projeto Eletrico',
 ];
 
 export const documentosFotovoltaico: DocumentoCategoria[] = [
@@ -54,7 +65,7 @@ export const documentosFotovoltaico: DocumentoCategoria[] = [
   { key: 'foto_disjuntor_geral', label: 'Foto Disjuntor Geral' },
   { key: 'foto_interconexao', label: 'Foto Interconexao' },
   { key: 'numero_poste_tr', label: 'Numero do Poste / TR' },
-  { key: 'outros', label: 'Outros', maxFiles: 10 }
+  { key: 'outros', label: 'Outros', maxFiles: 10 },
 ];
 
 export const documentosEmucPessoaFisica: DocumentoCategoria[] = [
@@ -66,7 +77,7 @@ export const documentosEmucPessoaFisica: DocumentoCategoria[] = [
   { key: 'documento_cnh', label: 'CNH' },
   { key: 'documento_procuracao', label: 'Procuracao' },
   { key: 'conta_luz_terreno', label: 'Conta de luz do terreno' },
-  { key: 'outros', label: 'Outros', maxFiles: 10 }
+  { key: 'outros', label: 'Outros', maxFiles: 10 },
 ];
 
 export const documentosEmucPessoaJuridica: DocumentoCategoria[] = [
@@ -80,10 +91,12 @@ export const documentosEmucPessoaJuridica: DocumentoCategoria[] = [
   { key: 'documentacao_socios', label: 'Documentacao dos socios', maxFiles: 5 },
   { key: 'documento_procuracao', label: 'Procuracao' },
   { key: 'conta_luz_terreno', label: 'Conta de luz do terreno' },
-  { key: 'outros', label: 'Outros', maxFiles: 10 }
+  { key: 'outros', label: 'Outros', maxFiles: 10 },
 ];
 
-export const padraoEntradaLinhasBase: Array<Pick<PadraoEntradaItemForm, 'tipoLigacao' | 'classificacao'>> = [
+export const padraoEntradaLinhasBase: Array<
+  Pick<PadraoEntradaItemForm, 'tipoLigacao' | 'classificacao'>
+> = [
   { tipoLigacao: 'Monofasico', classificacao: 'Residencial' },
   { tipoLigacao: 'Bifasico', classificacao: 'Residencial' },
   { tipoLigacao: 'Trifasico', classificacao: 'Residencial' },
@@ -92,7 +105,7 @@ export const padraoEntradaLinhasBase: Array<Pick<PadraoEntradaItemForm, 'tipoLig
   { tipoLigacao: 'Trifasico', classificacao: 'Comercial / Industrial' },
   { tipoLigacao: 'Monofasico', classificacao: 'Condominio' },
   { tipoLigacao: 'Bifasico', classificacao: 'Condominio' },
-  { tipoLigacao: 'Trifasico', classificacao: 'Condominio' }
+  { tipoLigacao: 'Trifasico', classificacao: 'Condominio' },
 ];
 
 export const formatDocumento = (value: string) => maskCpfOrCnpj(value);
@@ -113,7 +126,7 @@ export const buildItemVazio = (): ItemEquipamentoForm => ({
   quantidade: '',
   potencia: '',
   marca: '',
-  modelo: ''
+  modelo: '',
 });
 
 const buildPadraoEntradaLinhas = (): PadraoEntradaItemForm[] =>
@@ -122,7 +135,7 @@ const buildPadraoEntradaLinhas = (): PadraoEntradaItemForm[] =>
     tipoLigacao: item.tipoLigacao,
     classificacao: item.classificacao,
     quantidade: '',
-    disjuntor: ''
+    disjuntor: '',
   }));
 
 const buildEnderecoVazio = (): EnderecoForm => ({
@@ -132,7 +145,7 @@ const buildEnderecoVazio = (): EnderecoForm => ({
   complemento: '',
   bairro: '',
   cidade: '',
-  estado: ''
+  estado: '',
 });
 
 const dataAtualIso = new Date().toISOString().split('T')[0];
@@ -143,24 +156,23 @@ const buildEnderecoCompleto = (endereco: EnderecoForm): string =>
     endereco.complemento.trim(),
     endereco.bairro.trim(),
     `${endereco.cidade.trim()}${endereco.estado.trim() ? ` - ${endereco.estado.trim().toUpperCase()}` : ''}`,
-    onlyDigits(endereco.cep).length === 8 ? `CEP ${maskCep(endereco.cep)}` : ''
+    onlyDigits(endereco.cep).length === 8 ? `CEP ${maskCep(endereco.cep)}` : '',
   ]
     .filter(Boolean)
     .join(', ');
 
-const getTipoDocumentoPorValor = (value?: string): TipoDocumento => (onlyDigits(value ?? '').length > 11 ? 'cnpj' : 'cpf');
+const getTipoDocumentoPorValor = (value?: string): TipoDocumento =>
+  onlyDigits(value ?? '').length > 11 ? 'cnpj' : 'cpf';
 
 const parseCurrencyInput = (value: string) => {
-  const normalized = value.includes(',')
-    ? value.replace(/\./g, '').replace(',', '.')
-    : value;
+  const normalized = value.includes(',') ? value.replace(/\./g, '').replace(',', '.') : value;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
 const getFaixaFotovoltaicaValor = (
   potencias: { watts: number; kilowatts: number },
-  faixas: Array<{ min: number; max: number; valor: number }>
+  faixas: Array<{ min: number; max: number; valor: number }>,
 ) => {
   if (
     !Number.isFinite(potencias.watts) ||
@@ -208,7 +220,7 @@ const normalizeEnderecoForm = (endereco?: Customer['endereco']): EnderecoForm =>
         complemento: endereco.complemento ?? '',
         bairro: endereco.bairro ?? '',
         cidade: endereco.cidade ?? '',
-        estado: endereco.estado ?? ''
+        estado: endereco.estado ?? '',
       }
     : buildEnderecoVazio();
 
@@ -234,7 +246,7 @@ export const useNovoProjeto = () => {
     concessionaria: '',
     numeroUc: '',
     tipoProjeto: '',
-    integrador: ''
+    integrador: '',
   });
   const [servicosSelecionados, setServicosSelecionados] = useState<string[]>([]);
   const [modoEnderecoProjeto, setModoEnderecoProjeto] = useState<ModoEnderecoProjeto>('cliente');
@@ -245,7 +257,7 @@ export const useNovoProjeto = () => {
     cpfCnpj: '',
     telefone: '',
     email: '',
-    endereco: buildEnderecoVazio()
+    endereco: buildEnderecoVazio(),
   });
 
   const [detalhesProjeto, setDetalhesProjeto] = useState<DadosDetalhesForm>({
@@ -256,12 +268,14 @@ export const useNovoProjeto = () => {
     linkMapa: '',
     coordenadas: { latitude: '', longitude: '' },
     tensaoFornecimento: '',
-    observacoes: ''
+    observacoes: '',
   });
 
   const [modulos, setModulos] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
   const [inversores, setInversores] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
-  const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(buildPadraoEntradaLinhas());
+  const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(
+    buildPadraoEntradaLinhas(),
+  );
   const [documentos, setDocumentos] = useState<Record<string, File[]>>({});
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
@@ -270,17 +284,25 @@ export const useNovoProjeto = () => {
 
   const tabelaPrecoPadraoEntradaMap = useMemo(
     () => buildTabelaPrecoPadraoEntradaMap(configuracoesSistema.tabelaPrecoPadraoEntrada),
-    [configuracoesSistema.tabelaPrecoPadraoEntrada]
+    [configuracoesSistema.tabelaPrecoPadraoEntrada],
   );
 
   const potenciaTotalModulosW = useMemo(
-    () => modulos.reduce((total, m) => total + (Number(m.quantidade) || 0) * (Number(m.potencia) || 0), 0),
-    [modulos]
+    () =>
+      modulos.reduce(
+        (total, m) => total + (Number(m.quantidade) || 0) * (Number(m.potencia) || 0),
+        0,
+      ),
+    [modulos],
   );
 
   const potenciaTotalInversoresW = useMemo(
-    () => inversores.reduce((total, inv) => total + (Number(inv.quantidade) || 0) * (Number(inv.potencia) || 0), 0),
-    [inversores]
+    () =>
+      inversores.reduce(
+        (total, inv) => total + (Number(inv.quantidade) || 0) * (Number(inv.potencia) || 0),
+        0,
+      ),
+    [inversores],
   );
 
   const potenciaTotalSistemaW = useMemo(() => {
@@ -292,7 +314,7 @@ export const useNovoProjeto = () => {
 
   const potenciaTotalSistemaKw = useMemo(
     () => Number((potenciaTotalSistemaW / 1000).toFixed(2)),
-    [potenciaTotalSistemaW]
+    [potenciaTotalSistemaW],
   );
 
   const precoFotovoltaicoAtual = useMemo(
@@ -300,11 +322,11 @@ export const useNovoProjeto = () => {
       getFaixaFotovoltaicaValor(
         {
           watts: potenciaTotalSistemaW,
-          kilowatts: potenciaTotalSistemaKw
+          kilowatts: potenciaTotalSistemaKw,
         },
-        configuracoesSistema.tabelaPrecoFotovoltaico
+        configuracoesSistema.tabelaPrecoFotovoltaico,
       ),
-    [configuracoesSistema.tabelaPrecoFotovoltaico, potenciaTotalSistemaKw, potenciaTotalSistemaW]
+    [configuracoesSistema.tabelaPrecoFotovoltaico, potenciaTotalSistemaKw, potenciaTotalSistemaW],
   );
 
   const custoCalculadoProjeto = useMemo(() => {
@@ -313,10 +335,16 @@ export const useNovoProjeto = () => {
     }
     return padraoEntradaItens.reduce((total, item) => {
       const quantidade = Number(item.quantidade) || 0;
-      const valorUnitario = tabelaPrecoPadraoEntradaMap[`${item.classificacao}|${item.tipoLigacao}`] ?? 0;
+      const valorUnitario =
+        tabelaPrecoPadraoEntradaMap[`${item.classificacao}|${item.tipoLigacao}`] ?? 0;
       return total + quantidade * valorUnitario;
     }, 0);
-  }, [dadosBasicos.tipoProjeto, padraoEntradaItens, precoFotovoltaicoAtual, tabelaPrecoPadraoEntradaMap]);
+  }, [
+    dadosBasicos.tipoProjeto,
+    padraoEntradaItens,
+    precoFotovoltaicoAtual,
+    tabelaPrecoPadraoEntradaMap,
+  ]);
 
   useEffect(() => {
     if (!valorProjetoEditado) {
@@ -334,7 +362,9 @@ export const useNovoProjeto = () => {
 
   const documentosTemplate = useMemo(() => {
     if (dadosBasicos.tipoProjeto === 'padrao_entrada') {
-      return tipoDocumentoCliente === 'cnpj' ? documentosEmucPessoaJuridica : documentosEmucPessoaFisica;
+      return tipoDocumentoCliente === 'cnpj'
+        ? documentosEmucPessoaJuridica
+        : documentosEmucPessoaFisica;
     }
     return documentosFotovoltaico;
   }, [dadosBasicos.tipoProjeto, tipoDocumentoCliente]);
@@ -344,7 +374,7 @@ export const useNovoProjeto = () => {
       documentosTemplate.reduce<Record<string, File[]>>((acc, item) => {
         acc[item.key] = prev[item.key] ?? [];
         return acc;
-      }, {})
+      }, {}),
     );
   }, [documentosTemplate]);
 
@@ -360,18 +390,21 @@ export const useNovoProjeto = () => {
         c.nome.toLowerCase().includes(query) ||
         onlyDigits(c.cpfCnpj).includes(onlyDigits(query)) ||
         c.email.toLowerCase().includes(query) ||
-        onlyDigits(c.telefone).includes(onlyDigits(query))
+        onlyDigits(c.telefone).includes(onlyDigits(query)),
     );
   }, [buscaCliente, clientes]);
 
   const clienteSelecionado = useMemo(
     () => clientes.find((c) => c.id === clienteSelecionadoId) ?? null,
-    [clienteSelecionadoId, clientes]
+    [clienteSelecionadoId, clientes],
   );
 
   const reusedCustomerDocuments = useMemo(
-    () => (clienteSelecionadoDetalhe?.documentos ?? []).filter((d) => selectedCustomerDocumentIds.includes(d.id)),
-    [clienteSelecionadoDetalhe?.documentos, selectedCustomerDocumentIds]
+    () =>
+      (clienteSelecionadoDetalhe?.documentos ?? []).filter((d) =>
+        selectedCustomerDocumentIds.includes(d.id),
+      ),
+    [clienteSelecionadoDetalhe?.documentos, selectedCustomerDocumentIds],
   );
 
   const enderecoClienteProjeto = useMemo(() => {
@@ -379,7 +412,8 @@ export const useNovoProjeto = () => {
     return normalizeEnderecoForm(clienteSelecionadoDetalhe?.endereco);
   }, [clienteForm.endereco, clienteSelecionadoDetalhe?.endereco, modoCliente]);
 
-  const enderecoProjetoAtual = modoEnderecoProjeto === 'cliente' ? enderecoClienteProjeto : enderecoProjeto;
+  const enderecoProjetoAtual =
+    modoEnderecoProjeto === 'cliente' ? enderecoClienteProjeto : enderecoProjeto;
   const enderecoClienteDisponivel = enderecoValido(enderecoClienteProjeto);
 
   useEffect(() => {
@@ -402,11 +436,7 @@ export const useNovoProjeto = () => {
       try {
         const users = await usersService.getAll();
         const names = Array.from(
-          new Set(
-            users
-              .map((user: User) => user.name.trim())
-              .filter((name) => name.length > 0)
-          )
+          new Set(users.map((user: User) => user.name.trim()).filter((name) => name.length > 0)),
         ).sort((left, right) => left.localeCompare(right, 'pt-BR'));
 
         if (names.length > 0) {
@@ -465,7 +495,14 @@ export const useNovoProjeto = () => {
 
   const fillAddressFromCep = async (
     cep: string,
-    updater: (address: { cep: string; logradouro: string; complemento: string; bairro: string; cidade: string; estado: string }) => void
+    updater: (address: {
+      cep: string;
+      logradouro: string;
+      complemento: string;
+      bairro: string;
+      cidade: string;
+      estado: string;
+    }) => void,
   ) => {
     if (onlyDigits(cep).length !== 8) return;
     try {
@@ -484,21 +521,29 @@ export const useNovoProjeto = () => {
     setInversores((prev) => prev.map((inv) => (inv.id === id ? { ...inv, [field]: value } : inv)));
   };
 
-  const handlePadraoEntradaChange = (id: string, field: 'quantidade' | 'disjuntor', value: string) => {
-    setPadraoEntradaItens((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+  const handlePadraoEntradaChange = (
+    id: string,
+    field: 'quantidade' | 'disjuntor',
+    value: string,
+  ) => {
+    setPadraoEntradaItens((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+    );
   };
 
   const handleDocumentosChange = (key: string, files: FileList | null) => {
     const categoria = documentosTemplate.find((item) => item.key === key);
     if (!categoria) return;
     const selecionados = Array.from(files ?? []);
-    const limitados = categoria.maxFiles ? selecionados.slice(0, categoria.maxFiles) : selecionados.slice(0, 1);
+    const limitados = categoria.maxFiles
+      ? selecionados.slice(0, categoria.maxFiles)
+      : selecionados.slice(0, 1);
     setDocumentos((prev) => ({ ...prev, [key]: limitados }));
   };
 
   const buildSelectedDocumentFiles = (): DocumentoSelecionado[] =>
     documentosTemplate.flatMap((categoria) =>
-      (documentos[categoria.key] ?? []).map((file) => ({ categoria: categoria.label, file }))
+      (documentos[categoria.key] ?? []).map((file) => ({ categoria: categoria.label, file })),
     );
 
   const buildModulosPayload = () =>
@@ -513,7 +558,7 @@ export const useNovoProjeto = () => {
           modelo: item.modelo.trim() || '-',
           potencia,
           quantidade,
-          potenciaPico: Number(((quantidade * potencia) / 1000).toFixed(2))
+          potenciaPico: Number(((quantidade * potencia) / 1000).toFixed(2)),
         };
       });
 
@@ -529,7 +574,7 @@ export const useNovoProjeto = () => {
           modelo: item.modelo.trim() || '-',
           potencia,
           quantidade,
-          potenciaTotal: Number(((quantidade * potencia) / 1000).toFixed(2))
+          potenciaTotal: Number(((quantidade * potencia) / 1000).toFixed(2)),
         };
       });
 
@@ -541,23 +586,43 @@ export const useNovoProjeto = () => {
     const telefoneValido = onlyDigits(clienteForm.telefone).length >= 10;
     const nomeValido = clienteForm.nome.trim().length >= 2;
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteForm.email.trim());
-    return nomeValido && emailValido && documentoLimpo.length === tamanhoDocumentoValido && telefoneValido && enderecoValido(clienteForm.endereco);
+    return (
+      nomeValido &&
+      emailValido &&
+      documentoLimpo.length === tamanhoDocumentoValido &&
+      telefoneValido &&
+      enderecoValido(clienteForm.endereco)
+    );
   };
 
   const validarPasso2 = () => {
-    const camposObrigatorios = [dadosBasicos.dataAbertura, dadosBasicos.concessionaria, dadosBasicos.numeroUc];
-    return camposObrigatorios.every((campo) => campo.trim() !== '') && dadosBasicos.tipoProjeto !== '' && enderecoValido(enderecoProjetoAtual);
+    const camposObrigatorios = [
+      dadosBasicos.dataAbertura,
+      dadosBasicos.concessionaria,
+      dadosBasicos.numeroUc,
+    ];
+    return (
+      camposObrigatorios.every((campo) => campo.trim() !== '') &&
+      dadosBasicos.tipoProjeto !== '' &&
+      enderecoValido(enderecoProjetoAtual)
+    );
   };
 
   const validarPasso3 = () => {
     const coordenadasValidas =
-      isValidLatitude(detalhesProjeto.coordenadas.latitude) && isValidLongitude(detalhesProjeto.coordenadas.longitude);
-    if (!coordenadasValidas || dadosBasicos.integrador.trim() === '' || servicosSelecionados.length === 0) return false;
+      isValidLatitude(detalhesProjeto.coordenadas.latitude) &&
+      isValidLongitude(detalhesProjeto.coordenadas.longitude);
+    if (
+      !coordenadasValidas ||
+      dadosBasicos.integrador.trim() === '' ||
+      servicosSelecionados.length === 0
+    )
+      return false;
     if (dadosBasicos.tipoProjeto === 'fotovoltaico') {
       return potenciaTotalModulosW > 0 && potenciaTotalInversoresW > 0 && potenciaTotalSistemaW > 0;
     }
     const temPadraoPreenchido = padraoEntradaItens.some(
-      (item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== ''
+      (item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== '',
     );
     return detalhesProjeto.tensaoFornecimento !== '' && temPadraoPreenchido;
   };
@@ -594,7 +659,7 @@ export const useNovoProjeto = () => {
       setErro(
         projetoFotovoltaico
           ? 'Preencha latitude e longitude em formato valido, alem de modulos e inversores, para calcular corretamente a potencia do sistema.'
-          : 'Preencha tensao, latitude e longitude em formato valido e ao menos uma linha do quadro de padrao de entrada.'
+          : 'Preencha tensao, latitude e longitude em formato valido e ao menos uma linha do quadro de padrao de entrada.',
       );
       setPassoAtual(3);
       return;
@@ -617,7 +682,7 @@ export const useNovoProjeto = () => {
           neighborhood: clienteForm.endereco.bairro.trim(),
           city: clienteForm.endereco.cidade.trim(),
           state: clienteForm.endereco.estado.trim().toLowerCase(),
-          link: ''
+          link: '',
         });
 
         const novoCliente = await customersService.create({
@@ -625,7 +690,7 @@ export const useNovoProjeto = () => {
           addressId: enderecoCliente.id,
           cpfCnpj: onlyDigits(clienteForm.cpfCnpj),
           telefone: onlyDigits(clienteForm.telefone),
-          email: clienteForm.email.trim()
+          email: clienteForm.email.trim(),
         });
         clienteId = novoCliente.id;
         clienteAddressId = novoCliente.addressId ?? enderecoCliente.id;
@@ -652,19 +717,23 @@ export const useNovoProjeto = () => {
           state: enderecoProjetoAtual.estado.trim().toLowerCase(),
           link:
             detalhesProjeto.linkMapa.trim() ||
-            `https://maps.google.com/?q=${encodeURIComponent(`${latitudeMapa},${longitudeMapa}`)}`
+            `https://maps.google.com/?q=${encodeURIComponent(`${latitudeMapa},${longitudeMapa}`)}`,
         });
         enderecoProjetoId = enderecoProjetoCriado.id;
       }
 
       if (modoEnderecoProjeto === 'cliente' && !enderecoProjetoId) {
-        setErro('O cliente selecionado nao possui endereco vinculado. Cadastre um novo endereco para o projeto.');
+        setErro(
+          'O cliente selecionado nao possui endereco vinculado. Cadastre um novo endereco para o projeto.',
+        );
         setPassoAtual(2);
         return;
       }
 
       const documentoCliente =
-        modoCliente === 'novo' ? onlyDigits(clienteForm.cpfCnpj) : onlyDigits(clienteSelecionado?.cpfCnpj ?? '');
+        modoCliente === 'novo'
+          ? onlyDigits(clienteForm.cpfCnpj)
+          : onlyDigits(clienteSelecionado?.cpfCnpj ?? '');
       const classe = documentoCliente.length === 14 ? 'Comercial' : 'Residencial';
       const modalidade = projetoFotovoltaico
         ? detalhesProjeto.modalidadeGeracao === 'autoconsumo_local'
@@ -674,7 +743,9 @@ export const useNovoProjeto = () => {
             : 'GERACAO COMPARTILHADA'
         : 'Padrao de Entrada';
       const enquadramento = projetoFotovoltaico
-        ? potenciaSistemaKw <= 75 ? 'Microgeracao' : 'Minigeracao'
+        ? potenciaSistemaKw <= 75
+          ? 'Microgeracao'
+          : 'Minigeracao'
         : 'Padrao de Entrada';
       const latitudeFormatada = maskLatitude(detalhesProjeto.coordenadas.latitude);
       const longitudeFormatada = maskLongitude(detalhesProjeto.coordenadas.longitude);
@@ -691,7 +762,8 @@ export const useNovoProjeto = () => {
         id: crypto.randomUUID(),
         clientId: clienteId,
         addressId: enderecoProjetoId ?? undefined,
-        nomeCliente: modoCliente === 'novo' ? clienteForm.nome.trim() : (clienteSelecionado?.nome ?? ''),
+        nomeCliente:
+          modoCliente === 'novo' ? clienteForm.nome.trim() : (clienteSelecionado?.nome ?? ''),
         utilityCompany: dadosBasicos.concessionaria,
         utilityProtocol: gerarProtocolo(),
         customerClass: classe,
@@ -717,7 +789,7 @@ export const useNovoProjeto = () => {
                 tipoLigacao: item.tipoLigacao,
                 classificacao: item.classificacao,
                 quantidade: Number(item.quantidade) || 0,
-                disjuntor: item.disjuntor.trim()
+                disjuntor: item.disjuntor.trim(),
               })),
         modulos: projetoFotovoltaico ? buildModulosPayload() : [],
         inversores: projetoFotovoltaico ? buildInversoresPayload() : [],
@@ -727,8 +799,10 @@ export const useNovoProjeto = () => {
         coordinates: { latitude: latitudeFormatada, longitude: longitudeFormatada },
         fastTrack: projetoFotovoltaico ? detalhesProjeto.projetoFastTrack : 'nao',
         projetoNovo: detalhesProjeto.projetoNovo,
-        zeroGridControleExportacao: projetoFotovoltaico ? detalhesProjeto.zeroGridControleExportacao : 'nao',
-        description: detalhesProjeto.observacoes.trim()
+        zeroGridControleExportacao: projetoFotovoltaico
+          ? detalhesProjeto.zeroGridControleExportacao
+          : 'nao',
+        description: detalhesProjeto.observacoes.trim(),
       };
 
       console.log('Dados do formulario:', {
@@ -747,7 +821,7 @@ export const useNovoProjeto = () => {
         zeroGridControleExportacao: detalhesProjeto.zeroGridControleExportacao,
         latitude: latitudeFormatada,
         longitude: longitudeFormatada,
-        potenciaSistemaKw
+        potenciaSistemaKw,
       });
       console.log('Enviando dados para API:', projectData);
 
@@ -758,7 +832,7 @@ export const useNovoProjeto = () => {
         // O upload depende do id do projeto ja existir, por isso acontece depois da criacao.
         const uploadedFiles = await filesService.uploadFiles(
           projetoCriado.id,
-          documentosSelecionados.map((item) => item.file)
+          documentosSelecionados.map((item) => item.file),
         );
         projectsService.saveDocuments(projetoCriado.id, [
           ...reusedCustomerDocuments,
@@ -769,8 +843,8 @@ export const useNovoProjeto = () => {
             tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
             dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
             tamanho: uploadedFile.size,
-            url: uploadedFile.urlS3
-          }))
+            url: uploadedFile.urlS3,
+          })),
         ]);
       } else if (reusedCustomerDocuments.length > 0) {
         projectsService.saveDocuments(projetoCriado.id, reusedCustomerDocuments);
@@ -782,11 +856,15 @@ export const useNovoProjeto = () => {
       if (creationError instanceof ApiError) {
         console.error('Detalhes do erro:', creationError.payload);
         if (creationError.status === 401 || creationError.status === 403) {
-          setErro('Sua sessao nao esta autorizada para criar projetos. Faca login novamente e tente de novo.');
+          setErro(
+            'Sua sessao nao esta autorizada para criar projetos. Faca login novamente e tente de novo.',
+          );
         } else if (typeof creationError.payload === 'string' && creationError.payload.trim()) {
           setErro(creationError.payload);
         } else {
-          setErro(creationError.message || 'Nao foi possivel criar o projeto agora. Tente novamente.');
+          setErro(
+            creationError.message || 'Nao foi possivel criar o projeto agora. Tente novamente.',
+          );
         }
       } else {
         setErro('Nao foi possivel criar o projeto agora. Tente novamente.');
@@ -865,6 +943,6 @@ export const useNovoProjeto = () => {
     handleInversorChange,
     handlePadraoEntradaChange,
     handleDocumentosChange,
-    handleCriarProjeto
+    handleCriarProjeto,
   };
 };

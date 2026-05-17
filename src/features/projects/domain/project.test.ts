@@ -119,7 +119,9 @@ describe('toProjeto', () => {
   });
 
   it('mapeia coordenadas quando presentes', () => {
-    const result = toProjeto(makeProjectResponse({ coordinates: { latitude: '-23.5', longitude: '-46.6' } }));
+    const result = toProjeto(
+      makeProjectResponse({ coordinates: { latitude: '-23.5', longitude: '-46.6' } }),
+    );
     expect(result.coordenadas).toEqual({ latitude: '-23.5', longitude: '-46.6' });
     expect(result.latitude).toBe('-23.5');
   });

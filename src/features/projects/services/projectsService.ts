@@ -9,7 +9,7 @@ import {
   hasAddressData,
   mergeProjectEnhancement,
   saveProjectEnhancement,
-  updateProjectEnhancement
+  updateProjectEnhancement,
 } from './projectEnhancements';
 import { extractDataFromList, normalizeProjeto, toProjetoStatus } from './projectNormalizer';
 import type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
@@ -19,11 +19,7 @@ export type { CreateProjectData, Project, UpdateProjectData } from './projectTyp
 
 const PROJECTS_ENDPOINT = '/projects';
 
-
-export const projectsResouces = {
-
-}
-
+export const projectsResouces = {};
 
 const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   modulos: projectData.modulos ?? [],
@@ -44,7 +40,7 @@ const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   zeroGridControleExportacao: projectData.zeroGridControleExportacao,
   observacoes: projectData.description,
   status: toProjetoStatus(projectData.status),
-  timeline: buildInitialTimeline(projectData)
+  timeline: buildInitialTimeline(projectData),
 });
 
 const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
@@ -91,7 +87,7 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
     projeto_fast_track: projectData.fastTrack === 'sim',
     unit_control: projectData.unitControl,
     unitControl: projectData.unitControl,
-    unidade_controladora: projectData.unitControl
+    unidade_controladora: projectData.unitControl,
   };
 
   if (projectData.description) {
@@ -109,7 +105,9 @@ const isMissingCustomerName = (name: string) => {
 };
 
 const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto[]> => {
-  const requiresEnrichment = projects.some((project) => isMissingCustomerName(project.cliente.nome));
+  const requiresEnrichment = projects.some((project) =>
+    isMissingCustomerName(project.cliente.nome),
+  );
   if (!requiresEnrichment) return projects;
 
   try {
@@ -124,10 +122,12 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
         ...project,
         cliente: {
           ...project.cliente,
-          nome: isMissingCustomerName(project.cliente.nome) ? knownCustomer.nome : project.cliente.nome,
+          nome: isMissingCustomerName(project.cliente.nome)
+            ? knownCustomer.nome
+            : project.cliente.nome,
           cpfCnpj: project.cliente.cpfCnpj || knownCustomer.cpfCnpj,
           telefone: project.cliente.telefone || knownCustomer.telefone,
-          email: project.cliente.email || knownCustomer.email
+          email: project.cliente.email || knownCustomer.email,
         },
         endereco: hasAddressData(project.endereco)
           ? project.endereco
@@ -139,8 +139,8 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
               bairro: knownCustomer.endereco?.bairro || '',
               cidade: knownCustomer.endereco?.cidade || '',
               estado: knownCustomer.endereco?.estado || '',
-              link: knownCustomer.endereco?.link
-            }
+              link: knownCustomer.endereco?.link,
+            },
       };
     });
   } catch (error) {
@@ -149,9 +149,7 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
   }
 };
 
-
 export const projectsService = {
-
   saveDocuments(projectId: string, documentos: Documento[]) {
     // Documentos enviados apos a criacao precisam ser persistidos no enhancement local
     // porque o fluxo de upload e separado do POST principal de projeto.
@@ -164,7 +162,7 @@ export const projectsService = {
       return {
         ...current,
         observacoes: observacoes ?? current?.observacoes,
-        timeline: [item, ...previousTimeline]
+        timeline: [item, ...previousTimeline],
       };
     });
   },
@@ -178,12 +176,15 @@ export const projectsService = {
       entityType: 'projeto',
       entityId: mergedProject.id,
       entityLabel: mergedProject.protocolo,
-      clientName: mergedProject.cliente.nome
+      clientName: mergedProject.cliente.nome,
     });
     return mergedProject;
   },
 
-  async approvePending(id: string, nextStatus: StatusProjeto = 'em_analise_documentacao'): Promise<Project> {
+  async approvePending(
+    id: string,
+    nextStatus: StatusProjeto = 'em_analise_documentacao',
+  ): Promise<Project> {
     const project = await projectsService.getById(id);
     await projectsService.update(id, { status: nextStatus });
 
@@ -193,8 +194,8 @@ export const projectsService = {
       timeline: buildTimelineForProjectStatus(
         project,
         nextStatus,
-        'Projeto aprovado no frontend e liberado para o fluxo operacional.'
-      )
+        'Projeto aprovado no frontend e liberado para o fluxo operacional.',
+      ),
     }));
 
     return projectsService.getById(id);
@@ -202,7 +203,9 @@ export const projectsService = {
 
   async getAll(): Promise<Project[]> {
     const response = await apiClient.get<unknown[]>(PROJECTS_ENDPOINT);
-    const projects = extractDataFromList(response).map(normalizeProjeto).map(mergeProjectEnhancement);
+    const projects = extractDataFromList(response)
+      .map(normalizeProjeto)
+      .map(mergeProjectEnhancement);
     return enrichProjectsWithCustomers(projects);
   },
 
@@ -214,30 +217,31 @@ export const projectsService = {
         ? await customersService.getById(normalized.cliente.id).catch(() => null)
         : null;
     const [enrichedProject] = await enrichProjectsWithCustomers([normalized]);
-    const enriched = customerDetails && !hasAddressData(enrichedProject.endereco)
-      ? {
-          ...enrichedProject,
-          cliente: {
-            ...enrichedProject.cliente,
-            nome: enrichedProject.cliente.nome || customerDetails.nome,
-            cpfCnpj: enrichedProject.cliente.cpfCnpj || customerDetails.cpfCnpj,
-            telefone: enrichedProject.cliente.telefone || customerDetails.telefone,
-            email: enrichedProject.cliente.email || customerDetails.email
-          },
-          endereco: customerDetails.endereco
-            ? {
-                cep: customerDetails.endereco.cep || '',
-                logradouro: customerDetails.endereco.logradouro || '',
-                numero: customerDetails.endereco.numero || '',
-                complemento: customerDetails.endereco.complemento || '',
-                bairro: customerDetails.endereco.bairro || '',
-                cidade: customerDetails.endereco.cidade || '',
-                estado: customerDetails.endereco.estado || '',
-                link: customerDetails.endereco.link
-              }
-            : enrichedProject.endereco
-        }
-      : enrichedProject;
+    const enriched =
+      customerDetails && !hasAddressData(enrichedProject.endereco)
+        ? {
+            ...enrichedProject,
+            cliente: {
+              ...enrichedProject.cliente,
+              nome: enrichedProject.cliente.nome || customerDetails.nome,
+              cpfCnpj: enrichedProject.cliente.cpfCnpj || customerDetails.cpfCnpj,
+              telefone: enrichedProject.cliente.telefone || customerDetails.telefone,
+              email: enrichedProject.cliente.email || customerDetails.email,
+            },
+            endereco: customerDetails.endereco
+              ? {
+                  cep: customerDetails.endereco.cep || '',
+                  logradouro: customerDetails.endereco.logradouro || '',
+                  numero: customerDetails.endereco.numero || '',
+                  complemento: customerDetails.endereco.complemento || '',
+                  bairro: customerDetails.endereco.bairro || '',
+                  cidade: customerDetails.endereco.cidade || '',
+                  estado: customerDetails.endereco.estado || '',
+                  link: customerDetails.endereco.link,
+                }
+              : enrichedProject.endereco,
+          }
+        : enrichedProject;
 
     return enriched;
   },
@@ -247,7 +251,10 @@ export const projectsService = {
     return isRecord(response) ? response : {};
   },
 
-  async update(id: string, projectData: UpdateProjectData | Record<string, unknown>): Promise<Project> {
+  async update(
+    id: string,
+    projectData: UpdateProjectData | Record<string, unknown>,
+  ): Promise<Project> {
     const normalizedFastTrack =
       isRecord(projectData) && typeof projectData.fastTrack === 'string'
         ? projectData.fastTrack === 'sim'
@@ -287,12 +294,12 @@ export const projectsService = {
           projeto_fast_track: normalizedFastTrack,
           unit_control: projectData.unitControl,
           unidade_controladora: projectData.unitControl,
-          'descrição': projectData.description,
+          descrição: projectData.description,
           amount:
             typeof projectData.amount === 'number'
               ? String(projectData.amount)
               : projectData.amount,
-          fastTrack: normalizedFastTrack
+          fastTrack: normalizedFastTrack,
         }
       : { id };
     const response = await apiClient.put<unknown>(`${PROJECTS_ENDPOINT}/${id}`, payloadWithId);
@@ -307,14 +314,14 @@ export const projectsService = {
     const normalized = normalizeProjeto(
       isRecord(response) && Object.keys(response).length > 0
         ? response
-        : await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`)
+        : await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`),
     );
     const newStatus = normalized.status;
 
     updateProjectEnhancement(id, (current) => ({
       ...current,
       status: newStatus,
-      timeline: buildTimelineForProjectStatus(normalized, newStatus, comment)
+      timeline: buildTimelineForProjectStatus(normalized, newStatus, comment),
     }));
 
     return mergeProjectEnhancement(normalized);
@@ -342,15 +349,17 @@ export const projectsService = {
       'em_analise_documentacao',
       'elaboracao_documentacao_tecnica',
       'aguardando_assinatura_cliente',
-      'aguardando_pagamento'
+      'aguardando_pagamento',
     ]);
     const statusFinalizado = new Set<StatusProjeto>(['projeto_encerrado']);
 
     return {
       totalProjetos: projetos.length,
-      projetosEmAndamento: projetos.filter((p) => !statusPendente.has(p.status) && !statusFinalizado.has(p.status)).length,
+      projetosEmAndamento: projetos.filter(
+        (p) => !statusPendente.has(p.status) && !statusFinalizado.has(p.status),
+      ).length,
       projetosFinalizados: projetos.filter((p) => statusFinalizado.has(p.status)).length,
-      projetosPendentes: projetos.filter((p) => statusPendente.has(p.status)).length
+      projetosPendentes: projetos.filter((p) => statusPendente.has(p.status)).length,
     };
-  }
+  },
 };

@@ -37,7 +37,7 @@ const normalizeUser = (raw: unknown): User => {
     email: asString(user.email),
     role: normalizeRole(asString(user.role) || asString(user.profile) || undefined),
     createdAt: asString(user.createdAt) || asString(user.created_at) || undefined,
-    updatedAt: asString(user.updatedAt) || asString(user.updated_at) || undefined
+    updatedAt: asString(user.updatedAt) || asString(user.updated_at) || undefined,
   };
 };
 
@@ -48,7 +48,7 @@ export const usersService = {
       email: userData.email.trim().toLowerCase(),
       password: userData.password,
       password_confirmation: userData.passwordConfirmation ?? userData.password,
-      profile: normalizeRole(userData.role)
+      profile: normalizeRole(userData.role),
     });
 
     return normalizeUser(response.user);
@@ -76,5 +76,5 @@ export const usersService = {
 
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/users/${id}`);
-  }
+  },
 };

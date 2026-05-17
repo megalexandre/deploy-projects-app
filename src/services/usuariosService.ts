@@ -5,4 +5,8 @@ import { createCrudService } from '@/shared/api/crudService';
 export type CreateUsuarioPayload = Omit<Usuario, 'id' | 'ultimoAcesso'>;
 export type UpdateUsuarioPayload = Partial<Omit<Usuario, 'id'>>;
 
-export const usuariosService = createCrudService<Usuario, CreateUsuarioPayload, UpdateUsuarioPayload>('/usuarios');
+export const usuariosService = createCrudService<
+  Usuario,
+  CreateUsuarioPayload,
+  UpdateUsuarioPayload
+>('/usuarios');
