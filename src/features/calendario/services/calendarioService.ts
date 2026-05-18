@@ -5,4 +5,8 @@ import { createCrudService } from '@/shared/api/crudService';
 export type CreateEventoPayload = Omit<Evento, 'id'>;
 export type UpdateEventoPayload = Partial<CreateEventoPayload>;
 
-export const calendarioService = createCrudService<Evento, CreateEventoPayload, UpdateEventoPayload>('/calendario/eventos');
+export const calendarioService = createCrudService<
+  Evento,
+  CreateEventoPayload,
+  UpdateEventoPayload
+>('/calendario/eventos');

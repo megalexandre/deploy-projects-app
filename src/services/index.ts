@@ -5,54 +5,40 @@ export type { ApiRequestOptions } from '@/shared/api/apiClient';
 // New API services
 export { authService } from '@/features/auth/services/authService';
 export { usersService } from '@/features/admin/services/usersService';
-export { projectsService } from '@/features/projetos/services/projectsService';
+export { projectsService } from '@/features/projects/services/projectsService';
 export { customersService } from '@/features/clientes/services/customersService';
 export { addressService } from '@/shared/api/addressService';
 export { auditService } from '@/shared/api/auditService';
-export { concessionariasService } from '@/features/admin/services/concessionariasService';
+export { concessionairesService } from '@/features/concessionaries/services/concessionairesService';
 export { viaCepService } from '@/shared/api/viaCepService';
 export { filesService } from '@/shared/api/filesService';
 
 // Export types for new services
-export type { 
-  LoginCredentials, 
-  RegisterData, 
-  LoginResponse 
+export type {
+  LoginCredentials,
+  RegisterData,
+  LoginResponse,
 } from '@/features/auth/services/authService';
 
-export type { 
-  User, 
-  CreateUserData, 
-  UpdateUserData 
-} from '@/features/admin/services/usersService';
+export type { User, CreateUserData, UpdateUserData } from '@/features/admin/services/usersService';
 
-export type { 
-  Project, 
-  CreateProjectData, 
-  UpdateProjectData 
-} from '@/features/projetos/services/projectsService';
+export type {
+  Project,
+  CreateProjectData,
+  UpdateProjectData,
+} from '@/features/projects/services/projectsService';
 
 export type {
   Customer,
   CreateCustomerData,
-  UpdateCustomerData
+  UpdateCustomerData,
 } from '@/features/clientes/services/customersService';
 
-export type {
-  Address,
-  CreateAddressData,
-  UpdateAddressData
-} from '@/shared/api/addressService';
+export type { Address, CreateAddressData, UpdateAddressData } from '@/shared/api/addressService';
 
-export type { 
-  AuditLog, 
-  AuditFilters 
-} from '@/shared/api/auditService';
+export type { AuditLog, AuditFilters } from '@/shared/api/auditService';
 
-export type {
-  Concessionaria,
-  SaveConcessionariaData
-} from '@/features/admin/services/concessionariasService';
+export type { Concessionaire } from '@/features/concessionaries/domain/concessionaire';
 export type { UploadedFileResponse } from '@/shared/api/filesService';
 
 // Legacy services (keep if needed)

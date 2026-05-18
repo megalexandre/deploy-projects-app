@@ -1,13 +1,23 @@
 /** Pagina 'LoginPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useState } from 'react';
-import { ArrowRight, EnvelopeSimple, Eye, EyeSlash, Lightning, Lock, ShieldCheck, SunDim } from '@phosphor-icons/react';
+import {
+  ArrowRight,
+  EnvelopeSimple,
+  Eye,
+  EyeSlash,
+  Lightning,
+  Lock,
+  ShieldCheck,
+  SunDim,
+} from '@phosphor-icons/react';
+import { ErrorAlert } from '@/shared/components/ErrorAlert';
 import { authService } from '../services/authService';
 import type { LoginCredentials } from '@/services';
 
 export const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
-    password: ''
+    password: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,7 +41,7 @@ export const LoginPage: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCredentials((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -54,7 +64,8 @@ export const LoginPage: React.FC = () => {
               Gestao de projetos solares com visual premium.
             </h1>
             <p className="mt-5 max-w-lg text-lg text-slate-200/85">
-              Ambiente moderno para acompanhar projetos, equipe, cronogramas e resultados com alta legibilidade e foco em produtividade.
+              Ambiente moderno para acompanhar projetos, equipe, cronogramas e resultados com alta
+              legibilidade e foco em produtividade.
             </p>
 
             <div className="mt-10 grid grid-cols-3 gap-4">
@@ -64,7 +75,9 @@ export const LoginPage: React.FC = () => {
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur">
                 <p className="text-3xl font-bold text-amber-300">98%</p>
-                <p className="mt-1 text-xs uppercase tracking-widest text-slate-300">Entrega no prazo</p>
+                <p className="mt-1 text-xs uppercase tracking-widest text-slate-300">
+                  Entrega no prazo
+                </p>
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur">
                 <p className="text-3xl font-bold text-sky-200">24h</p>
@@ -88,9 +101,13 @@ export const LoginPage: React.FC = () => {
         <section className="mx-auto w-full max-w-md lg:mx-0 lg:justify-self-end">
           <div className="rounded-3xl border border-white/20 bg-white/[0.07] p-8 shadow-[0_30px_80px_-35px_rgba(0,0,0,0.75)] backdrop-blur-2xl sm:p-10">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">Acesso seguro</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                Acesso seguro
+              </p>
               <h2 className="mt-3 text-3xl font-bold text-white">Entrar na plataforma</h2>
-              <p className="mt-2 text-sm text-slate-200/80">Use suas credenciais de acesso cadastradas na API.</p>
+              <p className="mt-2 text-sm text-slate-200/80">
+                Use suas credenciais de acesso cadastradas na API.
+              </p>
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
@@ -134,11 +151,7 @@ export const LoginPage: React.FC = () => {
                 </div>
               </label>
 
-              {error && (
-                <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                  {error}
-                </div>
-              )}
+              {error && <ErrorAlert message={error} />}
 
               <button
                 type="submit"
@@ -149,8 +162,6 @@ export const LoginPage: React.FC = () => {
                 {!loading && <ArrowRight className="h-4 w-4" />}
               </button>
             </form>
-
-            
           </div>
         </section>
       </div>

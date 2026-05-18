@@ -1,5 +1,5 @@
 /** Pagina 'ConfiguracoesPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Bell,
   Buildings,
@@ -10,7 +10,7 @@ import {
   Percent,
   Phone,
   Plus,
-  Shield
+  Shield,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
@@ -18,7 +18,7 @@ import { Card, CardContent } from '@/shared/components/Card';
 import type { ConfiguracoesSistema } from '@/types';
 import { maskCnpj, maskPhoneBR } from '@/core/utils/masks';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
-import { getDefaultConfiguracoesSistema, loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import { loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
 
 type AbaConfiguracoes = 'geral' | 'precos' | 'cupons' | 'notificacoes' | 'sistema' | 'seguranca';
 
@@ -32,32 +32,35 @@ const tabs: Array<{
   { id: 'cupons', label: 'Cupons', icon: Percent },
   { id: 'notificacoes', label: 'Notificacoes', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
-  { id: 'seguranca', label: 'Seguranca', icon: Shield }
+  { id: 'seguranca', label: 'Seguranca', icon: Shield },
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
   const currentUser = useCurrentUser();
   const [activeTab, setActiveTab] = useState<AbaConfiguracoes>('geral');
-  const [formData, setFormData] = useState<ConfiguracoesSistema>(getDefaultConfiguracoesSistema());
+  const [formData, setFormData] = useState<ConfiguracoesSistema>(loadConfiguracoesSistema());
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const isAdmin = currentUser?.isAdmin === true;
 
-  useEffect(() => {
-    setFormData(loadConfiguracoesSistema());
-  }, []);
-
-  const handleInputChange = <K extends keyof ConfiguracoesSistema>(field: K, value: ConfiguracoesSistema[K]) => {
+  const handleInputChange = <K extends keyof ConfiguracoesSistema>(
+    field: K,
+    value: ConfiguracoesSistema[K],
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePrecoFotovoltaicoChange = (id: string, field: 'min' | 'max' | 'valor', value: string) => {
+  const handlePrecoFotovoltaicoChange = (
+    id: string,
+    field: 'min' | 'max' | 'valor',
+    value: string,
+  ) => {
     const nextValue = value === '' ? 0 : Number(value);
 
     setFormData((prev) => ({
       ...prev,
       tabelaPrecoFotovoltaico: prev.tabelaPrecoFotovoltaico.map((item) =>
-        item.id === id ? { ...item, [field]: Number.isFinite(nextValue) ? nextValue : 0 } : item
-      )
+        item.id === id ? { ...item, [field]: Number.isFinite(nextValue) ? nextValue : 0 } : item,
+      ),
     }));
   };
 
@@ -67,12 +70,16 @@ export const ConfiguracoesPage: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       tabelaPrecoPadraoEntrada: prev.tabelaPrecoPadraoEntrada.map((item) =>
-        item.id === id ? { ...item, valor: Number.isFinite(nextValue) ? nextValue : 0 } : item
-      )
+        item.id === id ? { ...item, valor: Number.isFinite(nextValue) ? nextValue : 0 } : item,
+      ),
     }));
   };
 
-  const handleCupomChange = (id: string, field: 'nome' | 'percentual' | 'ativo', value: string | boolean) => {
+  const handleCupomChange = (
+    id: string,
+    field: 'nome' | 'percentual' | 'ativo',
+    value: string | boolean,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       cuponsDesconto: prev.cuponsDesconto.map((item) =>
@@ -81,11 +88,13 @@ export const ConfiguracoesPage: React.FC = () => {
               ...item,
               [field]:
                 field === 'percentual'
-                  ? Number.isFinite(Number(value)) ? Number(value) : 0
-                  : value
+                  ? Number.isFinite(Number(value))
+                    ? Number(value)
+                    : 0
+                  : value,
             }
-          : item
-      )
+          : item,
+      ),
     }));
   };
 
@@ -98,9 +107,9 @@ export const ConfiguracoesPage: React.FC = () => {
           id: crypto.randomUUID(),
           nome: '',
           percentual: 0,
-          ativo: true
-        }
-      ]
+          ativo: true,
+        },
+      ],
     }));
   };
 
@@ -121,14 +130,19 @@ export const ConfiguracoesPage: React.FC = () => {
         <Card>
           <CardContent className="space-y-6 p-6">
             <div className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-              A API atual nao possui endpoint para editar o proprio perfil. Por isso, os dados abaixo estao disponiveis apenas para consulta no frontend.
+              A API atual nao possui endpoint para editar o proprio perfil. Por isso, os dados
+              abaixo estao disponiveis apenas para consulta no frontend.
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <Input label="Nome" value={currentUser?.name ?? ''} readOnly />
               <Input label="E-mail" value={currentUser?.email ?? ''} readOnly />
               <Input label="Perfil" value={currentUser?.role ?? 'user'} readOnly />
-              <Input label="Acesso" value={currentUser?.isAdmin ? 'Administrador do sistema' : 'Usuario'} readOnly />
+              <Input
+                label="Acesso"
+                value={currentUser?.isAdmin ? 'Administrador do sistema' : 'Usuario'}
+                readOnly
+              />
             </div>
           </CardContent>
         </Card>
@@ -141,7 +155,9 @@ export const ConfiguracoesPage: React.FC = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Configuracoes</h1>
-          <p className="mt-1 text-gray-400">Defina preferencias do sistema e as tabelas de valores.</p>
+          <p className="mt-1 text-gray-400">
+            Defina preferencias do sistema e as tabelas de valores.
+          </p>
         </div>
         <div className="flex items-center gap-3">
           {saveMessage && <p className="text-sm text-emerald-300">{saveMessage}</p>}
@@ -159,7 +175,9 @@ export const ConfiguracoesPage: React.FC = () => {
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              activeTab === tab.id
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
             }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -227,7 +245,9 @@ export const ConfiguracoesPage: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <h4 className="text-base font-semibold text-gray-100">Projeto Fotovoltaico</h4>
-                  <p className="text-sm text-gray-400">Faixas de potencia em kW e valor cobrado por faixa.</p>
+                  <p className="text-sm text-gray-400">
+                    Faixas de potencia em kW e valor cobrado por faixa.
+                  </p>
                 </div>
 
                 <div className="overflow-x-auto rounded border border-gray-700">
@@ -247,7 +267,9 @@ export const ConfiguracoesPage: React.FC = () => {
                               type="number"
                               step="0.1"
                               value={item.min}
-                              onChange={(e) => handlePrecoFotovoltaicoChange(item.id, 'min', e.target.value)}
+                              onChange={(e) =>
+                                handlePrecoFotovoltaicoChange(item.id, 'min', e.target.value)
+                              }
                               className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                             />
                           </td>
@@ -256,7 +278,9 @@ export const ConfiguracoesPage: React.FC = () => {
                               type="number"
                               step="0.1"
                               value={item.max}
-                              onChange={(e) => handlePrecoFotovoltaicoChange(item.id, 'max', e.target.value)}
+                              onChange={(e) =>
+                                handlePrecoFotovoltaicoChange(item.id, 'max', e.target.value)
+                              }
                               className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                             />
                           </td>
@@ -265,7 +289,9 @@ export const ConfiguracoesPage: React.FC = () => {
                               type="number"
                               step="0.01"
                               value={item.valor}
-                              onChange={(e) => handlePrecoFotovoltaicoChange(item.id, 'valor', e.target.value)}
+                              onChange={(e) =>
+                                handlePrecoFotovoltaicoChange(item.id, 'valor', e.target.value)
+                              }
                               className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                             />
                           </td>
@@ -278,8 +304,12 @@ export const ConfiguracoesPage: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-base font-semibold text-gray-100">Padrao de Entrada / EMUC</h4>
-                  <p className="text-sm text-gray-400">Valor unitario usado em cada combinacao de classificacao e ligacao.</p>
+                  <h4 className="text-base font-semibold text-gray-100">
+                    Padrao de Entrada / EMUC
+                  </h4>
+                  <p className="text-sm text-gray-400">
+                    Valor unitario usado em cada combinacao de classificacao e ligacao.
+                  </p>
                 </div>
 
                 <div className="overflow-x-auto rounded border border-gray-700">
@@ -301,7 +331,9 @@ export const ConfiguracoesPage: React.FC = () => {
                               type="number"
                               step="0.01"
                               value={item.valor}
-                              onChange={(e) => handlePrecoPadraoEntradaChange(item.id, e.target.value)}
+                              onChange={(e) =>
+                                handlePrecoPadraoEntradaChange(item.id, e.target.value)
+                              }
                               className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                             />
                           </td>
@@ -320,7 +352,8 @@ export const ConfiguracoesPage: React.FC = () => {
                 <div>
                   <h3 className="mb-2 text-lg font-medium text-gray-100">Cupons de Desconto</h3>
                   <p className="text-sm text-gray-400">
-                    Cadastre os cupons usados no fluxo de servicos. Cupons inativos deixam de aparecer na selecao.
+                    Cadastre os cupons usados no fluxo de servicos. Cupons inativos deixam de
+                    aparecer na selecao.
                   </p>
                 </div>
                 <Button type="button" variant="outline" onClick={handleAdicionarCupom}>
@@ -355,7 +388,9 @@ export const ConfiguracoesPage: React.FC = () => {
                             min="0"
                             step="0.01"
                             value={item.percentual}
-                            onChange={(e) => handleCupomChange(item.id, 'percentual', e.target.value)}
+                            onChange={(e) =>
+                              handleCupomChange(item.id, 'percentual', e.target.value)
+                            }
                             className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
                         </td>
@@ -364,7 +399,9 @@ export const ConfiguracoesPage: React.FC = () => {
                             <input
                               type="checkbox"
                               checked={item.ativo}
-                              onChange={(e) => handleCupomChange(item.id, 'ativo', e.target.checked)}
+                              onChange={(e) =>
+                                handleCupomChange(item.id, 'ativo', e.target.checked)
+                              }
                               className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
                             />
                             Exibir no sistema
@@ -380,13 +417,17 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {activeTab === 'notificacoes' && (
             <div className="space-y-6 page-enter">
-              <h3 className="mb-4 text-lg font-medium text-gray-100">Preferencias de Notificacao</h3>
+              <h3 className="mb-4 text-lg font-medium text-gray-100">
+                Preferencias de Notificacao
+              </h3>
 
               <div className="space-y-4">
                 <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
                   <div>
                     <div className="font-medium text-gray-100">Notificacoes por E-mail</div>
-                    <div className="text-sm text-gray-400">Receba avisos importantes por e-mail</div>
+                    <div className="text-sm text-gray-400">
+                      Receba avisos importantes por e-mail
+                    </div>
                   </div>
                   <input
                     type="checkbox"
@@ -460,7 +501,9 @@ export const ConfiguracoesPage: React.FC = () => {
                   <label className="mb-2 block text-sm font-medium text-gray-300">Tema</label>
                   <select
                     value={formData.tema}
-                    onChange={(e) => handleInputChange('tema', e.target.value as ConfiguracoesSistema['tema'])}
+                    onChange={(e) =>
+                      handleInputChange('tema', e.target.value as ConfiguracoesSistema['tema'])
+                    }
                     className="w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
                   >
                     <option value="dark">Escuro</option>
@@ -483,7 +526,9 @@ export const ConfiguracoesPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Fuso Horario</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Fuso Horario
+                  </label>
                   <select
                     value={formData.fusoHorario}
                     onChange={(e) => handleInputChange('fusoHorario', e.target.value)}
@@ -496,7 +541,9 @@ export const ConfiguracoesPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Formato de Data</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Formato de Data
+                  </label>
                   <select
                     value={formData.formatoData}
                     onChange={(e) => handleInputChange('formatoData', e.target.value)}
@@ -519,7 +566,9 @@ export const ConfiguracoesPage: React.FC = () => {
                 <Card>
                   <CardContent className="p-4">
                     <h4 className="mb-2 font-medium text-gray-100">Autenticacao de Dois Fatores</h4>
-                    <p className="mb-4 text-sm text-gray-400">Adicione uma camada extra de seguranca a sua conta.</p>
+                    <p className="mb-4 text-sm text-gray-400">
+                      Adicione uma camada extra de seguranca a sua conta.
+                    </p>
                     <Button variant="outline">Configurar 2FA</Button>
                   </CardContent>
                 </Card>
@@ -527,14 +576,15 @@ export const ConfiguracoesPage: React.FC = () => {
                 <Card>
                   <CardContent className="p-4">
                     <h4 className="mb-2 font-medium text-gray-100">Senha</h4>
-                    <p className="mb-4 text-sm text-gray-400">Altere sua senha regularmente para manter a seguranca.</p>
+                    <p className="mb-4 text-sm text-gray-400">
+                      Altere sua senha regularmente para manter a seguranca.
+                    </p>
                     <Button variant="outline">Alterar Senha</Button>
                   </CardContent>
                 </Card>
               </div>
             </div>
           )}
-
         </CardContent>
       </Card>
     </div>

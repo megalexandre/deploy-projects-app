@@ -1,11 +1,34 @@
 /** Pagina 'ClientesPage': lista clientes cadastrados e permite novo cadastro com endereco. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { DownloadSimple, FileText, MagnifyingGlass, PencilSimple, PlusCircle, UploadSimple } from '@phosphor-icons/react';
+import {
+  DownloadSimple,
+  FileText,
+  MagnifyingGlass,
+  PencilSimple,
+  PlusCircle,
+  UploadSimple,
+} from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Input } from '@/shared/components/Input';
-import { ApiError, addressService, customersService, filesService, viaCepService, type Customer } from '@/services';
-import { maskCep, maskCnpj, maskCpf, maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
+import { ErrorAlert } from '@/shared/components/ErrorAlert';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import {
+  ApiError,
+  addressService,
+  customersService,
+  filesService,
+  viaCepService,
+  type Customer,
+} from '@/services';
+import {
+  maskCep,
+  maskCnpj,
+  maskCpf,
+  maskCpfOrCnpj,
+  maskPhoneBR,
+  onlyDigits,
+} from '@/core/utils/masks';
 
 type TipoDocumento = 'cpf' | 'cnpj';
 
@@ -37,8 +60,8 @@ const createEmptyForm = (): ClienteForm => ({
     complemento: '',
     bairro: '',
     cidade: '',
-    estado: ''
-  }
+    estado: '',
+  },
 });
 
 const getTipoDocumento = (cpfCnpj: string): TipoDocumento =>
@@ -56,7 +79,9 @@ const extractApiErrorMessage = (payload: unknown, fallback: string) => {
   }
 
   const response = payload as { errors?: Record<string, string | null>; message?: string };
-  const fieldErrors = response.errors ? Object.entries(response.errors).filter(([, value]) => Boolean(value)) : [];
+  const fieldErrors = response.errors
+    ? Object.entries(response.errors).filter(([, value]) => Boolean(value))
+    : [];
 
   if (fieldErrors.length > 0) {
     return fieldErrors.map(([field, message]) => `${field}: ${message}`).join(' | ');
@@ -77,8 +102,8 @@ const createFormFromCustomer = (customer: Customer): ClienteForm => ({
     complemento: customer.endereco?.complemento ?? '',
     bairro: customer.endereco?.bairro ?? '',
     cidade: customer.endereco?.cidade ?? '',
-    estado: customer.endereco?.estado ?? ''
-  }
+    estado: customer.endereco?.estado ?? '',
+  },
 });
 
 export const ClientesPage: React.FC = () => {
@@ -105,7 +130,7 @@ export const ClientesPage: React.FC = () => {
           } catch {
             return customer;
           }
-        })
+        }),
       );
       setClientes(detailedCustomers);
     } catch (loadError) {
@@ -181,7 +206,7 @@ export const ClientesPage: React.FC = () => {
         neighborhood: form.endereco.bairro.trim(),
         city: form.endereco.cidade.trim(),
         state: form.endereco.estado.trim().toLowerCase(),
-        link: ''
+        link: '',
       };
 
       const address = editingAddressId
@@ -193,7 +218,7 @@ export const ClientesPage: React.FC = () => {
         addressId: address.id,
         cpfCnpj: onlyDigits(form.cpfCnpj),
         telefone: onlyDigits(form.telefone),
-        email: form.email.trim()
+        email: form.email.trim(),
       };
 
       if (editingCustomerId) {
@@ -214,11 +239,17 @@ export const ClientesPage: React.FC = () => {
         setError(
           extractApiErrorMessage(
             saveError.payload,
-            editingCustomerId ? 'Nao foi possivel atualizar o cliente.' : 'Nao foi possivel cadastrar o cliente.'
-          )
+            editingCustomerId
+              ? 'Nao foi possivel atualizar o cliente.'
+              : 'Nao foi possivel cadastrar o cliente.',
+          ),
         );
       } else {
-        setError(editingCustomerId ? 'Nao foi possivel atualizar o cliente.' : 'Nao foi possivel cadastrar o cliente.');
+        setError(
+          editingCustomerId
+            ? 'Nao foi possivel atualizar o cliente.'
+            : 'Nao foi possivel cadastrar o cliente.',
+        );
       }
     } finally {
       setSaving(false);
@@ -250,7 +281,7 @@ export const ClientesPage: React.FC = () => {
 
   const clienteEmEdicao = useMemo(
     () => clientes.find((cliente) => cliente.id === editingCustomerId) ?? null,
-    [clientes, editingCustomerId]
+    [clientes, editingCustomerId],
   );
 
   const handleDownload = async (fileId?: string) => {
@@ -291,8 +322,8 @@ export const ClientesPage: React.FC = () => {
           tipo: 'Documento',
           dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
           tamanho: uploadedFile.size,
-          url: uploadedFile.urlS3
-        }))
+          url: uploadedFile.urlS3,
+        })),
       ]);
       await loadClientes();
     } catch (uploadError) {
@@ -324,8 +355,8 @@ export const ClientesPage: React.FC = () => {
           complemento: prev.endereco.complemento || endereco.complemento,
           bairro: endereco.bairro || prev.endereco.bairro,
           cidade: endereco.cidade || prev.endereco.cidade,
-          estado: endereco.estado || prev.endereco.estado
-        }
+          estado: endereco.estado || prev.endereco.estado,
+        },
       }));
     } catch (lookupError) {
       console.error('Erro ao consultar CEP:', lookupError);
@@ -333,25 +364,19 @@ export const ClientesPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="space-y-6 page-enter">
       <div>
         <h1 className="text-3xl font-bold text-gray-100">Clientes</h1>
-        <p className="mt-1 text-gray-400">Lista de clientes cadastrados e novo cadastro com endereco.</p>
+        <p className="mt-1 text-gray-400">
+          Lista de clientes cadastrados e novo cadastro com endereco.
+        </p>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {error}
-        </div>
-      )}
+      {error && <ErrorAlert message={error} />}
 
       <Card>
         <CardContent className="p-6">
@@ -395,13 +420,23 @@ export const ClientesPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={() => handleEditCustomer(cliente)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditCustomer(cliente)}
+                        >
                           <UploadSimple className="mr-2 h-4 w-4" />
                           Documentos
                         </Button>
-                        <Button type="button" variant="outline" size="sm" onClick={() => handleEditCustomer(cliente)}>
-                        <PencilSimple className="mr-2 h-4 w-4" />
-                        Editar
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditCustomer(cliente)}
+                        >
+                          <PencilSimple className="mr-2 h-4 w-4" />
+                          Editar
                         </Button>
                       </div>
                     </td>
@@ -463,7 +498,10 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        cpfCnpj: tipoDocumento === 'cpf' ? maskCpf(event.target.value) : maskCnpj(event.target.value)
+                        cpfCnpj:
+                          tipoDocumento === 'cpf'
+                            ? maskCpf(event.target.value)
+                            : maskCnpj(event.target.value),
                       }))
                     }
                     className="col-span-2 rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -503,7 +541,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, cep: maskCep(event.target.value) }
+                        endereco: { ...prev.endereco, cep: maskCep(event.target.value) },
                       }))
                     }
                     onBlur={() => void handleEnderecoCepBlur()}
@@ -517,7 +555,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, numero: event.target.value }
+                        endereco: { ...prev.endereco, numero: event.target.value },
                       }))
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -530,7 +568,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, logradouro: event.target.value }
+                        endereco: { ...prev.endereco, logradouro: event.target.value },
                       }))
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -543,7 +581,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, complemento: event.target.value }
+                        endereco: { ...prev.endereco, complemento: event.target.value },
                       }))
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -556,7 +594,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, bairro: event.target.value }
+                        endereco: { ...prev.endereco, bairro: event.target.value },
                       }))
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -569,7 +607,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, cidade: event.target.value }
+                        endereco: { ...prev.endereco, cidade: event.target.value },
                       }))
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -583,7 +621,7 @@ export const ClientesPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
-                        endereco: { ...prev.endereco, estado: event.target.value.toUpperCase() }
+                        endereco: { ...prev.endereco, estado: event.target.value.toUpperCase() },
                       }))
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
@@ -625,7 +663,9 @@ export const ClientesPage: React.FC = () => {
           </CardHeader>
           <CardContent className="p-6">
             {clienteEmEdicao.documentos.length === 0 ? (
-              <p className="text-sm text-slate-400">Nenhum documento cadastrado para este cliente.</p>
+              <p className="text-sm text-slate-400">
+                Nenhum documento cadastrado para este cliente.
+              </p>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-white/10">
                 <table className="min-w-full divide-y divide-white/10">
@@ -647,9 +687,17 @@ export const ClientesPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3">{documento.tipo}</td>
-                        <td className="px-4 py-3">{new Date(documento.dataUpload).toLocaleDateString('pt-BR')}</td>
+                        <td className="px-4 py-3">
+                          {new Date(documento.dataUpload).toLocaleDateString('pt-BR')}
+                        </td>
                         <td className="px-4 py-3 text-right">
-                          <Button type="button" variant="outline" size="sm" onClick={() => void handleDownload(documento.fileId)} disabled={!documento.fileId}>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleDownload(documento.fileId)}
+                            disabled={!documento.fileId}
+                          >
                             <DownloadSimple className="mr-2 h-4 w-4" />
                             Download
                           </Button>

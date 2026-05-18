@@ -1,9 +1,10 @@
 /** Arquivo de suporte 'world' do projeto. */
 import { setWorldConstructor, type IWorldOptions } from '@cucumber/cucumber';
-import type { Page } from 'playwright';
+import type { Page, BrowserContext } from 'playwright';
 
 export class CustomWorld {
   page?: Page;
+  context?: BrowserContext;
   baseUrl: string;
 
   constructor(options: IWorldOptions) {

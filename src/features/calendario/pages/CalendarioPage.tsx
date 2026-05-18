@@ -1,6 +1,16 @@
 /** Pagina 'CalendarioPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CaretLeft, CaretRight, Folder, Wrench } from '@phosphor-icons/react';
+import {
+  Calendar as CalendarIcon,
+  Plus,
+  Clock,
+  MapPin,
+  Users,
+  CaretLeft,
+  CaretRight,
+  Folder,
+  Wrench,
+} from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
@@ -38,7 +48,8 @@ const now = new Date();
 const CURRENT_YEAR = now.getFullYear();
 const CURRENT_MONTH = now.getMonth() + 1;
 
-const dayToDate = (day: number) => `${CURRENT_YEAR}-${String(CURRENT_MONTH).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+const dayToDate = (day: number) =>
+  `${CURRENT_YEAR}-${String(CURRENT_MONTH).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
 export const CalendarioPage: React.FC = () => {
   const [projetos, setProjetos] = useState<Projeto[]>([]);
@@ -59,7 +70,7 @@ export const CalendarioPage: React.FC = () => {
     hora: '09:00',
     local: '',
     participantes: '',
-    descricao: ''
+    descricao: '',
   });
 
   useEffect(() => {
@@ -68,7 +79,7 @@ export const CalendarioPage: React.FC = () => {
       try {
         const [projectsData, servicesData] = await Promise.all([
           projectsService.getProjetos(),
-          servicosService.list()
+          servicosService.list(),
         ]);
         setProjetos(projectsData);
         setServicos(servicesData);
@@ -101,7 +112,9 @@ export const CalendarioPage: React.FC = () => {
   };
 
   const getLocalProjeto = (projeto: Projeto) => {
-    const cidadeEstado = [projeto.endereco.cidade, projeto.endereco.estado].filter(Boolean).join(' - ');
+    const cidadeEstado = [projeto.endereco.cidade, projeto.endereco.estado]
+      .filter(Boolean)
+      .join(' - ');
     if (cidadeEstado) {
       return cidadeEstado;
     }
@@ -137,7 +150,7 @@ export const CalendarioPage: React.FC = () => {
       hora: item.hora,
       local: item.local,
       descricao: item.descricao,
-      participantes: item.participantes
+      participantes: item.participantes,
     }));
 
     const projetosAgenda = projetos.flatMap((projeto) => {
@@ -160,7 +173,7 @@ export const CalendarioPage: React.FC = () => {
             hora: parsed.hora,
             local,
             descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-            participantes: ['Equipe de Projetos']
+            participantes: ['Equipe de Projetos'],
           };
         })
         .filter((item): item is AgendaItem => item !== null);
@@ -183,8 +196,8 @@ export const CalendarioPage: React.FC = () => {
           hora: parsedCriacao.hora,
           local,
           descricao: 'Projeto cadastrado no sistema.',
-          participantes: ['Equipe de Projetos']
-        }
+          participantes: ['Equipe de Projetos'],
+        },
       ];
     });
 
@@ -208,7 +221,7 @@ export const CalendarioPage: React.FC = () => {
             hora: parsed.hora,
             local,
             descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-            participantes: ['Equipe de Servicos']
+            participantes: ['Equipe de Servicos'],
           };
         })
         .filter((item): item is AgendaItem => item !== null);
@@ -231,8 +244,8 @@ export const CalendarioPage: React.FC = () => {
           hora: parsedAbertura.hora,
           local,
           descricao: servico.observacoes || 'Servico cadastrado no sistema.',
-          participantes: ['Equipe de Servicos']
-        }
+          participantes: ['Equipe de Servicos'],
+        },
       ];
     });
 
@@ -277,7 +290,8 @@ export const CalendarioPage: React.FC = () => {
     return days;
   };
 
-  const formatMonthYear = (date: Date) => date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const formatMonthYear = (date: Date) =>
+    date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const newDate = new Date(selectedDate);
@@ -288,7 +302,9 @@ export const CalendarioPage: React.FC = () => {
 
   const getItensForDay = (day: number) => {
     const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return agendaItems.filter((item) => item.data === dateStr && (filtroAgenda === 'todos' || item.origem === filtroAgenda));
+    return agendaItems.filter(
+      (item) => item.data === dateStr && (filtroAgenda === 'todos' || item.origem === filtroAgenda),
+    );
   };
 
   const formatDateFromDay = (day: number) => {
@@ -304,15 +320,24 @@ export const CalendarioPage: React.FC = () => {
       hora: '09:00',
       local: '',
       participantes: '',
-      descricao: ''
+      descricao: '',
     });
   };
 
   const handleCreateEvento = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!novoEvento.titulo.trim() || !novoEvento.data || !novoEvento.hora || !novoEvento.local.trim()) return;
+    if (
+      !novoEvento.titulo.trim() ||
+      !novoEvento.data ||
+      !novoEvento.hora ||
+      !novoEvento.local.trim()
+    )
+      return;
 
-    const participantes = novoEvento.participantes.split(',').map((item) => item.trim()).filter(Boolean);
+    const participantes = novoEvento.participantes
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
     const novoRegistro: EventoManual = {
       id: `e-${Date.now()}`,
       titulo: novoEvento.titulo.trim(),
@@ -321,7 +346,7 @@ export const CalendarioPage: React.FC = () => {
       hora: novoEvento.hora,
       local: novoEvento.local.trim(),
       participantes,
-      descricao: novoEvento.descricao.trim()
+      descricao: novoEvento.descricao.trim(),
     };
 
     setEventosManuais((prev) => [novoRegistro, ...prev]);
@@ -336,7 +361,10 @@ export const CalendarioPage: React.FC = () => {
       const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDayFilter).padStart(2, '0')}`;
       return item.data === dateStr;
     })
-    .sort((a, b) => new Date(`${a.data}T${a.hora}`).getTime() - new Date(`${b.data}T${b.hora}`).getTime());
+    .sort(
+      (a, b) =>
+        new Date(`${a.data}T${a.hora}`).getTime() - new Date(`${b.data}T${b.hora}`).getTime(),
+    );
 
   const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
@@ -345,8 +373,12 @@ export const CalendarioPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Calendario</h1>
-          <p className="text-gray-400 mt-1">Agenda com eventos, projetos e servicos do mes atual.</p>
-          {loadingProjetos && <p className="text-xs text-gray-500 mt-1">Carregando datas dos projetos...</p>}
+          <p className="text-gray-400 mt-1">
+            Agenda com eventos, projetos e servicos do mes atual.
+          </p>
+          {loadingProjetos && (
+            <p className="text-xs text-gray-500 mt-1">Carregando datas dos projetos...</p>
+          )}
           {erroProjetos && <p className="text-xs text-red-400 mt-1">{erroProjetos}</p>}
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
@@ -419,7 +451,9 @@ export const CalendarioPage: React.FC = () => {
                 <span className="mb-1 block">Tipo</span>
                 <select
                   value={novoEvento.tipo}
-                  onChange={(e) => setNovoEvento((prev) => ({ ...prev, tipo: e.target.value as TipoEventoManual }))}
+                  onChange={(e) =>
+                    setNovoEvento((prev) => ({ ...prev, tipo: e.target.value as TipoEventoManual }))
+                  }
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
                 >
                   <option value="instalacao">Instalacao</option>
@@ -428,20 +462,54 @@ export const CalendarioPage: React.FC = () => {
                   <option value="vistoria">Vistoria</option>
                 </select>
               </label>
-              <Input label="Data" type="date" value={novoEvento.data} onChange={(e) => setNovoEvento((prev) => ({ ...prev, data: e.target.value }))} required />
-              <Input label="Hora" type="time" value={novoEvento.hora} onChange={(e) => setNovoEvento((prev) => ({ ...prev, hora: e.target.value }))} required />
-              <Input label="Local" placeholder="Endereco" value={novoEvento.local} onChange={(e) => setNovoEvento((prev) => ({ ...prev, local: e.target.value }))} required />
+              <Input
+                label="Data"
+                type="date"
+                value={novoEvento.data}
+                onChange={(e) => setNovoEvento((prev) => ({ ...prev, data: e.target.value }))}
+                required
+              />
+              <Input
+                label="Hora"
+                type="time"
+                value={novoEvento.hora}
+                onChange={(e) => setNovoEvento((prev) => ({ ...prev, hora: e.target.value }))}
+                required
+              />
+              <Input
+                label="Local"
+                placeholder="Endereco"
+                value={novoEvento.local}
+                onChange={(e) => setNovoEvento((prev) => ({ ...prev, local: e.target.value }))}
+                required
+              />
               <Input
                 label="Participantes"
                 placeholder="Nomes separados por virgula"
                 value={novoEvento.participantes}
-                onChange={(e) => setNovoEvento((prev) => ({ ...prev, participantes: e.target.value }))}
+                onChange={(e) =>
+                  setNovoEvento((prev) => ({ ...prev, participantes: e.target.value }))
+                }
               />
               <div className="md:col-span-2">
-                <Input label="Descricao" placeholder="Resumo" value={novoEvento.descricao} onChange={(e) => setNovoEvento((prev) => ({ ...prev, descricao: e.target.value }))} />
+                <Input
+                  label="Descricao"
+                  placeholder="Resumo"
+                  value={novoEvento.descricao}
+                  onChange={(e) =>
+                    setNovoEvento((prev) => ({ ...prev, descricao: e.target.value }))
+                  }
+                />
               </div>
               <div className="md:col-span-2 flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); resetNovoEvento(); }}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsFormOpen(false);
+                    resetNovoEvento();
+                  }}
+                >
                   Cancelar
                 </Button>
                 <Button type="submit">Salvar evento</Button>
@@ -473,7 +541,10 @@ export const CalendarioPage: React.FC = () => {
             {getDaysInMonth(selectedDate).map((day, index) => {
               const dayItems = day ? getItensForDay(day) : [];
               const today = new Date();
-              const isToday = day === today.getDate() && selectedDate.getMonth() === today.getMonth() && selectedDate.getFullYear() === today.getFullYear();
+              const isToday =
+                day === today.getDate() &&
+                selectedDate.getMonth() === today.getMonth() &&
+                selectedDate.getFullYear() === today.getFullYear();
 
               return (
                 <div
@@ -491,14 +562,24 @@ export const CalendarioPage: React.FC = () => {
                 >
                   {day && (
                     <>
-                      <div className={`text-sm font-medium ${isToday ? 'text-blue-400' : 'text-gray-300'}`}>{day}</div>
+                      <div
+                        className={`text-sm font-medium ${isToday ? 'text-blue-400' : 'text-gray-300'}`}
+                      >
+                        {day}
+                      </div>
                       <div className="mt-1 space-y-1">
                         {dayItems.slice(0, 2).map((item) => (
-                          <div key={item.id} className={`text-xs px-1 py-0.5 rounded truncate ${getTipoColor(item)}`} title={item.titulo}>
+                          <div
+                            key={item.id}
+                            className={`text-xs px-1 py-0.5 rounded truncate ${getTipoColor(item)}`}
+                            title={item.titulo}
+                          >
                             {getTipoIcon(item)} {item.titulo}
                           </div>
                         ))}
-                        {dayItems.length > 2 && <div className="text-xs text-gray-400">+{dayItems.length - 2} mais</div>}
+                        {dayItems.length > 2 && (
+                          <div className="text-xs text-gray-400">+{dayItems.length - 2} mais</div>
+                        )}
                       </div>
                     </>
                   )}
@@ -565,4 +646,3 @@ export const CalendarioPage: React.FC = () => {
     </div>
   );
 };
-
