@@ -283,7 +283,7 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
   const project = isRecord(raw) ? raw : {};
 
   const sequence = asNumber(project.sequence);
-  const subsequente = asString(project.subsequente);
+  const subsequente = asString(project.subsequente) || asString(project.subsequence);
 
   const cliente = isRecord(project.cliente) ? project.cliente : {};
   const customer = isRecord(project.customer) ? project.customer : {};

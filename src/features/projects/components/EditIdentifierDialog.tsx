@@ -28,7 +28,7 @@ export const EditIdentifierDialog: React.FC<Props> = ({ project, onClose, onSave
     try {
       const updated = await projectsService.update(project.id, {
         sequence: seq,
-        subsequente: subsequente.trim() || null,
+        subsequence: subsequente.trim() || null,
       });
       onSaved(updated as unknown as Projeto);
     } catch {
@@ -52,7 +52,7 @@ export const EditIdentifierDialog: React.FC<Props> = ({ project, onClose, onSave
             onChange={(e) => setSequence(e.target.value)}
           />
           <Input
-            label="Subsequente"
+            label="Subsequencia"
             type="text"
             placeholder="Opcional"
             value={subsequente}
