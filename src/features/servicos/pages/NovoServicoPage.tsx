@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, FloppyDisk, PlusCircle } from '@phosphor-icons/react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ConcessionaireSelect } from '@/features/concessionaries/components/ConcessionaireSelect';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
@@ -551,21 +552,12 @@ export const NovoServicoPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Concessionaria</label>
-            <select
+            <label className="mb-2 block text-sm text-slate-300">Concessionária</label>
+            <ConcessionaireSelect
               value={form.concessionaria}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, concessionaria: event.target.value }))
-              }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
-            >
-              <option value="">Selecione...</option>
-              {concessionarias.map((item) => (
-                <option key={item.id} value={item.name}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setForm((prev) => ({ ...prev, concessionaria: value }))}
+              concessionarias={concessionarias}
+            />
           </div>
           <div>
             <label className="mb-2 block text-sm text-slate-300">Data de Abertura</label>

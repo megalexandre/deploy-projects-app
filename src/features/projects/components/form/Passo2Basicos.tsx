@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar } from '@phosphor-icons/react';
-import { Link } from 'react-router-dom';
 import { maskCep, maskNumeric } from '@/core/utils/masks';
+import { ConcessionaireSelect } from '@/features/concessionaries/components/ConcessionaireSelect';
 import type {
   DadosBasicosForm,
   DadosDetalhesForm,
@@ -10,8 +10,9 @@ import type {
   Passo,
 } from '@/features/projects/domain/types';
 import { tiposProjeto } from '@/features/projects/hooks/useNovoProjeto';
-import type { Concessionaire, User } from '@/services';
+import type { Concessionaire } from '@/services';
 import { Button } from '@/shared/components/Button';
+import type { User } from '@/types';
 import { CoordenadasFields } from './CoordenadasFields';
 import { EnderecoFields } from './EnderecoFields';
 import { FormField } from './FormField';
@@ -65,7 +66,7 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
 
   return (
     <div className="space-y-6 page-enter">
-      <h2 className="text-2xl font-bold text-gray-100">Informacoes Basicas do Projeto</h2>
+      <h2 className="text-2xl font-bold text-gray-100">Informações Básicas do Projeto</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -85,34 +86,15 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
         </div>
 
         <div>
-          <FormField label="Concessionaria">
-            <select
+          <FormField label="Concessionária">
+            <ConcessionaireSelect
               value={dadosBasicos.concessionaria}
-              onChange={(e) =>
-                setDadosBasicos((prev) => ({ ...prev, concessionaria: e.target.value }))
-              }
-              disabled={concessionariasLoading}
+              onChange={(value) => setDadosBasicos((prev) => ({ ...prev, concessionaria: value }))}
+              concessionarias={concessionarias}
+              loading={concessionariasLoading}
+              isAdmin={currentUser?.isAdmin}
               className={selectCls}
-            >
-              <option value="">{concessionariasLoading ? 'Carregando...' : 'Selecione...'}</option>
-              {concessionarias.map((item) => (
-                <option key={item.id} value={item.name}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-            <div className="mt-2 flex items-center justify-between gap-3 text-xs text-gray-400">
-              <span>
-                {concessionarias.length > 0
-                  ? `${concessionarias.length} concessionaria(s) disponivel(is) no cadastro local.`
-                  : 'Nenhuma concessionaria ativa cadastrada.'}
-              </span>
-              {currentUser?.isAdmin && (
-                <Link to="/concessionarias" className="text-cyan-300 hover:text-cyan-200">
-                  Gerenciar concessionarias
-                </Link>
-              )}
-            </div>
+            />
           </FormField>
         </div>
 
