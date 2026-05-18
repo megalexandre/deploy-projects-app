@@ -3,8 +3,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FloppyDisk, MagnifyingGlass, PencilSimple, PlusCircle, X } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
-import { Input } from '@/shared/components/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { Input } from '@/shared/components/Input';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
   concessionairesService,
   customersService,
@@ -625,11 +626,7 @@ export const ServicosPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

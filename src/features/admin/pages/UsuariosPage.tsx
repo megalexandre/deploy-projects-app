@@ -11,8 +11,9 @@ import {
   EyeSlash,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
-import { Input } from '@/shared/components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
+import { Input } from '@/shared/components/Input';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { ApiError, usersService, type CreateUserData, type User as SystemUser } from '@/services';
 
 type UserForm = {
@@ -177,11 +178,7 @@ export const UsuariosPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

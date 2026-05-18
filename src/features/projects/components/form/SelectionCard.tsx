@@ -1,3 +1,4 @@
+import { Button } from '@/shared/components/Button';
 import React from 'react';
 
 interface SelectionCardProps {
@@ -13,10 +14,10 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
   title,
   description,
 }) => (
-  <button
-    type="button"
+  <Button
+    variant="ghost"
     onClick={onClick}
-    className={`rounded border px-4 py-4 text-left transition-colors ${
+    className={`w-full rounded border px-4 py-4 text-left transition-colors ${
       active
         ? 'border-blue-500 bg-blue-900/25 text-blue-100'
         : 'border-gray-600 bg-gray-800 text-gray-200 hover:border-gray-500'
@@ -24,5 +25,5 @@ export const SelectionCard: React.FC<SelectionCardProps> = ({
   >
     <p className="text-base font-semibold">{title}</p>
     {description && <p className="text-sm opacity-80">{description}</p>}
-  </button>
+  </Button>
 );

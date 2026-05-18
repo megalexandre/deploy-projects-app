@@ -106,7 +106,7 @@ export const Passo1Cliente: React.FC<Passo1ClienteProps> = ({
       <Button
         onClick={() => {
           if (!validarPasso1()) {
-            setErro('Preencha os campos obrigatorios do cliente para avancar ao Passo 2.');
+            setErro('Preencha os campos obrigatorios do cliente para avancar para Passo 2.');
             return;
           }
           setErro(null);

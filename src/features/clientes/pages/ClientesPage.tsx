@@ -11,6 +11,8 @@ import {
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Input } from '@/shared/components/Input';
+import { ErrorAlert } from '@/shared/components/ErrorAlert';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
   ApiError,
   addressService,
@@ -362,11 +364,7 @@ export const ClientesPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -378,11 +376,7 @@ export const ClientesPage: React.FC = () => {
         </p>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {error}
-        </div>
-      )}
+      {error && <ErrorAlert message={error} />}
 
       <Card>
         <CardContent className="p-6">

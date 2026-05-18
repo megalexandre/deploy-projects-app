@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { ErrorAlert } from '@/shared/components/ErrorAlert';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { customersService, projectsService } from '@/services';
 import type { Projeto } from '@/types';
 import { columns, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
@@ -150,11 +152,7 @@ export const ProjetosPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -168,11 +166,7 @@ export const ProjetosPage: React.FC = () => {
         onStatusChange={setStatusFilter}
       />
 
-      {error && (
-        <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {error}
-        </div>
-      )}
+      {error && <ErrorAlert message={error} />}
 
       <div className="overflow-x-auto pb-2">
         <div className="flex min-w-max gap-4">

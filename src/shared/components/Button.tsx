@@ -2,7 +2,7 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   children: React.ReactNode;
@@ -18,7 +18,9 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses =
-    'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0';
+    variant === 'ghost'
+      ? ''
+      : 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0';
 
   const variantClasses = {
     primary:
@@ -27,6 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
       'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-[0_12px_26px_-14px_rgba(251,146,60,0.95)] hover:brightness-110 hover:-translate-y-0.5',
     outline:
       'border border-white/20 bg-slate-900/50 text-slate-100 hover:bg-slate-800/80 hover:border-cyan-300/45',
+    ghost: '',
   };
 
   const sizeClasses = {
@@ -35,7 +38,9 @@ export const Button: React.FC<ButtonProps> = ({
     lg: 'px-6 py-3 text-base',
   };
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const sizeClass = variant === 'ghost' ? '' : sizeClasses[size];
+
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClass} ${className}`.trim();
 
   return (
     <button className={classes} disabled={disabled || loading} {...props}>

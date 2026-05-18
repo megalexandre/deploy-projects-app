@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, FileText, Clock, CheckCircle, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { customersService, filesService, projectsService, type Customer } from '@/services';
 import type { Documento, Projeto } from '@/types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
@@ -210,11 +211,7 @@ export const ProjetoDetailPage: React.FC = () => {
       : Math.max(potenciaTotalModulos, potenciaTotalInversores);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!projeto) {

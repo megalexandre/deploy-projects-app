@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   SunDim,
 } from '@phosphor-icons/react';
+import { ErrorAlert } from '@/shared/components/ErrorAlert';
 import { authService } from '../services/authService';
 import type { LoginCredentials } from '@/services';
 
@@ -150,11 +151,7 @@ export const LoginPage: React.FC = () => {
                 </div>
               </label>
 
-              {error && (
-                <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                  {error}
-                </div>
-              )}
+              {error && <ErrorAlert message={error} />}
 
               <button
                 type="submit"

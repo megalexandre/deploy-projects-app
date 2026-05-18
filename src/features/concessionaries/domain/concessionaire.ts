@@ -24,12 +24,12 @@ export class Concessionaire {
   constructor(data: ConcessionaireData) {
     this.id = data.id;
     this.name = data.name.trim();
-    this.acronym = data.acronym;
-    this.code = data.code;
-    this.region = data.region;
-    this.phone = data.phone;
-    this.email = data.email;
-    this.active = data.active;
-    this.logo = data.logo;
+    this.acronym = data.acronym ?? '';
+    this.code = data.code ?? '';
+    this.region = data.region ?? '';
+    this.phone = data.phone ?? '';
+    this.email = data.email ?? '';
+    this.active = data.active ?? true;
+    this.logo = data.logo ?? null;
   }
 }

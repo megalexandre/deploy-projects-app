@@ -10,8 +10,9 @@ import {
   Eye,
   ClipboardText,
 } from '@phosphor-icons/react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { Button } from '@/shared/components/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { projectsService } from '@/services';
 import {
   approvalsService,
@@ -78,11 +79,7 @@ export const DashboardPage: React.FC = () => {
     type === 'projeto' ? 'Projeto' : 'Servico';
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

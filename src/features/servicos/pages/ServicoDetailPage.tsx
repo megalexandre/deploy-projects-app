@@ -10,6 +10,7 @@ import {
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
   concessionairesService,
   customersService,
@@ -152,11 +153,7 @@ export const ServicoDetailPage: React.FC = () => {
   );
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!servico || !form) {

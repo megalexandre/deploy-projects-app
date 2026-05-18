@@ -1,6 +1,10 @@
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Input } from '@/shared/components/Input';
+import { ErrorAlert } from '@/shared/components/ErrorAlert';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { LogoAvatar } from '@/shared/components/LogoAvatar';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { MagnifyingGlass, PencilSimple } from '@phosphor-icons/react';
 import React from 'react';
 import { ConcessionaireFormCard } from '../components/ConcessionaireFormCard';
@@ -23,27 +27,17 @@ export const ConcessionairesPage: React.FC = () => {
   } = useConcessionaires();
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="space-y-6 page-enter">
       <div>
         <h1 className="text-3xl font-bold text-gray-100">Concessionárias</h1>
-        <p className="mt-1 text-gray-400">
-          Cadastro integrado ao backend para uso em projetos e serviços.
-        </p>
+        <p className="mt-1 text-gray-400">Cadastro Para uso em projetos e serviços.</p>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {error}
-        </div>
-      )}
+      {error && <ErrorAlert message={error} />}
 
       <Card>
         <CardContent className="p-6">
@@ -70,6 +64,7 @@ export const ConcessionairesPage: React.FC = () => {
                   <th className="px-4 py-3">Código</th>
                   <th className="px-4 py-3">Região</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Logo</th>
                   <th className="px-4 py-3 text-right">Ações</th>
                 </tr>
               </thead>
@@ -81,16 +76,16 @@ export const ConcessionairesPage: React.FC = () => {
                     <td className="px-4 py-3 text-slate-400">{item.code || '—'}</td>
                     <td className="px-4 py-3 text-slate-400">{item.region || '—'}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          item.active
-                            ? 'bg-emerald-500/15 text-emerald-400'
-                            : 'bg-slate-500/15 text-slate-400'
-                        }`}
-                      >
-                        {item.active ? 'Ativa' : 'Inativa'}
-                      </span>
+                      <StatusBadge
+                        variant={item.active ? 'active' : 'inactive'}
+                        label={item.active ? 'Ativa' : 'Inativa'}
+                      />
                     </td>
+
+                    <td className="px-4 py-3">
+                      <LogoAvatar src={item.logo} name={item.acronym || item.name} />
+                    </td>
+
                     <td className="px-4 py-3 text-right">
                       <Button
                         type="button"
