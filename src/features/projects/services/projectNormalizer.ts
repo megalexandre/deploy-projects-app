@@ -221,12 +221,26 @@ const normalizeTimelineItem = (item: unknown): Projeto['timeline'][number] | nul
       : rawStatus === 'em_andamento'
         ? 'em_andamento'
         : 'pendente';
+  const comentarios = asArray(item.comentarios ?? item.comments)
+    .map((comment) => {
+      if (!isRecord(comment)) return null;
+      const texto = asString(comment.texto) || asString(comment.body) || asString(comment.comment);
+      if (!texto) return null;
+      return {
+        id: asString(comment.id) || crypto.randomUUID(),
+        texto,
+        data: asString(comment.data) || asString(comment.created_at) || new Date().toISOString(),
+        autor: asString(comment.autor) || asString(comment.created_by) || undefined,
+      };
+    })
+    .filter((comment): comment is NonNullable<typeof comment> => comment !== null);
   return {
     id: asString(item.id) || crypto.randomUUID(),
     etapa,
     data: asString(item.data) || asString(item.date) || new Date().toISOString(),
     status,
     descricao: asString(item.descricao) || asString(item.description) || undefined,
+    comentarios,
   };
 };
 
@@ -248,24 +262,22 @@ const buildFallbackTimeline = (
     | 'dadosProjeto'
     | 'protocolo'
   >,
-) =>
-  projectStatusFlow.map((item, index) => {
-    const timelineStatus = getTimelineStatusFromProjectStatus(item.status, project.status);
-    const isCurrent = item.status === project.status;
-    const description =
-      timelineStatus === 'pendente'
-        ? `Etapa aguardando dados do backend para historico completo em ${project.dadosProjeto.concessionaria || 'concessionaria'}.`
-        : isCurrent
-          ? `Status atual do projeto ${project.protocolo}.`
-          : 'Etapa concluida antes do status atual.';
-    return {
-      id: `${project.id}-timeline-${item.status}`,
-      etapa: item.etapa,
-      data: index === 0 ? project.dataAbertura || project.dataCriacao : project.dataAtualizacao,
-      status: timelineStatus,
-      descricao: description,
-    };
-  });
+) => {
+  const currentStage = projectStatusFlow.find((item) => item.status === project.status);
+  return [
+    {
+      id: `${project.id}-timeline-${project.status}`,
+      etapa: currentStage?.etapa ?? project.status,
+      data: project.dataAbertura || project.dataCriacao || project.dataAtualizacao,
+      status:
+        project.status === 'projeto_aprovado' || project.status === 'projeto_encerrado'
+          ? ('concluido' as const)
+          : ('em_andamento' as const),
+      descricao: `Status atual do projeto ${project.protocolo}.`,
+      comentarios: [],
+    },
+  ];
+};
 
 // --- Paginação ---
 

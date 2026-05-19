@@ -29,7 +29,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   const canManageStatus = useCurrentUser()?.isAdmin === true;
 
   return (
-    <Card className={`w-[340px] shrink-0 border ${column.className}`}>
+    <Card className={`w-[340px] shrink-0 snap-start border ${column.className}`}>
       <CardContent className="p-4">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">

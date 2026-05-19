@@ -47,12 +47,20 @@ export interface Documento {
   url?: string;
 }
 
+export interface TimelineComment {
+  id: string;
+  texto: string;
+  data: string;
+  autor?: string;
+}
+
 export interface TimelineItem {
   id: string;
   etapa: string;
   data: string;
   status: 'concluido' | 'em_andamento' | 'pendente';
   descricao?: string;
+  comentarios?: TimelineComment[];
 }
 
 export interface PadraoEntradaItem {

@@ -383,7 +383,12 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
             type="button"
             onClick={() => {
               setValorProjetoEditado(false);
-              setValorProjeto(String(custoCalculadoProjeto));
+              setValorProjeto(
+                custoCalculadoProjeto.toLocaleString('pt-BR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }),
+              );
             }}
             className="text-xs font-medium text-blue-300 transition hover:text-blue-200"
           >
@@ -394,7 +399,17 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
           value={valorProjeto}
           onChange={(e) => {
             setValorProjetoEditado(true);
-            setValorProjeto(e.target.value.replace(/[^0-9.,]/g, ''));
+            const digits = e.target.value.replace(/\D/g, '');
+            if (!digits) {
+              setValorProjeto('');
+              return;
+            }
+            setValorProjeto(
+              (Number(digits) / 100).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }),
+            );
           }}
           className={inputCls}
         />

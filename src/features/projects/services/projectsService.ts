@@ -4,8 +4,8 @@ import { customersService } from '@/features/clientes/services/customersService'
 import { apiClient } from '@/shared/api/apiClient';
 import type { DashboardStats, Documento, Projeto, StatusProjeto } from '@/types';
 import {
+  appendTimelineEntryForProjectStatus,
   buildInitialTimeline,
-  buildTimelineForProjectStatus,
   hasAddressData,
   mergeProjectEnhancement,
   saveProjectEnhancement,
@@ -40,7 +40,7 @@ const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   zeroGridControleExportacao: projectData.zeroGridControleExportacao,
   observacoes: projectData.description,
   status: toProjetoStatus(projectData.status),
-  timeline: buildInitialTimeline(projectData),
+  timeline: buildInitialTimeline({ ...projectData, id: projectData.id }),
 });
 
 const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
@@ -162,9 +162,22 @@ export const projectsService = {
       return {
         ...current,
         observacoes: observacoes ?? current?.observacoes,
-        timeline: [item, ...previousTimeline],
+        timeline: [...previousTimeline, item],
       };
     });
+  },
+
+  saveTimelineComments(
+    projectId: string,
+    timelineItemId: string,
+    comentarios: NonNullable<Projeto['timeline'][number]['comentarios']>,
+  ) {
+    updateProjectEnhancement(projectId, (current) => ({
+      ...current,
+      timeline: (current?.timeline ?? []).map((item) =>
+        item.id === timelineItemId ? { ...item, comentarios } : item,
+      ),
+    }));
   },
 
   async create(projectData: CreateProjectData): Promise<Project> {
@@ -191,8 +204,9 @@ export const projectsService = {
     updateProjectEnhancement(id, (current) => ({
       ...current,
       status: nextStatus,
-      timeline: buildTimelineForProjectStatus(
+      timeline: appendTimelineEntryForProjectStatus(
         project,
+        current?.timeline ?? project.timeline,
         nextStatus,
         'Projeto aprovado no frontend e liberado para o fluxo operacional.',
       ),
@@ -321,7 +335,12 @@ export const projectsService = {
     updateProjectEnhancement(id, (current) => ({
       ...current,
       status: newStatus,
-      timeline: buildTimelineForProjectStatus(normalized, newStatus, comment),
+      timeline: appendTimelineEntryForProjectStatus(
+        normalized,
+        current?.timeline ?? normalized.timeline,
+        newStatus,
+        comment,
+      ),
     }));
 
     return mergeProjectEnhancement(normalized);

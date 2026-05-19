@@ -165,9 +165,20 @@ const getTipoDocumentoPorValor = (value?: string): TipoDocumento =>
   onlyDigits(value ?? '').length > 11 ? 'cnpj' : 'cpf';
 
 const parseCurrencyInput = (value: string) => {
-  const normalized = value.includes(',') ? value.replace(/\./g, '').replace(',', '.') : value;
+  const sanitized = value.replace(/[^\d,.-]/g, '');
+  const normalized = sanitized.includes(',')
+    ? sanitized.replace(/\./g, '').replace(',', '.')
+    : sanitized;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatCurrencyInput = (value: number) => {
+  const amount = Number.isFinite(value) ? value : 0;
+  return amount.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 };
 
 const getFaixaFotovoltaicaValor = (
@@ -348,7 +359,7 @@ export const useNovoProjeto = () => {
 
   useEffect(() => {
     if (!valorProjetoEditado) {
-      setValorProjeto(String(custoCalculadoProjeto));
+      setValorProjeto(formatCurrencyInput(custoCalculadoProjeto));
     }
   }, [custoCalculadoProjeto, valorProjetoEditado]);
 

@@ -35,6 +35,7 @@ import {
   parseCoordinate,
 } from '@/core/utils/masks';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
+import { useDragToScroll } from '@/features/projects/hooks/useDragToScroll';
 
 type PersonType = 'cpf' | 'cnpj';
 
@@ -123,18 +124,18 @@ const tipoLigacaoOptions = ['Monofasico', 'Bifasico', 'Trifasico'];
 const classificacaoOptions = ['Residencial', 'Comercial', 'Industrial', 'Rural', 'Condominio'];
 
 const statusColumnStyles: Record<StatusServico, string> = {
-  aguardando_aprovacao: 'border-amber-500/60 bg-amber-700/20',
-  abertura_servico: 'border-amber-700/60 bg-amber-900/20',
-  elaboracao_documentacao: 'border-orange-700/60 bg-orange-900/20',
-  aguardando_assinatura_cliente: 'border-yellow-700/60 bg-yellow-900/20',
-  aguardando_protocolo_concessionaria: 'border-lime-700/60 bg-lime-900/20',
-  em_analise_concessionaria: 'border-sky-700/60 bg-sky-900/20',
-  ressalvas: 'border-rose-700/60 bg-rose-900/20',
-  obras_concessionaria: 'border-cyan-700/60 bg-cyan-900/20',
-  servico_aprovado: 'border-emerald-700/60 bg-emerald-900/20',
-  vistoria_solicitada: 'border-teal-700/60 bg-teal-900/20',
-  vistoria_reprovada: 'border-red-700/60 bg-red-900/20',
-  servico_encerrado: 'border-emerald-700/60 bg-emerald-900/30',
+  aguardando_aprovacao: 'border-white/10 bg-sky-900/20',
+  abertura_servico: 'border-white/10 bg-sky-900/20',
+  elaboracao_documentacao: 'border-white/10 bg-sky-900/20',
+  aguardando_assinatura_cliente: 'border-white/10 bg-sky-900/20',
+  aguardando_protocolo_concessionaria: 'border-white/10 bg-sky-900/20',
+  em_analise_concessionaria: 'border-white/10 bg-sky-900/20',
+  ressalvas: 'border-white/10 bg-sky-900/20',
+  obras_concessionaria: 'border-white/10 bg-sky-900/20',
+  servico_aprovado: 'border-white/10 bg-sky-900/20',
+  vistoria_solicitada: 'border-white/10 bg-sky-900/20',
+  vistoria_reprovada: 'border-white/10 bg-sky-900/20',
+  servico_encerrado: 'border-white/10 bg-sky-900/20',
 };
 
 const emptyAddress = (): AddressForm => ({
@@ -315,6 +316,12 @@ export const ServicosPage: React.FC = () => {
   const [form, setForm] = useState<ServicoForm>(createEmptyForm());
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
   const [cupons] = useState(() => getCuponsDescontoAtivos(loadConfiguracoesSistema()));
+  const { containerRef, isDragging, dragBindings } = useDragToScroll({
+    canStartDrag: (event) =>
+      !(
+        event.target instanceof HTMLElement && event.target.closest('[data-no-drag-scroll="true"]')
+      ),
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -1506,12 +1513,20 @@ export const ServicosPage: React.FC = () => {
         </Card>
       )}
 
-      <div className="overflow-x-auto pb-2">
-        <div className="flex min-w-max gap-4">
+      <div
+        ref={containerRef}
+        className={[
+          'hide-scrollbar overflow-x-auto pb-2',
+          'touch-pan-y select-none',
+          isDragging ? 'cursor-grabbing' : 'cursor-grab',
+        ].join(' ')}
+        {...dragBindings}
+      >
+        <div className="flex min-w-max snap-x snap-mandatory gap-4">
           {servicosService.statusFlow.map((column) => (
             <Card
               key={column.status}
-              className={`w-[340px] shrink-0 border ${statusColumnStyles[column.status]}`}
+              className={`w-[340px] shrink-0 snap-start border ${statusColumnStyles[column.status]}`}
             >
               <CardContent className="p-4">
                 <div className="mb-4 flex items-center justify-between">
@@ -1537,6 +1552,7 @@ export const ServicosPage: React.FC = () => {
                   {groupedServicos[column.status].map((servico) => (
                     <div
                       key={servico.id}
+                      data-no-drag-scroll="true"
                       draggable={canManageStatus}
                       onDragStart={(event) => {
                         if (!canManageStatus) return;

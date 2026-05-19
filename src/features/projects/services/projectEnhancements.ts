@@ -1,12 +1,7 @@
 import type { Projeto, StatusProjeto } from '@/types';
 import { asString } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
-import {
-  applyDerivedDadosTecnicos,
-  getTimelineStatusFromProjectStatus,
-  projectStatusFlow,
-  toProjetoStatus,
-} from './projectNormalizer';
+import { applyDerivedDadosTecnicos, projectStatusFlow, toProjetoStatus } from './projectNormalizer';
 
 // @TODO: achoq ue da pra remover essa classe toda
 
@@ -67,23 +62,40 @@ export const hasAddressData = (endereco?: Projeto['endereco']): boolean => {
   ].some((item) => String(item ?? '').trim() !== '');
 };
 
-export const buildTimelineForProjectStatus = (
-  project: Projeto,
+const getTimelineStageLabel = (status: StatusProjeto) =>
+  projectStatusFlow.find((item) => item.status === status)?.etapa ?? status;
+
+const getRecordedTimelineStatus = (status: StatusProjeto): Projeto['timeline'][number]['status'] =>
+  status === 'projeto_aprovado' || status === 'projeto_encerrado' ? 'concluido' : 'em_andamento';
+
+export const buildTimelineEntry = (
+  project: Pick<Projeto, 'id' | 'protocolo' | 'dataAbertura' | 'dataCriacao'>,
   status: StatusProjeto,
   descricaoAtual?: string,
-): Projeto['timeline'] =>
-  projectStatusFlow.map((item, index) => ({
-    id: `${project.id}-timeline-${item.status}`,
-    etapa: item.etapa,
-    data: index === 0 ? project.dataAbertura || project.dataCriacao : new Date().toISOString(),
-    status: getTimelineStatusFromProjectStatus(item.status, status),
-    descricao:
-      item.status === status
-        ? descricaoAtual || `Status atual do projeto ${project.protocolo}.`
-        : item.status === 'aguardando_aprovacao'
-          ? 'Projeto aguardando validacao administrativa antes de entrar no fluxo operacional.'
-          : 'Etapa prevista no fluxo padrao do projeto.',
-  }));
+  data?: string,
+): Projeto['timeline'][number] => ({
+  id: crypto.randomUUID(),
+  etapa: getTimelineStageLabel(status),
+  data: data || new Date().toISOString(),
+  status: getRecordedTimelineStatus(status),
+  descricao: descricaoAtual || `Status atual do projeto ${project.protocolo}.`,
+  comentarios: [],
+});
+
+export const appendTimelineEntryForProjectStatus = (
+  project: Pick<Projeto, 'id' | 'protocolo' | 'dataAbertura' | 'dataCriacao'>,
+  currentTimeline: Projeto['timeline'],
+  status: StatusProjeto,
+  descricaoAtual?: string,
+): Projeto['timeline'] => {
+  const previousTimeline = currentTimeline.map((item, index, array) =>
+    index === array.length - 1 && item.status === 'em_andamento'
+      ? { ...item, status: 'concluido' as const }
+      : item,
+  );
+
+  return [...previousTimeline, buildTimelineEntry(project, status, descricaoAtual)];
+};
 
 export const mergeProjectEnhancement = (project: Projeto): Projeto => {
   const enhancement = projectEnhancementsStorage.read()[project.id];
@@ -134,20 +146,21 @@ export const buildInitialTimeline = (projectData: {
   status?: string;
   utilityProtocol: string;
   dataAbertura?: string;
+  id?: string;
 }): Projeto['timeline'] => {
   const currentStatus = toProjetoStatus(projectData.status);
   const protocol = asString(projectData.utilityProtocol) || 'novo projeto';
-  return projectStatusFlow.map((item, index) => ({
-    id: crypto.randomUUID(),
-    etapa: item.etapa,
-    data:
-      index === 0 ? projectData.dataAbertura || new Date().toISOString() : new Date().toISOString(),
-    status: getTimelineStatusFromProjectStatus(item.status, currentStatus),
-    descricao:
-      item.status === currentStatus
-        ? `Projeto ${protocol} criado no frontend e pronto para receber historico oficial do backend.`
-        : item.status === 'em_analise_documentacao'
-          ? 'Projeto aberto e aguardando evolucao das proximas etapas.'
-          : 'Etapa prevista no fluxo padrao do projeto.',
-  }));
+  return [
+    buildTimelineEntry(
+      {
+        id: projectData.id || crypto.randomUUID(),
+        protocolo: protocol,
+        dataAbertura: projectData.dataAbertura,
+        dataCriacao: new Date().toISOString(),
+      },
+      currentStatus,
+      `Projeto ${protocol} criado no frontend e pronto para receber historico oficial do backend.`,
+      projectData.dataAbertura || new Date().toISOString(),
+    ),
+  ];
 };

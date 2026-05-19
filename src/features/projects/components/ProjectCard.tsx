@@ -30,6 +30,7 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
 
   return (
     <div
+      data-no-drag-scroll="true"
       draggable={canManageStatus}
       onDragStart={(event) => {
         if (!canManageStatus) return;

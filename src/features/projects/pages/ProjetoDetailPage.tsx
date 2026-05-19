@@ -1,13 +1,24 @@
 /** Pagina 'ProjetoDetailPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, FileText, Clock, CheckCircle, UploadSimple } from '@phosphor-icons/react';
+import {
+  ArrowLeft,
+  ChatCircleText,
+  CheckCircle,
+  Clock,
+  Eye,
+  FileText,
+  PlusCircle,
+  UploadSimple,
+} from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { customersService, filesService, projectsService, type Customer } from '@/services';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import type { Documento, Projeto } from '@/types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
+import { TimelineCommentsDialog } from '../components/TimelineCommentsDialog';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
   const merged = new Map<string, Documento>();
@@ -27,6 +38,13 @@ export const ProjetoDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dados');
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [savingDocuments, setSavingDocuments] = useState(false);
+  const [timelineDialogItem, setTimelineDialogItem] = useState<Projeto['timeline'][number] | null>(
+    null,
+  );
+  const [timelineDialogMode, setTimelineDialogMode] = useState<'view' | 'add'>('view');
+  const [timelineComment, setTimelineComment] = useState('');
+  const [savingTimelineComment, setSavingTimelineComment] = useState(false);
+  const currentUser = useCurrentUser();
 
   useEffect(() => {
     if (id) {
@@ -275,6 +293,51 @@ export const ProjetoDetailPage: React.FC = () => {
     { id: 'timeline', label: 'Linha do Tempo' },
     { id: 'documentos', label: 'Documentos' },
   ];
+
+  const openTimelineDialog = (item: Projeto['timeline'][number], mode: 'view' | 'add') => {
+    setTimelineDialogItem(item);
+    setTimelineDialogMode(mode);
+    setTimelineComment('');
+  };
+
+  const handleSaveTimelineComment = async () => {
+    if (!projeto || !timelineDialogItem) return;
+
+    const texto = timelineComment.trim();
+    if (!texto) return;
+
+    setSavingTimelineComment(true);
+
+    try {
+      const comentarios = [
+        ...(timelineDialogItem.comentarios ?? []),
+        {
+          id: crypto.randomUUID(),
+          texto,
+          data: new Date().toISOString(),
+          autor: currentUser?.name || undefined,
+        },
+      ];
+
+      projectsService.saveTimelineComments(projeto.id, timelineDialogItem.id, comentarios);
+
+      setProjeto((current) =>
+        current
+          ? {
+              ...current,
+              timeline: current.timeline.map((item) =>
+                item.id === timelineDialogItem.id ? { ...item, comentarios } : item,
+              ),
+            }
+          : current,
+      );
+      setTimelineDialogItem((current) => (current ? { ...current, comentarios } : current));
+      setTimelineComment('');
+      setTimelineDialogMode('view');
+    } finally {
+      setSavingTimelineComment(false);
+    }
+  };
 
   return (
     <div className="space-y-6 page-enter">
@@ -800,16 +863,49 @@ export const ProjetoDetailPage: React.FC = () => {
               ) : (
                 <div className="space-y-6 page-enter">
                   {projeto.timeline.map((item) => (
-                    <div key={item.id} className="flex items-start space-x-4">
-                      <div className="flex-shrink-0 mt-1">{getTimelineIcon(item.status)}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-medium text-gray-100">{item.etapa}</h4>
-                          <span className="text-sm text-gray-400">{formatDate(item.data)}</span>
+                    <div
+                      key={item.id}
+                      className="rounded-2xl border border-white/10 bg-slate-950/25 p-4"
+                    >
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 mt-1">{getTimelineIcon(item.status)}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <h4 className="text-lg font-medium text-gray-100">{item.etapa}</h4>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openTimelineDialog(item, 'add')}
+                                >
+                                  <PlusCircle className="mr-2 h-4 w-4" />
+                                  Adicionar comentario
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openTimelineDialog(item, 'view')}
+                                >
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Ver comentarios ({item.comentarios?.length ?? 0})
+                                </Button>
+                              </div>
+                            </div>
+                            <span className="text-sm text-gray-400">{formatDate(item.data)}</span>
+                          </div>
+                          {item.descricao && (
+                            <p className="mt-1 text-sm text-gray-300">{item.descricao}</p>
+                          )}
+                          {(item.comentarios?.length ?? 0) > 0 && (
+                            <div className="mt-3 inline-flex items-center rounded-full border border-white/10 bg-slate-900/40 px-3 py-1 text-xs text-slate-300">
+                              <ChatCircleText className="mr-2 h-4 w-4" />
+                              {item.comentarios?.length} comentario(s) registrado(s)
+                            </div>
+                          )}
                         </div>
-                        {item.descricao && (
-                          <p className="mt-1 text-sm text-gray-300">{item.descricao}</p>
-                        )}
                       </div>
                     </div>
                   ))}
@@ -952,6 +1048,23 @@ export const ProjetoDetailPage: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {timelineDialogItem && (
+        <TimelineCommentsDialog
+          item={timelineDialogItem}
+          mode={timelineDialogMode}
+          commentText={timelineComment}
+          saving={savingTimelineComment}
+          onCommentTextChange={setTimelineComment}
+          onSave={() => void handleSaveTimelineComment()}
+          onClose={() => {
+            if (savingTimelineComment) return;
+            setTimelineDialogItem(null);
+            setTimelineComment('');
+            setTimelineDialogMode('view');
+          }}
+        />
+      )}
     </div>
   );
 };
