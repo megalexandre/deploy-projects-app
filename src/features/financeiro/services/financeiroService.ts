@@ -6,7 +6,9 @@ import { createCrudService } from '@/shared/api/crudService';
 export type CreateTransacaoPayload = Omit<Transacao, 'id'>;
 export type UpdateTransacaoPayload = Partial<CreateTransacaoPayload>;
 
-const transacoesCrud = createCrudService<Transacao, CreateTransacaoPayload, UpdateTransacaoPayload>('/financeiro/transacoes');
+const transacoesCrud = createCrudService<Transacao, CreateTransacaoPayload, UpdateTransacaoPayload>(
+  '/financeiro/transacoes',
+);
 
 export interface ResumoFinanceiro {
   totalReceitas: number;
@@ -17,5 +19,5 @@ export interface ResumoFinanceiro {
 
 export const financeiroService = {
   ...transacoesCrud,
-  getResumo: () => apiClient.get<ResumoFinanceiro>('/financeiro/resumo')
+  getResumo: () => apiClient.get<ResumoFinanceiro>('/financeiro/resumo'),
 };

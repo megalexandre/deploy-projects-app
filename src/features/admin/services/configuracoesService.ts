@@ -6,5 +6,5 @@ export const configuracoesService = {
   get: () => apiClient.get<ConfiguracoesSistema>('/configuracoes'),
   update: (payload: Partial<ConfiguracoesSistema>) =>
     apiClient.put<ConfiguracoesSistema>('/configuracoes', payload),
-  reset: () => apiClient.post<ConfiguracoesSistema>('/configuracoes/reset')
+  reset: () => apiClient.post<ConfiguracoesSistema>('/configuracoes/reset'),
 };

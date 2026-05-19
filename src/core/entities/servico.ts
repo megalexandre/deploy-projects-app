@@ -1,10 +1,16 @@
-import type { Documento, DivisaoCreditos, Endereco, PadraoEntradaItem, TimelineItem } from './comum';
+import type {
+  Documento,
+  DivisaoCreditos,
+  Endereco,
+  PadraoEntradaItem,
+  TimelineItem,
+} from './comum';
 
 export const TipoServico = {
   LIGACAO_NOVA: 'ligacao_nova',
   AUMENTO_CARGA: 'aumento_carga',
   TROCA_TITULARIDADE: 'troca_titularidade',
-  ALTERACAO_COMPARTILHAMENTO_CREDITO: 'alteracao_compartilhamento_credito'
+  ALTERACAO_COMPARTILHAMENTO_CREDITO: 'alteracao_compartilhamento_credito',
 } as const;
 
 export type TipoServico = (typeof TipoServico)[keyof typeof TipoServico];
@@ -21,7 +27,7 @@ export const StatusServico = {
   SERVICO_APROVADO: 'servico_aprovado',
   VISTORIA_SOLICITADA: 'vistoria_solicitada',
   VISTORIA_REPROVADA: 'vistoria_reprovada',
-  SERVICO_ENCERRADO: 'servico_encerrado'
+  SERVICO_ENCERRADO: 'servico_encerrado',
 } as const;
 
 export type StatusServico = (typeof StatusServico)[keyof typeof StatusServico];

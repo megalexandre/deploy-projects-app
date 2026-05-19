@@ -172,6 +172,15 @@ body.light .app-shell textarea:focus {
   border-radius: 9999px;
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .page-enter {
   animation: pageEnter 0.35s ease-out;
 }

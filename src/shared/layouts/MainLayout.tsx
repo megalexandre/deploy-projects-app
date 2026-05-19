@@ -15,7 +15,7 @@ import {
   Sun,
   Moon,
   List,
-  X
+  X,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
@@ -45,7 +45,7 @@ export const MainLayout: React.FC = () => {
         { icon: Calendar, label: 'Calendario', path: '/calendario' },
         { icon: Users, label: 'Usuarios', path: '/usuarios' },
         { icon: CheckSquare, label: 'Aprovacoes', path: '/aprovacoes' },
-        { icon: Gear, label: 'Configuracoes', path: '/configuracoes' }
+        { icon: Gear, label: 'Configuracoes', path: '/configuracoes' },
       ]
     : [
         { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
@@ -53,7 +53,7 @@ export const MainLayout: React.FC = () => {
         { icon: Folder, label: 'Projetos', path: '/projetos' },
         { icon: Wrench, label: 'Servicos', path: '/servicos' },
         { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
-        { icon: Calendar, label: 'Calendario', path: '/calendario' }
+        { icon: Calendar, label: 'Calendario', path: '/calendario' },
       ];
 
   return (
@@ -79,7 +79,9 @@ export const MainLayout: React.FC = () => {
           <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
             <div className="flex items-center gap-3">
               <img src="/opj-padrao.png" alt="OPJ Engenharia" className="h-8 w-auto" />
-              <span className="text-base font-semibold tracking-wide text-slate-100">OPJ Engenharia</span>
+              <span className="text-base font-semibold tracking-wide text-slate-100">
+                OPJ Engenharia
+              </span>
             </div>
             <button
               type="button"

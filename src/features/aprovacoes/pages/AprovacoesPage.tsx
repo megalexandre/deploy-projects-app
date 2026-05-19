@@ -3,8 +3,12 @@ import { CheckCircle, ClockCounterClockwise, Eye, Prohibit } from '@phosphor-ico
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent } from '@/shared/components/Card';
-import { approvalsService, type ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
-import { projectStatusFlow, projectsService } from '@/features/projetos/services/projectsService';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import {
+  approvalsService,
+  type ApprovalRequest,
+} from '@/features/aprovacoes/services/approvalsService';
+import { projectStatusFlow, projectsService } from '@/features/projects/services/projectsService';
 import { servicosService } from '@/features/servicos/services/servicosService';
 import { getSessionUser, isAdminSessionUser } from '@/shared/session/sessionUser';
 import type { Projeto, Servico, StatusProjeto, StatusServico } from '@/types';
@@ -14,7 +18,8 @@ type EntitySnapshot = {
   destinationPath: string;
 };
 
-const formatEntityType = (type: ApprovalRequest['entityType']) => (type === 'projeto' ? 'Projeto' : 'Servico');
+const formatEntityType = (type: ApprovalRequest['entityType']) =>
+  type === 'projeto' ? 'Projeto' : 'Servico';
 const formatApprovalStatus = (status: ApprovalRequest['status']) =>
   status === 'pendente' ? 'Pendente' : status === 'aprovado' ? 'Aprovado' : 'Rejeitado';
 
@@ -30,7 +35,7 @@ export const AprovacoesPage: React.FC = () => {
       const bootstrapPendingRequests = async () => {
         const [projetos, servicos] = await Promise.all([
           projectsService.getProjetos().catch(() => []),
-          servicosService.list().catch(() => [])
+          servicosService.list().catch(() => []),
         ]);
 
         (projetos as Projeto[])
@@ -41,7 +46,7 @@ export const AprovacoesPage: React.FC = () => {
               entityId: projeto.id,
               entityLabel: projeto.protocolo,
               clientName: projeto.cliente.nome,
-              createdAt: projeto.dataCriacao
+              createdAt: projeto.dataCriacao,
             });
           });
 
@@ -53,7 +58,7 @@ export const AprovacoesPage: React.FC = () => {
               entityId: servico.id,
               entityLabel: servico.protocolo,
               clientName: servico.cliente,
-              createdAt: servico.dataCriacao
+              createdAt: servico.dataCriacao,
             });
           });
       };
@@ -67,7 +72,7 @@ export const AprovacoesPage: React.FC = () => {
             current[request.id] ??
             (request.entityType === 'projeto' ? 'em_analise_documentacao' : 'abertura_servico');
           return acc;
-        }, {})
+        }, {}),
       );
 
       const nextSnapshots: Record<string, EntitySnapshot> = {};
@@ -78,7 +83,7 @@ export const AprovacoesPage: React.FC = () => {
               const projeto = await projectsService.getById(request.entityId);
               nextSnapshots[request.id] = {
                 status: projeto.status,
-                destinationPath: `/projetos/${request.entityId}`
+                destinationPath: `/projetos/${request.entityId}`,
               };
               return;
             }
@@ -86,14 +91,14 @@ export const AprovacoesPage: React.FC = () => {
             const servico = await servicosService.getById(request.entityId);
             nextSnapshots[request.id] = {
               status: servico.status,
-              destinationPath: `/servicos/${request.entityId}`
+              destinationPath: `/servicos/${request.entityId}`,
             };
           } catch {
             nextSnapshots[request.id] = {
-              destinationPath: request.entityType === 'projeto' ? '/projetos' : '/servicos'
+              destinationPath: request.entityType === 'projeto' ? '/projetos' : '/servicos',
             };
           }
-        })
+        }),
       );
 
       setSnapshots(nextSnapshots);
@@ -103,9 +108,18 @@ export const AprovacoesPage: React.FC = () => {
     void load();
   }, []);
 
-  const pendingCount = useMemo(() => requests.filter((item) => item.status === 'pendente').length, [requests]);
-  const approvedCount = useMemo(() => requests.filter((item) => item.status === 'aprovado').length, [requests]);
-  const rejectedCount = useMemo(() => requests.filter((item) => item.status === 'rejeitado').length, [requests]);
+  const pendingCount = useMemo(
+    () => requests.filter((item) => item.status === 'pendente').length,
+    [requests],
+  );
+  const approvedCount = useMemo(
+    () => requests.filter((item) => item.status === 'aprovado').length,
+    [requests],
+  );
+  const rejectedCount = useMemo(
+    () => requests.filter((item) => item.status === 'rejeitado').length,
+    [requests],
+  );
   const sessionUser = getSessionUser();
   const isAdmin = isAdminSessionUser();
 
@@ -119,26 +133,26 @@ export const AprovacoesPage: React.FC = () => {
       if (request.entityType === 'projeto') {
         const projeto = await projectsService.approvePending(
           request.entityId,
-          (approvalTargets[request.id] as StatusProjeto | undefined) ?? 'em_analise_documentacao'
+          (approvalTargets[request.id] as StatusProjeto | undefined) ?? 'em_analise_documentacao',
         );
         setSnapshots((current) => ({
           ...current,
           [request.id]: {
             status: projeto.status,
-            destinationPath: `/projetos/${request.entityId}`
-          }
+            destinationPath: `/projetos/${request.entityId}`,
+          },
         }));
       } else {
         const servico = await servicosService.approvePending(
           request.entityId,
-          (approvalTargets[request.id] as StatusServico | undefined) ?? 'abertura_servico'
+          (approvalTargets[request.id] as StatusServico | undefined) ?? 'abertura_servico',
         );
         setSnapshots((current) => ({
           ...current,
           [request.id]: {
             status: servico.status,
-            destinationPath: `/servicos/${request.entityId}`
-          }
+            destinationPath: `/servicos/${request.entityId}`,
+          },
         }));
       }
     }
@@ -159,7 +173,7 @@ export const AprovacoesPage: React.FC = () => {
   }
 
   if (loading) {
-    return <div className="flex h-64 items-center justify-center"><div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" /></div>;
+    return <LoadingSpinner />;
   }
 
   return (
@@ -172,14 +186,30 @@ export const AprovacoesPage: React.FC = () => {
           </p>
         </div>
         <div className="text-sm text-slate-400">
-          Responsavel atual: <span className="text-slate-100">{sessionUser?.name || 'Administrador'}</span>
+          Responsavel atual:{' '}
+          <span className="text-slate-100">{sessionUser?.name || 'Administrador'}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.18em] text-slate-400">Pendentes</div><div className="mt-2 text-3xl font-semibold text-amber-300">{pendingCount}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aprovados</div><div className="mt-2 text-3xl font-semibold text-emerald-300">{approvedCount}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.18em] text-slate-400">Rejeitados</div><div className="mt-2 text-3xl font-semibold text-rose-300">{rejectedCount}</div></CardContent></Card>
+        <Card>
+          <CardContent className="p-5">
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Pendentes</div>
+            <div className="mt-2 text-3xl font-semibold text-amber-300">{pendingCount}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aprovados</div>
+            <div className="mt-2 text-3xl font-semibold text-emerald-300">{approvedCount}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Rejeitados</div>
+            <div className="mt-2 text-3xl font-semibold text-rose-300">{rejectedCount}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -200,31 +230,48 @@ export const AprovacoesPage: React.FC = () => {
               <tbody className="divide-y divide-white/5">
                 {requests.map((request) => (
                   <tr key={request.id} className="bg-slate-950/20">
-                    <td className="px-5 py-4 text-sm text-slate-200">{formatEntityType(request.entityType)}</td>
+                    <td className="px-5 py-4 text-sm text-slate-200">
+                      {formatEntityType(request.entityType)}
+                    </td>
                     <td className="px-5 py-4">
-                      <div className="text-sm font-medium text-slate-100">{request.entityLabel}</div>
-                      <div className="text-xs text-slate-400">{new Date(request.createdAt).toLocaleString('pt-BR')}</div>
+                      <div className="text-sm font-medium text-slate-100">
+                        {request.entityLabel}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {new Date(request.createdAt).toLocaleString('pt-BR')}
+                      </div>
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-300">{request.clientName}</td>
                     <td className="px-5 py-4">
                       <div className="text-sm text-slate-200">{request.createdByName}</div>
-                      <div className="text-xs uppercase tracking-wide text-slate-500">{request.createdByRole}</div>
+                      <div className="text-xs uppercase tracking-wide text-slate-500">
+                        {request.createdByRole}
+                      </div>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-300">{snapshots[request.id]?.status ?? '-'}</td>
+                    <td className="px-5 py-4 text-sm text-slate-300">
+                      {snapshots[request.id]?.status ?? '-'}
+                    </td>
                     <td className="px-5 py-4">
-                      <span className={`rounded-full px-2.5 py-1 text-xs ${
-                        request.status === 'pendente'
-                          ? 'bg-amber-500/15 text-amber-200'
-                          : request.status === 'aprovado'
-                            ? 'bg-emerald-500/15 text-emerald-200'
-                            : 'bg-rose-500/15 text-rose-200'
-                      }`}>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs ${
+                          request.status === 'pendente'
+                            ? 'bg-amber-500/15 text-amber-200'
+                            : request.status === 'aprovado'
+                              ? 'bg-emerald-500/15 text-emerald-200'
+                              : 'bg-rose-500/15 text-rose-200'
+                        }`}
+                      >
                         {formatApprovalStatus(request.status)}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-2">
-                        <Link to={snapshots[request.id]?.destinationPath ?? (request.entityType === 'projeto' ? '/projetos' : '/servicos')}>
+                        <Link
+                          to={
+                            snapshots[request.id]?.destinationPath ??
+                            (request.entityType === 'projeto' ? '/projetos' : '/servicos')
+                          }
+                        >
                           <Button variant="outline" size="sm">
                             <Eye className="mr-1 h-4 w-4" />
                             Abrir
@@ -233,29 +280,48 @@ export const AprovacoesPage: React.FC = () => {
                         {request.status === 'pendente' && (
                           <>
                             <select
-                              value={approvalTargets[request.id] ?? (request.entityType === 'projeto' ? 'em_analise_documentacao' : 'abertura_servico')}
+                              value={
+                                approvalTargets[request.id] ??
+                                (request.entityType === 'projeto'
+                                  ? 'em_analise_documentacao'
+                                  : 'abertura_servico')
+                              }
                               onChange={(event) =>
                                 setApprovalTargets((current) => ({
                                   ...current,
-                                  [request.id]: event.target.value
+                                  [request.id]: event.target.value,
                                 }))
                               }
                               className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-slate-200"
                             >
                               {(request.entityType === 'projeto'
-                                ? projectStatusFlow.filter((item) => item.status !== 'aguardando_aprovacao')
-                                : servicosService.statusFlow.filter((item) => item.status !== 'aguardando_aprovacao')
+                                ? projectStatusFlow.filter(
+                                    (item) => item.status !== 'aguardando_aprovacao',
+                                  )
+                                : servicosService.statusFlow.filter(
+                                    (item) => item.status !== 'aguardando_aprovacao',
+                                  )
                               ).map((item) => (
                                 <option key={item.status} value={item.status}>
                                   {item.etapa}
                                 </option>
                               ))}
                             </select>
-                            <Button type="button" size="sm" onClick={() => handleDecision(request.id, 'aprovado')}>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleDecision(request.id, 'aprovado')}
+                            >
                               <CheckCircle className="mr-1 h-4 w-4" />
                               Aprovar
                             </Button>
-                            <Button type="button" variant="outline" size="sm" className="text-rose-300 hover:text-rose-200" onClick={() => handleDecision(request.id, 'rejeitado')}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="text-rose-300 hover:text-rose-200"
+                              onClick={() => handleDecision(request.id, 'rejeitado')}
+                            >
                               <Prohibit className="mr-1 h-4 w-4" />
                               Rejeitar
                             </Button>
@@ -264,7 +330,9 @@ export const AprovacoesPage: React.FC = () => {
                         {request.status !== 'pendente' && (
                           <div className="inline-flex items-center rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-400">
                             <ClockCounterClockwise className="mr-2 h-4 w-4" />
-                            {request.decidedByName ? `Decidido por ${request.decidedByName}` : 'Decisao registrada'}
+                            {request.decidedByName
+                              ? `Decidido por ${request.decidedByName}`
+                              : 'Decisao registrada'}
                           </div>
                         )}
                       </div>

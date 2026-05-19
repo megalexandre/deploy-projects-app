@@ -16,14 +16,39 @@ interface Pagamento {
 }
 
 const pagamentosMock: Pagamento[] = [
-  { id: '1', fornecedor: 'Solaris Equipamentos', descricao: 'Compra de inversores', vencimento: '2026-02-18', valor: 12450, status: 'agendado' },
-  { id: '2', fornecedor: 'Logistica Sul', descricao: 'Frete de modulos', vencimento: '2026-02-10', valor: 1890, status: 'atrasado' },
-  { id: '3', fornecedor: 'Energia Limpa LTDA', descricao: 'Estruturas metalicas', vencimento: '2026-02-06', valor: 5320, status: 'pago' }
+  {
+    id: '1',
+    fornecedor: 'Solaris Equipamentos',
+    descricao: 'Compra de inversores',
+    vencimento: '2026-02-18',
+    valor: 12450,
+    status: 'agendado',
+  },
+  {
+    id: '2',
+    fornecedor: 'Logistica Sul',
+    descricao: 'Frete de modulos',
+    vencimento: '2026-02-10',
+    valor: 1890,
+    status: 'atrasado',
+  },
+  {
+    id: '3',
+    fornecedor: 'Energia Limpa LTDA',
+    descricao: 'Estruturas metalicas',
+    vencimento: '2026-02-06',
+    valor: 5320,
+    status: 'pago',
+  },
 ];
 
 export const PagamentosPage: React.FC = () => {
-  const totalAPagar = pagamentosMock.filter((item) => item.status !== 'pago').reduce((sum, item) => sum + item.valor, 0);
-  const totalAtrasado = pagamentosMock.filter((item) => item.status === 'atrasado').reduce((sum, item) => sum + item.valor, 0);
+  const totalAPagar = pagamentosMock
+    .filter((item) => item.status !== 'pago')
+    .reduce((sum, item) => sum + item.valor, 0);
+  const totalAtrasado = pagamentosMock
+    .filter((item) => item.status === 'atrasado')
+    .reduce((sum, item) => sum + item.valor, 0);
 
   const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
@@ -82,7 +107,9 @@ export const PagamentosPage: React.FC = () => {
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-400">Proximo passo</p>
-            <p className="text-gray-100 mt-2">Conectar com API de financeiro e regras de aprovacao.</p>
+            <p className="text-gray-100 mt-2">
+              Conectar com API de financeiro e regras de aprovacao.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -109,9 +136,13 @@ export const PagamentosPage: React.FC = () => {
                     <td className="py-3 px-4 text-gray-100">{item.fornecedor}</td>
                     <td className="py-3 px-4 text-gray-100">{item.descricao}</td>
                     <td className="py-3 px-4 text-gray-100">{formatDateBR(item.vencimento)}</td>
-                    <td className="py-3 px-4 text-gray-100 font-medium">{formatCurrencyBRL(item.valor)}</td>
+                    <td className="py-3 px-4 text-gray-100 font-medium">
+                      {formatCurrencyBRL(item.valor)}
+                    </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}
+                      >
                         {getStatusLabel(item.status)}
                       </span>
                     </td>
@@ -125,4 +156,3 @@ export const PagamentosPage: React.FC = () => {
     </div>
   );
 };
-

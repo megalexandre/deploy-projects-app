@@ -16,9 +16,33 @@ interface Fatura {
 }
 
 const faturasMock: Fatura[] = [
-  { id: '1', numero: 'FAT-2026-0017', cliente: 'Condominio Vale Verde', referencia: 'Janeiro/2026', emissao: '2026-02-02', valor: 'R$ 24.500,00', status: 'enviada' },
-  { id: '2', numero: 'FAT-2026-0018', cliente: 'Mercado Nova Era', referencia: 'Janeiro/2026', emissao: '2026-02-03', valor: 'R$ 11.200,00', status: 'paga' },
-  { id: '3', numero: 'FAT-2026-0019', cliente: 'Carlos Santos', referencia: 'Fevereiro/2026', emissao: '2026-02-09', valor: 'R$ 7.800,00', status: 'emitida' }
+  {
+    id: '1',
+    numero: 'FAT-2026-0017',
+    cliente: 'Condominio Vale Verde',
+    referencia: 'Janeiro/2026',
+    emissao: '2026-02-02',
+    valor: 'R$ 24.500,00',
+    status: 'enviada',
+  },
+  {
+    id: '2',
+    numero: 'FAT-2026-0018',
+    cliente: 'Mercado Nova Era',
+    referencia: 'Janeiro/2026',
+    emissao: '2026-02-03',
+    valor: 'R$ 11.200,00',
+    status: 'paga',
+  },
+  {
+    id: '3',
+    numero: 'FAT-2026-0019',
+    cliente: 'Carlos Santos',
+    referencia: 'Fevereiro/2026',
+    emissao: '2026-02-09',
+    valor: 'R$ 7.800,00',
+    status: 'emitida',
+  },
 ];
 
 export const FaturasPage: React.FC = () => {
@@ -60,7 +84,9 @@ export const FaturasPage: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-gray-300">Estrutura pronta para incluir filtros por cliente, periodo e status.</p>
+            <p className="text-gray-300">
+              Estrutura pronta para incluir filtros por cliente, periodo e status.
+            </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm">
                 <FunnelSimple className="h-4 w-4 mr-2" />
@@ -101,7 +127,9 @@ export const FaturasPage: React.FC = () => {
                     <td className="py-3 px-4 text-gray-100">{formatDateBR(fatura.emissao)}</td>
                     <td className="py-3 px-4 text-gray-100">{fatura.valor}</td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(fatura.status)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(fatura.status)}`}
+                      >
                         {getStatusLabel(fatura.status)}
                       </span>
                     </td>
@@ -115,4 +143,3 @@ export const FaturasPage: React.FC = () => {
     </div>
   );
 };
-

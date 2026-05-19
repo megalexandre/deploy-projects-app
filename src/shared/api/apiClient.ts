@@ -55,7 +55,9 @@ const resolveApiBaseUrl = () => {
     return removeTrailingSlash(API_PROXY_TARGET);
   }
 
-  throw new Error('Variavel de ambiente obrigatoria ausente: defina VITE_API_PROXY_TARGET ou VITE_API_BASE_URL');
+  throw new Error(
+    'Variavel de ambiente obrigatoria ausente: defina VITE_API_PROXY_TARGET ou VITE_API_BASE_URL',
+  );
 };
 
 const RESOLVED_API_BASE_URL = resolveApiBaseUrl();
@@ -133,7 +135,11 @@ export const resolveErrorMessage = (payload: unknown, fallback: string) => {
 };
 
 /** Executa requisicao HTTP com tratamento centralizado de headers, auth e erros. */
-const request = async <T>(method: HttpMethod, path: string, options: ApiRequestOptions = {}): Promise<T> => {
+const request = async <T>(
+  method: HttpMethod,
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<T> => {
   const token = getStoredToken();
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
@@ -150,7 +156,7 @@ const request = async <T>(method: HttpMethod, path: string, options: ApiRequestO
     ...options,
     method,
     headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
   const contentType = response.headers.get('content-type');
@@ -162,7 +168,7 @@ const request = async <T>(method: HttpMethod, path: string, options: ApiRequestO
     const error = new ApiError(
       resolveErrorMessage(payload, 'Erro na comunicacao com o servidor'),
       response.status,
-      payload
+      payload,
     );
 
     if (error.status === 401 && unauthorizedHandler && !handlingUnauthorized) {
@@ -219,5 +225,5 @@ export const apiClient = {
   },
   /** Exposicao da URL base para diagnostico e logs. */
   baseUrl: RESOLVED_API_BASE_URL,
-  authStateChangedEvent: AUTH_STATE_CHANGED_EVENT
+  authStateChangedEvent: AUTH_STATE_CHANGED_EVENT,
 };

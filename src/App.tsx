@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { ClientesPage } from '@/features/clientes/pages/ClientesPage';
-import { ProjetosPage } from '@/features/projetos/pages/ProjetosPage';
-import { ProjetoDetailPage } from '@/features/projetos/pages/ProjetoDetailPage';
-import { NovoProjetoPage } from '@/features/projetos/pages/NovoProjetoPage';
+import { ProjetosPage } from '@/features/projects/pages/ProjetosPage';
+import { ProjetoDetailPage } from '@/features/projects/pages/ProjetoDetailPage';
+import { NovoProjetoPage } from '@/features/projects/pages/NovoProjetoPage';
 import { ServicosPage } from '@/features/servicos/pages/ServicosPage';
 import { ServicoDetailPage } from '@/features/servicos/pages/ServicoDetailPage';
 import { NovoServicoPage } from '@/features/servicos/pages/NovoServicoPage';
@@ -16,7 +16,7 @@ import { FaturasPage } from '@/features/financeiro/pages/FaturasPage';
 import { CalendarioPage } from '@/features/calendario/pages/CalendarioPage';
 import { AprovacoesPage } from '@/features/aprovacoes/pages/AprovacoesPage';
 import { UsuariosPage } from '@/features/admin/pages/UsuariosPage';
-import { ConcessionariasPage } from '@/features/admin/pages/ConcessionariasPage';
+import { ConcessionairesPage } from '@/features/concessionaries/pages/ConcessionairesPage';
 import { ConfiguracoesPage } from '@/features/admin/pages/ConfiguracoesPage';
 import { ProtectedLayout } from '@/shared/layouts/ProtectedLayout';
 import { useAuthInterceptor } from '@/shared/hooks/useAuthInterceptor';
@@ -40,7 +40,10 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={getIsAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route
+        path="/login"
+        element={getIsAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+      />
 
       <Route element={<ProtectedLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -76,7 +79,7 @@ const AppRoutes: React.FC = () => {
           path="/concessionarias"
           element={
             <AdminOnlyRoute>
-              <ConcessionariasPage />
+              <ConcessionairesPage />
             </AdminOnlyRoute>
           }
         />

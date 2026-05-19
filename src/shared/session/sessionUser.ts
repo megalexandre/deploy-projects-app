@@ -5,7 +5,8 @@ const STORAGE_USER_KEY = 'user';
 const AUTH_STATE_CHANGED_EVENT = 'auth-state-changed';
 const ADMIN_ROLES = new Set(['admin', 'main']);
 
-const normalizeRole = (value: unknown) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+const normalizeRole = (value: unknown) =>
+  typeof value === 'string' ? value.trim().toLowerCase() : '';
 const isAdminRole = (role: string) => ADMIN_ROLES.has(role);
 
 const notifyAuthStateChanged = () => {
@@ -26,7 +27,7 @@ const mapStoredUser = (parsed: unknown): User | null => {
     name: typeof parsed.name === 'string' ? parsed.name : '',
     email: typeof parsed.email === 'string' ? parsed.email : '',
     role,
-    isAdmin: isAdminRole(role)
+    isAdmin: isAdminRole(role),
   };
 };
 
@@ -56,7 +57,7 @@ export const setSessionUser = (user: User) => {
   const normalizedUser = {
     ...user,
     role: normalizeRole(user.role),
-    isAdmin: isAdminRole(normalizeRole(user.role))
+    isAdmin: isAdminRole(normalizeRole(user.role)),
   };
 
   window.localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(normalizedUser));
