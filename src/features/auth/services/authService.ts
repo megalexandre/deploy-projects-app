@@ -49,10 +49,14 @@ const clearPersistedSession = () => {
 
 const normalizeRole = (profile?: string) => {
   const normalized = profile?.trim().toLowerCase();
-  return normalized || 'user';
+  if (!normalized) {
+    return 'user';
+  }
+
+  return normalized === 'admin' ? 'main' : normalized;
 };
 
-const isAdminRole = (role: string) => role === 'admin' || role === 'main';
+const isAdminRole = (role: string) => role === 'main';
 
 const mapBackendCurrentUser = (response: BackendCurrentUserResponse): User => ({
   id: response.id,
@@ -90,7 +94,7 @@ export const authService = {
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      profile: userData.profile ?? 'admin',
+      profile: normalizeRole(userData.profile) || 'main',
     };
 
     // @todo change all rotes do proper path and remove this endpoint

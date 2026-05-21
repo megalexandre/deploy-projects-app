@@ -26,7 +26,10 @@ export interface UpdateUserData {
   role?: string;
 }
 
-const normalizeRole = (value?: string) => value?.trim().toLowerCase() || 'user';
+const normalizeRole = (value?: string) => {
+  const normalized = value?.trim().toLowerCase() || 'user';
+  return normalized === 'admin' ? 'main' : normalized;
+};
 
 const normalizeUser = (raw: unknown): User => {
   const user = isRecord(raw) ? raw : {};

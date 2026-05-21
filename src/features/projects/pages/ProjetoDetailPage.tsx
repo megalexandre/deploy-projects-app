@@ -15,9 +15,9 @@ import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { customersService, filesService, projectsService, type Customer } from '@/services';
-import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import type { Documento, Projeto } from '@/types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
+import { EntityFinanceTab } from '@/features/financeiro/components/EntityFinanceTab';
 import { TimelineCommentsDialog } from '../components/TimelineCommentsDialog';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
@@ -44,7 +44,6 @@ export const ProjetoDetailPage: React.FC = () => {
   const [timelineDialogMode, setTimelineDialogMode] = useState<'view' | 'add'>('view');
   const [timelineComment, setTimelineComment] = useState('');
   const [savingTimelineComment, setSavingTimelineComment] = useState(false);
-  const currentUser = useCurrentUser();
 
   useEffect(() => {
     if (id) {
@@ -290,6 +289,7 @@ export const ProjetoDetailPage: React.FC = () => {
   const tabs = [
     { id: 'dados', label: 'Dados do Projeto' },
     { id: 'tecnicos', label: 'Dados Tecnicos' },
+    { id: 'financeiro', label: 'Financeiro' },
     { id: 'timeline', label: 'Linha do Tempo' },
     { id: 'documentos', label: 'Documentos' },
   ];
@@ -309,31 +309,20 @@ export const ProjetoDetailPage: React.FC = () => {
     setSavingTimelineComment(true);
 
     try {
-      const comentarios = [
-        ...(timelineDialogItem.comentarios ?? []),
-        {
-          id: crypto.randomUUID(),
-          texto,
-          data: new Date().toISOString(),
-          autor: currentUser?.name || undefined,
-        },
-      ];
-
-      projectsService.saveTimelineComments(projeto.id, timelineDialogItem.id, comentarios);
-
-      setProjeto((current) =>
-        current
-          ? {
-              ...current,
-              timeline: current.timeline.map((item) =>
-                item.id === timelineDialogItem.id ? { ...item, comentarios } : item,
-              ),
-            }
-          : current,
+      const updatedProject = await projectsService.addTimelineComment(
+        projeto.id,
+        timelineDialogItem.id,
+        texto,
       );
-      setTimelineDialogItem((current) => (current ? { ...current, comentarios } : current));
+
+      setProjeto(updatedProject);
+      setTimelineDialogItem(
+        updatedProject.timeline.find((item) => item.id === timelineDialogItem.id) ?? null,
+      );
       setTimelineComment('');
       setTimelineDialogMode('view');
+    } catch (error) {
+      console.error('Erro ao salvar comentario do status do projeto:', error);
     } finally {
       setSavingTimelineComment(false);
     }
@@ -913,6 +902,16 @@ export const ProjetoDetailPage: React.FC = () => {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {activeTab === 'financeiro' && (
+          <EntityFinanceTab
+            entityType="projeto"
+            entityId={projeto.id}
+            entityLabel={projeto.protocolo}
+            amount={projeto.valor}
+            createdAt={projeto.dataCriacao}
+          />
         )}
 
         {activeTab === 'documentos' && (

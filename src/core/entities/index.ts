@@ -5,6 +5,7 @@ export type {
   PaginatedResponse,
   Endereco,
   Documento,
+  TimelineComment,
   TimelineItem,
   PadraoEntradaItem,
   Modulo,

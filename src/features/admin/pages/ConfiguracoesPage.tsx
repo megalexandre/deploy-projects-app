@@ -140,7 +140,7 @@ export const ConfiguracoesPage: React.FC = () => {
               <Input label="Perfil" value={currentUser?.role ?? 'user'} readOnly />
               <Input
                 label="Acesso"
-                value={currentUser?.isAdmin ? 'Administrador do sistema' : 'Usuario'}
+                value={currentUser?.isAdmin ? 'Perfil Main' : 'Usuario'}
                 readOnly
               />
             </div>

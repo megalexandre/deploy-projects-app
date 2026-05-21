@@ -1,6 +1,6 @@
 import type { Endereco } from '@/core/entities/comum';
 import type { Projeto } from '@/core/entities/projeto';
-import type { Customer } from '@/features/clientes/services/customersService';
+import type { Customer } from '@/features/clientes/domain/customer';
 import { toProjetoStatus } from '../services/projectNormalizer';
 
 //#TODO provavelmente vai dar pra excluir isso depois de refatorar

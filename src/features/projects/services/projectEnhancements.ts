@@ -129,7 +129,7 @@ export const mergeProjectEnhancement = (project: Projeto): Projeto => {
       enhancement.zeroGridControleExportacao || project.zeroGridControleExportacao,
     observacoes: enhancement.observacoes || project.observacoes,
     status: project.status,
-    timeline: timeline.length > 0 ? timeline : project.timeline,
+    timeline: project.timeline.length > 0 ? project.timeline : timeline,
     padraoEntradaItens:
       padraoEntradaItens.length > 0 ? padraoEntradaItens : project.padraoEntradaItens,
     dadosTecnicos: {

@@ -166,7 +166,7 @@ export const AprovacoesPage: React.FC = () => {
       <div className="space-y-6 page-enter">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Aprovacoes</h1>
-          <p className="mt-1 text-gray-400">Area restrita a usuarios com perfil administrador.</p>
+          <p className="mt-1 text-gray-400">Area restrita a usuarios com perfil main.</p>
         </div>
       </div>
     );
@@ -182,12 +182,11 @@ export const AprovacoesPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-100">Aprovacoes</h1>
           <p className="mt-1 text-gray-400">
-            Solicita aprovacao para projetos e servicos criados por usuarios sem role `admin`.
+            Solicita aprovacao para projetos e servicos criados por usuarios sem role `main`.
           </p>
         </div>
         <div className="text-sm text-slate-400">
-          Responsavel atual:{' '}
-          <span className="text-slate-100">{sessionUser?.name || 'Administrador'}</span>
+          Responsavel atual: <span className="text-slate-100">{sessionUser?.name || 'Main'}</span>
         </div>
       </div>
 

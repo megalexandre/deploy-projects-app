@@ -7,6 +7,7 @@ export type {
   Endereco,
   Cliente,
   Documento,
+  TimelineComment,
   TimelineItem,
   PadraoEntradaItem,
   Modulo,

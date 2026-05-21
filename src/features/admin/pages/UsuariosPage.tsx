@@ -19,6 +19,7 @@ export const UsuariosPage: React.FC = () => {
     loading,
     saving,
     error,
+    constructionMessage,
     searchTerm,
     selectedRole,
     formOpen,
@@ -56,7 +57,7 @@ export const UsuariosPage: React.FC = () => {
 
       <UserStatsGrid
         totalUsers={usuarios.length}
-        adminUsers={adminUsers}
+        mainUsers={adminUsers}
         regularUsers={regularUsers}
         profileCount={roleOptions.filter((item) => item !== 'todos').length}
       />
@@ -70,6 +71,7 @@ export const UsuariosPage: React.FC = () => {
       />
 
       {error && <ErrorAlert message={error} />}
+      {constructionMessage && <ErrorAlert message={constructionMessage} />}
 
       <UserListCard users={filteredUsuarios} onEdit={handleEditUser} />
 

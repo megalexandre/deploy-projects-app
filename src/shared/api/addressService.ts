@@ -100,7 +100,7 @@ export const addressService = {
 
   async update(addressData: UpdateAddressData): Promise<Address> {
     const response = await apiClient.put<unknown>(
-      ADDRESS_ENDPOINT,
+      `${ADDRESS_ENDPOINT}/${addressData.id}`,
       buildAddressPayload(addressData),
     );
     return normalizeAddress(response);
