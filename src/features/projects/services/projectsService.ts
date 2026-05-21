@@ -180,6 +180,15 @@ export const projectsService = {
     }));
   },
 
+  async addTimelineComment(projectId: string, statusId: string, body: string): Promise<Project> {
+    await apiClient.post<unknown>(
+      `${PROJECTS_ENDPOINT}/${projectId}/statuses/${statusId}/comments`,
+      { body },
+    );
+
+    return projectsService.getById(projectId);
+  },
+
   async create(projectData: CreateProjectData): Promise<Project> {
     const response = await createRaw(projectData);
     const normalized = normalizeProjeto(response);
@@ -198,21 +207,11 @@ export const projectsService = {
     id: string,
     nextStatus: StatusProjeto = 'em_analise_documentacao',
   ): Promise<Project> {
-    const project = await projectsService.getById(id);
-    await projectsService.update(id, { status: nextStatus });
-
-    updateProjectEnhancement(id, (current) => ({
-      ...current,
-      status: nextStatus,
-      timeline: appendTimelineEntryForProjectStatus(
-        project,
-        current?.timeline ?? project.timeline,
-        nextStatus,
-        'Projeto aprovado no frontend e liberado para o fluxo operacional.',
-      ),
-    }));
-
-    return projectsService.getById(id);
+    return projectsService.updateStatus(
+      id,
+      nextStatus,
+      'Projeto aprovado no frontend e liberado para o fluxo operacional.',
+    );
   },
 
   async getAll(): Promise<Project[]> {
@@ -324,12 +323,8 @@ export const projectsService = {
     const payload: Record<string, unknown> = { name };
     if (comment) payload.comment = comment;
 
-    const response = await apiClient.post<unknown>(`${PROJECTS_ENDPOINT}/${id}/statuses`, payload);
-    const normalized = normalizeProjeto(
-      isRecord(response) && Object.keys(response).length > 0
-        ? response
-        : await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`),
-    );
+    await apiClient.post<unknown>(`${PROJECTS_ENDPOINT}/${id}/statuses`, payload);
+    const normalized = normalizeProjeto(await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`));
     const newStatus = normalized.status;
 
     updateProjectEnhancement(id, (current) => ({

@@ -32,7 +32,7 @@ export type {
   Customer,
   CreateCustomerData,
   UpdateCustomerData,
-} from '@/features/clientes/services/customersService';
+} from '@/features/clientes/domain/customer';
 
 export type { Address, CreateAddressData, UpdateAddressData } from '@/shared/api/addressService';
 

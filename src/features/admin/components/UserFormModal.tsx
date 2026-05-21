@@ -84,7 +84,7 @@ export const UserFormModal: React.FC<Props> = ({
             className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
           >
             <option value="user">Usuario</option>
-            <option value="admin">Administrador</option>
+            <option value="main">Main</option>
           </select>
         </div>
 

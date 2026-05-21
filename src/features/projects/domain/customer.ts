@@ -1,4 +1,4 @@
-import type { Customer } from '@/features/clientes/services/customersService';
+import type { Customer } from '@/features/clientes/domain/customer';
 import { toAddress, type AddressResponse } from './address';
 
 export interface CustomerResponse {

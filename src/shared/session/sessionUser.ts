@@ -3,11 +3,14 @@ import { isRecord } from '@/core/utils/normalize';
 
 const STORAGE_USER_KEY = 'user';
 const AUTH_STATE_CHANGED_EVENT = 'auth-state-changed';
-const ADMIN_ROLES = new Set(['admin', 'main']);
 
 const normalizeRole = (value: unknown) =>
-  typeof value === 'string' ? value.trim().toLowerCase() : '';
-const isAdminRole = (role: string) => ADMIN_ROLES.has(role);
+  typeof value === 'string'
+    ? value.trim().toLowerCase() === 'admin'
+      ? 'main'
+      : value.trim().toLowerCase()
+    : '';
+const isAdminRole = (role: string) => role === 'main';
 
 const notifyAuthStateChanged = () => {
   if (typeof window !== 'undefined') {

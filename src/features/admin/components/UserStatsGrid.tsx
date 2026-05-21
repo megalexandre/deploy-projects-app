@@ -4,14 +4,14 @@ import { Card, CardContent } from '@/shared/components/Card';
 
 type Props = {
   totalUsers: number;
-  adminUsers: number;
+  mainUsers: number;
   regularUsers: number;
   profileCount: number;
 };
 
 export const UserStatsGrid: React.FC<Props> = ({
   totalUsers,
-  adminUsers,
+  mainUsers,
   regularUsers,
   profileCount,
 }) => (
@@ -32,8 +32,8 @@ export const UserStatsGrid: React.FC<Props> = ({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-400">Admins</p>
-            <p className="text-2xl font-bold text-amber-300">{adminUsers}</p>
+            <p className="text-sm text-gray-400">Main</p>
+            <p className="text-2xl font-bold text-amber-300">{mainUsers}</p>
           </div>
           <Shield className="h-8 w-8 text-amber-300" />
         </div>

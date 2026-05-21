@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { toProjeto, type ProjectResponse } from './project';
-import type { Customer } from '@/features/clientes/services/customersService';
+import type { Customer } from '@/features/clientes/domain/customer';
 import type { Endereco } from '@/core/entities/comum';
 
 const makeProjectResponse = (overrides: Partial<ProjectResponse> = {}): ProjectResponse => ({

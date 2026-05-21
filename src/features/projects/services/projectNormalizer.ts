@@ -244,6 +244,46 @@ const normalizeTimelineItem = (item: unknown): Projeto['timeline'][number] | nul
   };
 };
 
+const normalizeTimelineFromStatuses = (
+  statuses: unknown[],
+  currentStatus: StatusProjeto,
+): Projeto['timeline'] =>
+  statuses
+    .map((item): Projeto['timeline'][number] | null => {
+      if (!isRecord(item)) return null;
+
+      const statusName = toProjetoStatus(item.name);
+      const etapa = projectStatusFlow.find((flowItem) => flowItem.status === statusName)?.etapa;
+      if (!etapa) return null;
+
+      const comentarios = asArray(item.comments)
+        .map((comment) => {
+          if (!isRecord(comment)) return null;
+
+          const texto = asString(comment.texto) || asString(comment.body);
+          if (!texto) return null;
+
+          return {
+            id: asString(comment.id) || crypto.randomUUID(),
+            texto,
+            data:
+              asString(comment.data) || asString(comment.created_at) || new Date().toISOString(),
+            autor: asString(comment.autor) || asString(comment.created_by) || undefined,
+          };
+        })
+        .filter((comment): comment is NonNullable<typeof comment> => comment !== null);
+
+      return {
+        id: asString(item.id) || crypto.randomUUID(),
+        etapa,
+        data: asString(item.data) || asString(item.created_at) || new Date().toISOString(),
+        status: getTimelineStatusFromProjectStatus(statusName, currentStatus),
+        descricao: undefined,
+        comentarios,
+      };
+    })
+    .filter((item): item is Projeto['timeline'][number] => item !== null);
+
 const normalizeModalidade = (rawModalidade: unknown): Projeto['dadosProjeto']['modalidade'] => {
   const modalidade = normalizeStatusKey(rawModalidade);
   if (modalidade.includes('compart')) return 'geracao_compartilhada';
@@ -306,6 +346,9 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
   const dadosProjeto = isRecord(project.dadosProjeto) ? project.dadosProjeto : {};
   const financeiro = isRecord(project.financeiro) ? project.financeiro : {};
   const dadosTecnicos = isRecord(project.dadosTecnicos) ? project.dadosTecnicos : {};
+  const projectStatus = toProjetoStatus(
+    project.status ?? project.projectStatus ?? project.situacao ?? project.state,
+  );
 
   const id = asString(project.id) || crypto.randomUUID();
   const protocolo =
@@ -414,9 +457,7 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
       .map(normalizeTimelineItem)
       .filter((item): item is Projeto['timeline'][number] => item !== null),
     documentos: asArray<Projeto['documentos'][number]>(project.documentos),
-    status: toProjetoStatus(
-      project.status ?? project.projectStatus ?? project.situacao ?? project.state,
-    ),
+    status: projectStatus,
     valor: asNumber(
       project.valor ?? project.amount ?? project.value ?? dadosProjeto.valor ?? financeiro.valor,
     ),
@@ -497,11 +538,18 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
       new Date().toISOString(),
   };
 
+  const timelineFromStatuses = normalizeTimelineFromStatuses(
+    asArray(project.statuses),
+    projetoNormalizado.status,
+  );
+
   return applyDerivedDadosTecnicos({
     ...projetoNormalizado,
     timeline:
-      projetoNormalizado.timeline.length > 0
-        ? projetoNormalizado.timeline
-        : buildFallbackTimeline(projetoNormalizado),
+      timelineFromStatuses.length > 0
+        ? timelineFromStatuses
+        : projetoNormalizado.timeline.length > 0
+          ? projetoNormalizado.timeline
+          : buildFallbackTimeline(projetoNormalizado),
   });
 };

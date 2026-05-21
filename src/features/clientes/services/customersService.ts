@@ -3,43 +3,8 @@ import type { Documento } from '@/types';
 import { asNumber, asString, isRecord } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
 import { apiClient } from '@/shared/api/apiClient';
-
-export interface Customer {
-  id: string;
-  addressId?: string;
-  nome: string;
-  cpfCnpj: string;
-  telefone: string;
-  email: string;
-  enderecoCompleto?: string;
-  endereco?: {
-    cep: string;
-    logradouro: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    link?: string;
-  };
-  documentos: Documento[];
-}
-
-export interface CreateCustomerData {
-  nome: string;
-  addressId?: string;
-  cpfCnpj: string;
-  telefone: string;
-  email: string;
-}
-
-export interface UpdateCustomerData {
-  nome?: string;
-  addressId?: string;
-  cpfCnpj?: string;
-  telefone?: string;
-  email?: string;
-}
+import type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
+export type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
 
 type CustomerEnhancement = {
   documentos?: Documento[];

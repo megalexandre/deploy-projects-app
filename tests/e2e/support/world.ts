@@ -14,5 +14,3 @@ export class CustomWorld {
 }
 
 setWorldConstructor(CustomWorld);
-
-export type { CustomWorld };

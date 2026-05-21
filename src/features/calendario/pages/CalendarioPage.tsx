@@ -1,5 +1,5 @@
-/** Pagina 'CalendarioPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
-import React, { useEffect, useMemo, useState } from 'react';
+/** Pagina 'CalendarioPage': renderiza a agenda usando hook e helpers do dominio da feature. */
+import React from 'react';
 import {
   Calendar as CalendarIcon,
   Plus,
@@ -14,359 +14,40 @@ import {
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
-import type { Projeto, Servico } from '@/types';
-import { projectsService, servicosService } from '@/services';
-
-type TipoEventoManual = 'instalacao' | 'manutencao' | 'reuniao' | 'vistoria';
-type OrigemAgenda = 'evento' | 'projeto' | 'servico';
-type FiltroAgenda = 'todos' | OrigemAgenda;
-
-interface EventoManual {
-  id: string;
-  titulo: string;
-  data: string;
-  hora: string;
-  tipo: TipoEventoManual;
-  local: string;
-  participantes: string[];
-  descricao: string;
-}
-
-interface AgendaItem {
-  id: string;
-  origem: OrigemAgenda;
-  subtipo?: TipoEventoManual;
-  titulo: string;
-  data: string;
-  hora: string;
-  local: string;
-  descricao: string;
-  participantes: string[];
-}
-
-const now = new Date();
-const CURRENT_YEAR = now.getFullYear();
-const CURRENT_MONTH = now.getMonth() + 1;
-
-const dayToDate = (day: number) =>
-  `${CURRENT_YEAR}-${String(CURRENT_MONTH).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+import {
+  formatDateBR,
+  formatMonthYear,
+  getDaysInMonth,
+  getOrigemLabel,
+  getTipoColor,
+  getTipoIcon,
+  type FiltroAgenda,
+  type TipoEventoManual,
+} from '../domain/calendar';
+import { useCalendario } from '../hooks/useCalendario';
 
 export const CalendarioPage: React.FC = () => {
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
-  const [servicos, setServicos] = useState<Servico[]>([]);
-  const [loadingProjetos, setLoadingProjetos] = useState(false);
-  const [erroProjetos, setErroProjetos] = useState<string | null>(null);
-  const [eventosManuais, setEventosManuais] = useState<EventoManual[]>([]);
-
-  const [selectedDate, setSelectedDate] = useState(new Date(CURRENT_YEAR, CURRENT_MONTH - 1, 1));
-  const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'dia'>('mes');
-  const [filtroAgenda, setFiltroAgenda] = useState<FiltroAgenda>('todos');
-  const [selectedDayFilter, setSelectedDayFilter] = useState<number | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [novoEvento, setNovoEvento] = useState({
-    titulo: '',
-    tipo: 'instalacao' as TipoEventoManual,
-    data: dayToDate(now.getDate()),
-    hora: '09:00',
-    local: '',
-    participantes: '',
-    descricao: '',
-  });
-
-  useEffect(() => {
-    const loadAgenda = async () => {
-      setLoadingProjetos(true);
-      try {
-        const [projectsData, servicesData] = await Promise.all([
-          projectsService.getProjetos(),
-          servicosService.list(),
-        ]);
-        setProjetos(projectsData);
-        setServicos(servicesData);
-        setErroProjetos(null);
-      } catch (error) {
-        console.error('Erro ao carregar agenda para o calendario:', error);
-        setErroProjetos('Nao foi possivel carregar projetos e servicos.');
-      } finally {
-        setLoadingProjetos(false);
-      }
-    };
-
-    void loadAgenda();
-  }, []);
-
-  const extractDateAndTime = (value: string): { data: string; hora: string } | null => {
-    if (!value) {
-      return null;
-    }
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return null;
-    }
-
-    const data = parsed.toISOString().slice(0, 10);
-    const hasTime = value.includes('T');
-    const hora = hasTime ? parsed.toISOString().slice(11, 16) : '09:00';
-    return { data, hora };
-  };
-
-  const getLocalProjeto = (projeto: Projeto) => {
-    const cidadeEstado = [projeto.endereco.cidade, projeto.endereco.estado]
-      .filter(Boolean)
-      .join(' - ');
-    if (cidadeEstado) {
-      return cidadeEstado;
-    }
-
-    if (projeto.endereco.logradouro) {
-      return projeto.endereco.logradouro;
-    }
-
-    return 'Local nao informado';
-  };
-
-  const getLocalServico = (servico: Servico) => {
-    const endereco = servico.enderecoObra ?? servico.enderecoGeradora;
-    const cidadeEstado = [endereco?.cidade, endereco?.estado].filter(Boolean).join(' - ');
-    if (cidadeEstado) {
-      return cidadeEstado;
-    }
-
-    if (endereco?.logradouro) {
-      return endereco.logradouro;
-    }
-
-    return servico.concessionaria || 'Local nao informado';
-  };
-
-  const agendaItems = useMemo<AgendaItem[]>(() => {
-    const eventos = eventosManuais.map((item) => ({
-      id: item.id,
-      origem: 'evento' as const,
-      subtipo: item.tipo,
-      titulo: item.titulo,
-      data: item.data,
-      hora: item.hora,
-      local: item.local,
-      descricao: item.descricao,
-      participantes: item.participantes,
-    }));
-
-    const projetosAgenda = projetos.flatMap((projeto) => {
-      const baseTitulo = `Projeto ${projeto.protocolo} - ${projeto.cliente.nome}`;
-      const local = getLocalProjeto(projeto);
-      const timeline = Array.isArray(projeto.timeline) ? projeto.timeline : [];
-
-      const itensTimeline: AgendaItem[] = timeline
-        .map<AgendaItem | null>((item) => {
-          const parsed = extractDateAndTime(item.data);
-          if (!parsed) {
-            return null;
-          }
-
-          return {
-            id: `projeto-${projeto.id}-timeline-${item.id}`,
-            origem: 'projeto' as const,
-            titulo: `${baseTitulo} - ${item.etapa}`,
-            data: parsed.data,
-            hora: parsed.hora,
-            local,
-            descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-            participantes: ['Equipe de Projetos'],
-          };
-        })
-        .filter((item): item is AgendaItem => item !== null);
-
-      if (itensTimeline.length > 0) {
-        return itensTimeline;
-      }
-
-      const parsedCriacao = extractDateAndTime(projeto.dataCriacao);
-      if (!parsedCriacao) {
-        return [];
-      }
-
-      return [
-        {
-          id: `projeto-${projeto.id}-criacao`,
-          origem: 'projeto' as const,
-          titulo: `${baseTitulo} - Cadastro do projeto`,
-          data: parsedCriacao.data,
-          hora: parsedCriacao.hora,
-          local,
-          descricao: 'Projeto cadastrado no sistema.',
-          participantes: ['Equipe de Projetos'],
-        },
-      ];
-    });
-
-    const servicosAgenda = servicos.flatMap((servico) => {
-      const baseTitulo = `${servico.nome} - ${servico.cliente}`;
-      const local = getLocalServico(servico);
-      const timeline = Array.isArray(servico.timeline) ? servico.timeline : [];
-
-      const itensTimeline: AgendaItem[] = timeline
-        .map<AgendaItem | null>((item) => {
-          const parsed = extractDateAndTime(item.data);
-          if (!parsed) {
-            return null;
-          }
-
-          return {
-            id: `servico-${servico.id}-timeline-${item.id}`,
-            origem: 'servico' as const,
-            titulo: `${baseTitulo} - ${item.etapa}`,
-            data: parsed.data,
-            hora: parsed.hora,
-            local,
-            descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-            participantes: ['Equipe de Servicos'],
-          };
-        })
-        .filter((item): item is AgendaItem => item !== null);
-
-      if (itensTimeline.length > 0) {
-        return itensTimeline;
-      }
-
-      const parsedAbertura = extractDateAndTime(servico.dataAbertura || servico.dataCriacao);
-      if (!parsedAbertura) {
-        return [];
-      }
-
-      return [
-        {
-          id: `servico-${servico.id}-abertura`,
-          origem: 'servico' as const,
-          titulo: `${baseTitulo} - Abertura do servico`,
-          data: parsedAbertura.data,
-          hora: parsedAbertura.hora,
-          local,
-          descricao: servico.observacoes || 'Servico cadastrado no sistema.',
-          participantes: ['Equipe de Servicos'],
-        },
-      ];
-    });
-
-    return [...eventos, ...projetosAgenda, ...servicosAgenda];
-  }, [eventosManuais, projetos, servicos]);
-
-  const getTipoColor = (item: AgendaItem) => {
-    if (item.origem === 'projeto') return 'bg-blue-900/50 text-blue-300 border-blue-700';
-    if (item.origem === 'servico') return 'bg-green-900/50 text-green-300 border-green-700';
-    if (item.subtipo === 'manutencao') return 'bg-yellow-900/50 text-yellow-300 border-yellow-700';
-    if (item.subtipo === 'reuniao') return 'bg-purple-900/50 text-purple-300 border-purple-700';
-    if (item.subtipo === 'vistoria') return 'bg-cyan-900/50 text-cyan-300 border-cyan-700';
-    return 'bg-orange-900/50 text-orange-300 border-orange-700';
-  };
-
-  const getTipoIcon = (item: AgendaItem) => {
-    if (item.origem === 'projeto') return 'PR';
-    if (item.origem === 'servico') return 'SV';
-    if (item.subtipo === 'manutencao') return 'MN';
-    if (item.subtipo === 'reuniao') return 'RE';
-    if (item.subtipo === 'vistoria') return 'VS';
-    return 'IN';
-  };
-
-  const getOrigemLabel = (origem: OrigemAgenda) => {
-    if (origem === 'projeto') return 'Projeto';
-    if (origem === 'servico') return 'Servico';
-    return 'Evento';
-  };
-
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    const days = [];
-    for (let i = 0; i < startingDayOfWeek; i += 1) days.push(null);
-    for (let i = 1; i <= daysInMonth; i += 1) days.push(i);
-    return days;
-  };
-
-  const formatMonthYear = (date: Date) =>
-    date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    const newDate = new Date(selectedDate);
-    if (direction === 'prev') newDate.setMonth(newDate.getMonth() - 1);
-    else newDate.setMonth(newDate.getMonth() + 1);
-    setSelectedDate(newDate);
-  };
-
-  const getItensForDay = (day: number) => {
-    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return agendaItems.filter(
-      (item) => item.data === dateStr && (filtroAgenda === 'todos' || item.origem === filtroAgenda),
-    );
-  };
-
-  const formatDateFromDay = (day: number) => {
-    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return formatDateBR(dateStr);
-  };
-
-  const resetNovoEvento = () => {
-    setNovoEvento({
-      titulo: '',
-      tipo: 'instalacao',
-      data: dayToDate(now.getDate()),
-      hora: '09:00',
-      local: '',
-      participantes: '',
-      descricao: '',
-    });
-  };
-
-  const handleCreateEvento = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (
-      !novoEvento.titulo.trim() ||
-      !novoEvento.data ||
-      !novoEvento.hora ||
-      !novoEvento.local.trim()
-    )
-      return;
-
-    const participantes = novoEvento.participantes
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean);
-    const novoRegistro: EventoManual = {
-      id: `e-${Date.now()}`,
-      titulo: novoEvento.titulo.trim(),
-      tipo: novoEvento.tipo,
-      data: novoEvento.data,
-      hora: novoEvento.hora,
-      local: novoEvento.local.trim(),
-      participantes,
-      descricao: novoEvento.descricao.trim(),
-    };
-
-    setEventosManuais((prev) => [novoRegistro, ...prev]);
-    resetNovoEvento();
-    setIsFormOpen(false);
-  };
-
-  const agendaFiltradaOrdenada = [...agendaItems]
-    .filter((item) => filtroAgenda === 'todos' || item.origem === filtroAgenda)
-    .filter((item) => {
-      if (selectedDayFilter === null) return true;
-      const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDayFilter).padStart(2, '0')}`;
-      return item.data === dateStr;
-    })
-    .sort(
-      (a, b) =>
-        new Date(`${a.data}T${a.hora}`).getTime() - new Date(`${b.data}T${b.hora}`).getTime(),
-    );
-
-  const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
+  const {
+    loadingProjetos,
+    erroProjetos,
+    selectedDate,
+    viewMode,
+    filtroAgenda,
+    selectedDayFilter,
+    isFormOpen,
+    novoEvento,
+    agendaFiltradaOrdenada,
+    setViewMode,
+    setFiltroAgenda,
+    setSelectedDayFilter,
+    setIsFormOpen,
+    setNovoEvento,
+    navigateMonth,
+    getItensForDay,
+    formatDateFromDay,
+    resetNovoEvento,
+    handleCreateEvento,
+  } = useCalendario();
 
   return (
     <div className="space-y-6 page-enter">
@@ -384,14 +65,14 @@ export const CalendarioPage: React.FC = () => {
         <div className="flex gap-2 mt-4 sm:mt-0">
           <select
             value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as 'mes' | 'semana' | 'dia')}
+            onChange={(event) => setViewMode(event.target.value as 'mes' | 'semana' | 'dia')}
             className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
           >
             <option value="dia">Dia</option>
             <option value="semana">Semana</option>
             <option value="mes">Mes</option>
           </select>
-          <Button onClick={() => setIsFormOpen((prev) => !prev)}>
+          <Button onClick={() => setIsFormOpen((current) => !current)}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Evento
           </Button>
@@ -415,7 +96,7 @@ export const CalendarioPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <select
                 value={filtroAgenda}
-                onChange={(e) => setFiltroAgenda(e.target.value as FiltroAgenda)}
+                onChange={(event) => setFiltroAgenda(event.target.value as FiltroAgenda)}
                 className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
               >
                 <option value="todos">Mostrar tudo</option>
@@ -444,15 +125,20 @@ export const CalendarioPage: React.FC = () => {
                 label="Titulo"
                 placeholder="Ex: Reuniao com cliente"
                 value={novoEvento.titulo}
-                onChange={(e) => setNovoEvento((prev) => ({ ...prev, titulo: e.target.value }))}
+                onChange={(event) =>
+                  setNovoEvento((current) => ({ ...current, titulo: event.target.value }))
+                }
                 required
               />
               <label className="block text-sm text-gray-300">
                 <span className="mb-1 block">Tipo</span>
                 <select
                   value={novoEvento.tipo}
-                  onChange={(e) =>
-                    setNovoEvento((prev) => ({ ...prev, tipo: e.target.value as TipoEventoManual }))
+                  onChange={(event) =>
+                    setNovoEvento((current) => ({
+                      ...current,
+                      tipo: event.target.value as TipoEventoManual,
+                    }))
                   }
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
                 >
@@ -466,29 +152,35 @@ export const CalendarioPage: React.FC = () => {
                 label="Data"
                 type="date"
                 value={novoEvento.data}
-                onChange={(e) => setNovoEvento((prev) => ({ ...prev, data: e.target.value }))}
+                onChange={(event) =>
+                  setNovoEvento((current) => ({ ...current, data: event.target.value }))
+                }
                 required
               />
               <Input
                 label="Hora"
                 type="time"
                 value={novoEvento.hora}
-                onChange={(e) => setNovoEvento((prev) => ({ ...prev, hora: e.target.value }))}
+                onChange={(event) =>
+                  setNovoEvento((current) => ({ ...current, hora: event.target.value }))
+                }
                 required
               />
               <Input
                 label="Local"
                 placeholder="Endereco"
                 value={novoEvento.local}
-                onChange={(e) => setNovoEvento((prev) => ({ ...prev, local: e.target.value }))}
+                onChange={(event) =>
+                  setNovoEvento((current) => ({ ...current, local: event.target.value }))
+                }
                 required
               />
               <Input
                 label="Participantes"
                 placeholder="Nomes separados por virgula"
                 value={novoEvento.participantes}
-                onChange={(e) =>
-                  setNovoEvento((prev) => ({ ...prev, participantes: e.target.value }))
+                onChange={(event) =>
+                  setNovoEvento((current) => ({ ...current, participantes: event.target.value }))
                 }
               />
               <div className="md:col-span-2">
@@ -496,8 +188,8 @@ export const CalendarioPage: React.FC = () => {
                   label="Descricao"
                   placeholder="Resumo"
                   value={novoEvento.descricao}
-                  onChange={(e) =>
-                    setNovoEvento((prev) => ({ ...prev, descricao: e.target.value }))
+                  onChange={(event) =>
+                    setNovoEvento((current) => ({ ...current, descricao: event.target.value }))
                   }
                 />
               </div>
@@ -549,12 +241,12 @@ export const CalendarioPage: React.FC = () => {
               return (
                 <div
                   key={String(index)}
-                  className={`
-                    min-h-[90px] border border-gray-700 rounded-lg p-2
-                    ${day ? 'hover:bg-gray-800 cursor-pointer' : ''}
-                    ${isToday ? 'bg-blue-900/20 border-blue-600' : ''}
-                    ${day && selectedDayFilter === day ? 'ring-2 ring-opj-blue bg-blue-900/30' : ''}
-                  `}
+                  className={[
+                    'min-h-[90px] border border-gray-700 rounded-lg p-2',
+                    day ? 'hover:bg-gray-800 cursor-pointer' : '',
+                    isToday ? 'bg-blue-900/20 border-blue-600' : '',
+                    day && selectedDayFilter === day ? 'ring-2 ring-opj-blue bg-blue-900/30' : '',
+                  ].join(' ')}
                   onClick={() => {
                     if (!day) return;
                     setSelectedDayFilter(day);

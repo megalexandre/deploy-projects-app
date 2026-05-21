@@ -23,6 +23,7 @@ import type { Documento, Servico, StatusServico } from '@/types';
 import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '@/core/utils/masks';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
+import { EntityFinanceTab } from '@/features/financeiro/components/EntityFinanceTab';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
   const merged = new Map<string, Documento>();
@@ -283,6 +284,7 @@ export const ServicoDetailPage: React.FC = () => {
         <nav className="flex space-x-8 overflow-x-auto">
           {[
             { id: 'dados', label: 'Dados' },
+            { id: 'financeiro', label: 'Financeiro' },
             { id: 'timeline', label: 'Linha do Tempo' },
             { id: 'documentos', label: 'Documentos' },
             { id: 'editar', label: 'Editar' },
@@ -387,6 +389,16 @@ export const ServicoDetailPage: React.FC = () => {
             ))}
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === 'financeiro' && (
+        <EntityFinanceTab
+          entityType="servico"
+          entityId={servico.id}
+          entityLabel={servico.protocolo}
+          amount={servico.valorFinal}
+          createdAt={servico.dataCriacao}
+        />
       )}
 
       {activeTab === 'documentos' && (

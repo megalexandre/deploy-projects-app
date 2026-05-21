@@ -23,10 +23,6 @@ export const formatRoleLabel = (role?: string) => {
     return 'Main';
   }
 
-  if (normalized === 'admin') {
-    return 'Administrador';
-  }
-
   return 'Usuario';
 };
 
@@ -51,6 +47,7 @@ export const useUsers = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [constructionMessage, setConstructionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -103,7 +100,7 @@ export const useUsers = () => {
 
   const adminUsers = usuarios.filter((usuario) => {
     const role = (usuario.role ?? 'user').toLowerCase();
-    return role === 'admin' || role === 'main';
+    return role === 'main';
   }).length;
 
   const regularUsers = usuarios.length - adminUsers;
@@ -116,9 +113,14 @@ export const useUsers = () => {
     setError(null);
   };
 
+  const showConstructionNotice = () => {
+    setConstructionMessage(
+      'Em construcao: o backend atual ainda nao possui suporte completo para essa acao.',
+    );
+  };
+
   const handleOpenCreateForm = () => {
-    resetForm();
-    setFormOpen(true);
+    showConstructionNotice();
   };
 
   const handleCloseForm = () => {
@@ -127,18 +129,8 @@ export const useUsers = () => {
   };
 
   const handleEditUser = (user: SystemUser) => {
-    setEditingUserId(user.id);
-    setForm({
-      name: user.name,
-      email: user.email,
-      password: '',
-      passwordConfirmation: '',
-      role: (user.role ?? 'user').toLowerCase(),
-    });
-    setShowPassword(false);
-    setShowPasswordConfirmation(false);
-    setError(null);
-    setFormOpen(true);
+    void user;
+    showConstructionNotice();
   };
 
   const handleSaveUser = async (event: React.FormEvent) => {
@@ -218,6 +210,7 @@ export const useUsers = () => {
     loading,
     saving,
     error,
+    constructionMessage,
     searchTerm,
     selectedRole,
     formOpen,
@@ -230,6 +223,7 @@ export const useUsers = () => {
     setForm,
     setShowPassword,
     setShowPasswordConfirmation,
+    setConstructionMessage,
     handleOpenCreateForm,
     handleCloseForm,
     handleEditUser,
