@@ -22,7 +22,7 @@ export const StatusSelect: React.FC<StatusSelectProps> = ({
       onStatusChange(projectId, event.target.value as KanbanStatus);
     }}
     disabled={!canManageStatus}
-    className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200"
+    className="min-w-0 w-full appearance-none border-0 bg-transparent px-0 py-0 text-center text-sm font-semibold text-slate-300 outline-none disabled:cursor-default"
   >
     {columns.map((column) => (
       <option key={column.id} value={column.id}>

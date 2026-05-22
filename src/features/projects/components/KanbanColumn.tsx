@@ -1,15 +1,15 @@
 import React from 'react';
 import { Card, CardContent } from '@/shared/components/Card';
-import type { Projeto } from '@/types';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { type KanbanStatus } from '../kanban/kanbanConfig';
+import type { ProjetoKanbanCard } from '../pages/ProjetosPage';
 import { ProjetoCard } from './ProjectCard';
 
 type Column = { id: KanbanStatus; label: string; className: string };
 
 type KanbanColumnProps = {
   column: Column;
-  projetos: Projeto[];
+  projetos: ProjetoKanbanCard[];
   draggedId: string | null;
   onDragStart: (id: string, event: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: () => void;

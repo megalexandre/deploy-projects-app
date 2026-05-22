@@ -3,7 +3,7 @@ import { formatCurrencyBRL } from '@/core/utils/masks';
 import { ErrorAlert } from '@/shared/components/ErrorAlert';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
-import { customersService, projectsService } from '@/services';
+import { concessionairesService, customersService, projectsService } from '@/services';
 import type { Projeto } from '@/types';
 import { columns, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
 import { ProjetosPageHeader } from '../components/ProjectPageHeader';
@@ -17,8 +17,19 @@ type PendingStatusChange = {
   nextStatus: KanbanStatus;
 };
 
+export type ProjetoKanbanCard = Projeto & {
+  concessionariaLogo?: string | null;
+};
+
+const normalizeText = (value?: string | null) =>
+  (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
 export const ProjetosPage: React.FC = () => {
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
+  const [projetos, setProjetos] = useState<ProjetoKanbanCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,22 +51,40 @@ export const ProjetosPage: React.FC = () => {
       setError(null);
 
       try {
-        const [data, customers] = await Promise.all([
+        const [data, customers, concessionarias] = await Promise.all([
           projectsService.getProjetos(),
           customersService.getAll().catch(() => []),
+          concessionairesService.getAll().catch(() => []),
         ]);
 
         const customersById = new Map(customers.map((customer) => [customer.id, customer]));
+        const concessionariasByName = new Map<string, (typeof concessionarias)[number]>();
+
+        concessionarias.forEach((item) => {
+          concessionariasByName.set(normalizeText(item.name), item);
+          if (item.acronym) {
+            concessionariasByName.set(normalizeText(item.acronym), item);
+          }
+        });
+
         const enriched = data.map((projeto) => {
           const knownCustomer = customersById.get(projeto.cliente.id);
-          if (!knownCustomer) return projeto;
+          const concessionaria = concessionariasByName.get(
+            normalizeText(projeto.dadosProjeto.concessionaria),
+          );
+          const projetoComLogo: ProjetoKanbanCard = {
+            ...projeto,
+            concessionariaLogo: concessionaria?.logo ?? null,
+          };
+
+          if (!knownCustomer) return projetoComLogo;
 
           const shouldReplaceName =
             !projeto.cliente.nome || projeto.cliente.nome === 'Cliente sem nome';
-          if (!shouldReplaceName) return projeto;
+          if (!shouldReplaceName) return projetoComLogo;
 
           return {
-            ...projeto,
+            ...projetoComLogo,
             cliente: {
               ...projeto.cliente,
               nome: knownCustomer.nome,
@@ -96,12 +125,12 @@ export const ProjetosPage: React.FC = () => {
   );
 
   const groupedProjetos = useMemo(() => {
-    const grouped = columns.reduce<Record<KanbanStatus, Projeto[]>>(
+    const grouped = columns.reduce<Record<KanbanStatus, ProjetoKanbanCard[]>>(
       (acc, column) => {
         acc[column.id] = [];
         return acc;
       },
-      {} as Record<KanbanStatus, Projeto[]>,
+      {} as Record<KanbanStatus, ProjetoKanbanCard[]>,
     );
     filteredProjetos.forEach((item) => grouped[toKanbanStatus(item.status)].push(item));
     return grouped;
