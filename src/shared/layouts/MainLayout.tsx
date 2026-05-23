@@ -10,7 +10,6 @@ import {
   CurrencyDollar,
   Calendar,
   Users,
-  Buildings,
   CheckSquare,
   Sun,
   Moon,
@@ -37,23 +36,22 @@ export const MainLayout: React.FC = () => {
   const menuItems = isAdmin
     ? [
         { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
-        { icon: Users, label: 'Clientes', path: '/clientes' },
+        { icon: CheckSquare, label: 'Aprovacoes', path: '/aprovacoes' },
         { icon: Folder, label: 'Projetos', path: '/projetos' },
-        { icon: Buildings, label: 'Concessionarias', path: '/concessionarias' },
         { icon: Wrench, label: 'Servicos', path: '/servicos' },
         { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
         { icon: Calendar, label: 'Calendario', path: '/calendario' },
+        { icon: Users, label: 'Clientes', path: '/clientes' },
         { icon: Users, label: 'Usuarios', path: '/usuarios' },
-        { icon: CheckSquare, label: 'Aprovacoes', path: '/aprovacoes' },
         { icon: Gear, label: 'Configuracoes', path: '/configuracoes' },
       ]
     : [
         { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
-        { icon: Users, label: 'Clientes', path: '/clientes' },
         { icon: Folder, label: 'Projetos', path: '/projetos' },
         { icon: Wrench, label: 'Servicos', path: '/servicos' },
         { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
         { icon: Calendar, label: 'Calendario', path: '/calendario' },
+        { icon: Gear, label: 'Configuracoes', path: '/configuracoes' },
       ];
 
   return (

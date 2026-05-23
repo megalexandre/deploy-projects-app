@@ -35,6 +35,7 @@ export const useConcessionaires = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isConcessionaireModalOpen, setIsConcessionaireModalOpen] = useState(false);
   const [form, setForm] = useState<ConcessionaireForm>(createEmptyForm());
 
   const loadData = useCallback(async () => {
@@ -98,6 +99,7 @@ export const useConcessionaires = () => {
 
       setEditingId(null);
       setForm(createEmptyForm());
+      setIsConcessionaireModalOpen(false);
     } catch (saveError) {
       console.error('Erro ao salvar concessionária:', saveError);
       setError('Não foi possível salvar a concessionária.');
@@ -110,12 +112,21 @@ export const useConcessionaires = () => {
     setEditingId(item.id);
     setForm(createFormFromConcessionaire(item));
     setError(null);
+    setIsConcessionaireModalOpen(true);
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingId(null);
+    setForm(createEmptyForm());
+    setError(null);
+    setIsConcessionaireModalOpen(true);
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setForm(createEmptyForm());
     setError(null);
+    setIsConcessionaireModalOpen(false);
   };
 
   return {
@@ -128,8 +139,10 @@ export const useConcessionaires = () => {
     loading,
     saving,
     editingId,
+    isConcessionaireModalOpen,
     handleSubmit,
     handleEdit,
+    handleOpenCreateModal,
     handleCancelEdit,
   };
 };

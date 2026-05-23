@@ -17,10 +17,18 @@ import { Input } from '@/shared/components/Input';
 import { Card, CardContent } from '@/shared/components/Card';
 import type { ConfiguracoesSistema } from '@/types';
 import { maskCnpj, maskPhoneBR } from '@/core/utils/masks';
+import { ConcessionairesSection } from '@/features/concessionaries/components/ConcessionairesSection';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
 
-type AbaConfiguracoes = 'geral' | 'precos' | 'cupons' | 'notificacoes' | 'sistema' | 'seguranca';
+type AbaConfiguracoes =
+  | 'geral'
+  | 'precos'
+  | 'cupons'
+  | 'concessionarias'
+  | 'notificacoes'
+  | 'sistema'
+  | 'seguranca';
 
 const tabs: Array<{
   id: AbaConfiguracoes;
@@ -30,6 +38,7 @@ const tabs: Array<{
   { id: 'geral', label: 'Geral', icon: Buildings },
   { id: 'precos', label: 'Precos', icon: CurrencyCircleDollar },
   { id: 'cupons', label: 'Cupons', icon: Percent },
+  { id: 'concessionarias', label: 'Concessionarias', icon: Buildings },
   { id: 'notificacoes', label: 'Notificacoes', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
   { id: 'seguranca', label: 'Seguranca', icon: Shield },
@@ -414,6 +423,8 @@ export const ConfiguracoesPage: React.FC = () => {
               </div>
             </div>
           )}
+
+          {activeTab === 'concessionarias' && <ConcessionairesSection compactHeader />}
 
           {activeTab === 'notificacoes' && (
             <div className="space-y-6 page-enter">
