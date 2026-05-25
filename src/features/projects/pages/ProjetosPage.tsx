@@ -276,7 +276,7 @@ export const ProjetosPage: React.FC = () => {
             ].join(' ')}
             {...dragBindings}
           >
-            <div className="flex min-w-max snap-x snap-mandatory gap-4">
+            <div className="flex min-w-max snap-x snap-mandatory items-start gap-4">
               {visibleColumns.map((column) => (
                 <KanbanColumn
                   key={column.id}
