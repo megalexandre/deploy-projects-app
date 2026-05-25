@@ -1,8 +1,8 @@
 import { LogoAvatar } from '@/shared/components/LogoAvatar';
+import { ViewButton } from '@/shared/components/ViewButton';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { Buildings, MapPinLine } from '@phosphor-icons/react';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useIdentifier } from '../hooks/useIdentifyer';
 import { type KanbanStatus } from '../kanban/kanbanConfig';
 import type { ProjetoKanbanCard } from '../pages/ProjetosPage';
@@ -18,8 +18,28 @@ type ProjetoCardProps = {
 };
 
 const formatTipoProjeto = (tipoProjeto?: string) => {
-  if (tipoProjeto === 'fotovoltaico') return 'Projeto Solar';
-  if (tipoProjeto === 'padrao_entrada') return 'Projeto EMUC';
+  const normalized = (tipoProjeto ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (
+    ['fotovoltaico', 'projeto_fotovoltaico', 'solar', 'projeto_solar', 'energia_solar'].includes(
+      normalized,
+    )
+  ) {
+    return 'Projeto Solar';
+  }
+
+  if (['padrao_entrada', 'padrao de entrada', 'emuc', 'projeto_emuc'].includes(normalized)) {
+    return 'Projeto EMUC';
+  }
+
+  if (['orcamento_conexao', 'orcamento de conexao', 'orçamento de conexão'].includes(normalized)) {
+    return 'Orçamento de Conexão';
+  }
+
   return tipoProjeto || '-';
 };
 
@@ -129,21 +149,15 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
         />
       )}
 
-      <div className="mt-auto flex border-t border-white/10 bg-black/10">
-        <div className="flex-1 border-r border-white/10 px-3 py-3">
-          <StatusSelect
-            projectId={localProjeto.id}
-            status={localProjeto.status}
-            canManageStatus={canManageStatus}
-            onStatusChange={onStatusChange}
-          />
-        </div>
-        <Link
-          to={`/projetos/${localProjeto.id}`}
-          className="flex flex-1 items-center justify-center px-3 py-3 text-sm font-semibold text-[#a9c7ff] transition-all hover:bg-[#a9c7ff]/10"
-        >
-          Abrir
-        </Link>
+      <div className="mt-auto flex items-center gap-2 border-t border-white/10 bg-black/10 p-3">
+        <StatusSelect
+          projectId={localProjeto.id}
+          status={localProjeto.status}
+          canManageStatus={canManageStatus}
+          onStatusChange={onStatusChange}
+        />
+
+        <ViewButton to={`/projetos/${localProjeto.id}`} />
       </div>
     </div>
   );

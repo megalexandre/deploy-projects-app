@@ -7,10 +7,10 @@ import {
   approvalsService,
   type ApprovalRequest,
 } from '@/features/aprovacoes/services/approvalsService';
-import { projectStatusFlow, projectsService } from '@/features/projects/services/projectsService';
+import { projectsService } from '@/features/projects/services/projectsService';
 import { servicosService } from '@/features/servicos/services/servicosService';
 import { getSessionUser, isAdminSessionUser } from '@/shared/session/sessionUser';
-import type { Projeto, Servico, StatusProjeto, StatusServico } from '@/types';
+import type { Projeto, Servico } from '@/types';
 
 type EntitySnapshot = {
   status?: string;
@@ -57,7 +57,6 @@ const tabConfig: Record<
 export const AprovacoesPage: React.FC = () => {
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [snapshots, setSnapshots] = useState<Record<string, EntitySnapshot>>({});
-  const [approvalTargets, setApprovalTargets] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ApprovalTab>('pendente');
 
@@ -99,14 +98,6 @@ export const AprovacoesPage: React.FC = () => {
       await bootstrapPendingRequests();
       const approvalRequests = approvalsService.list();
       setRequests(approvalRequests);
-      setApprovalTargets((current) =>
-        approvalRequests.reduce<Record<string, string>>((acc, request) => {
-          acc[request.id] =
-            current[request.id] ??
-            (request.entityType === 'projeto' ? 'em_analise_documentacao' : 'abertura_servico');
-          return acc;
-        }, {}),
-      );
 
       const nextSnapshots: Record<string, EntitySnapshot> = {};
       await Promise.all(
@@ -167,34 +158,6 @@ export const AprovacoesPage: React.FC = () => {
     const request = requests.find((item) => item.id === id);
     if (!request) return;
 
-    if (status === 'aprovado') {
-      if (request.entityType === 'projeto') {
-        const projeto = await projectsService.approvePending(
-          request.entityId,
-          (approvalTargets[request.id] as StatusProjeto | undefined) ?? 'em_analise_documentacao',
-        );
-        setSnapshots((current) => ({
-          ...current,
-          [request.id]: {
-            status: projeto.status,
-            destinationPath: `/projetos/${request.entityId}`,
-          },
-        }));
-      } else {
-        const servico = await servicosService.approvePending(
-          request.entityId,
-          (approvalTargets[request.id] as StatusServico | undefined) ?? 'abertura_servico',
-        );
-        setSnapshots((current) => ({
-          ...current,
-          [request.id]: {
-            status: servico.status,
-            destinationPath: `/servicos/${request.entityId}`,
-          },
-        }));
-      }
-    }
-
     approvalsService.decide(id, status);
     setRequests(approvalsService.list());
     setActiveTab(status);
@@ -226,7 +189,8 @@ export const AprovacoesPage: React.FC = () => {
             <th className="px-6 py-4">Projeto / ID</th>
             <th className="px-6 py-4">Cliente</th>
             <th className="px-6 py-4">Solicitante</th>
-            <th className="px-6 py-4">Status Interno</th>
+            <th className="px-6 py-4">Aprovacao</th>
+            <th className="px-6 py-4">Status Kanban</th>
             <th className="px-6 py-4">Data</th>
             <th className="px-6 py-4 text-right">Acoes</th>
           </tr>
@@ -269,8 +233,11 @@ export const AprovacoesPage: React.FC = () => {
                         : 'border-rose-400/20 bg-rose-400/10 text-rose-200'
                   }`}
                 >
-                  {snapshots[request.id]?.status ?? formatApprovalStatus(request.status)}
+                  {formatApprovalStatus(request.status)}
                 </span>
+              </td>
+              <td className="px-6 py-6 text-sm text-slate-300">
+                {snapshots[request.id]?.status ?? '-'}
               </td>
               <td className="px-6 py-6 text-sm text-slate-400">
                 {new Date(request.createdAt).toLocaleDateString('pt-BR')}
@@ -290,34 +257,6 @@ export const AprovacoesPage: React.FC = () => {
 
                   {request.status === 'pendente' ? (
                     <>
-                      <select
-                        value={
-                          approvalTargets[request.id] ??
-                          (request.entityType === 'projeto'
-                            ? 'em_analise_documentacao'
-                            : 'abertura_servico')
-                        }
-                        onChange={(event) =>
-                          setApprovalTargets((current) => ({
-                            ...current,
-                            [request.id]: event.target.value,
-                          }))
-                        }
-                        className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-slate-200"
-                      >
-                        {(request.entityType === 'projeto'
-                          ? projectStatusFlow.filter(
-                              (item) => item.status !== 'aguardando_aprovacao',
-                            )
-                          : servicosService.statusFlow.filter(
-                              (item) => item.status !== 'aguardando_aprovacao',
-                            )
-                        ).map((item) => (
-                          <option key={item.status} value={item.status}>
-                            {item.etapa}
-                          </option>
-                        ))}
-                      </select>
                       <Button
                         type="button"
                         size="sm"
@@ -352,7 +291,7 @@ export const AprovacoesPage: React.FC = () => {
 
           {items.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-400">
+              <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-400">
                 {emptyMessage}
               </td>
             </tr>

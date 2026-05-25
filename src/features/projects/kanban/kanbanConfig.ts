@@ -1,7 +1,6 @@
 import type { Projeto } from '@/types';
 
 export type KanbanStatus =
-  | 'aguardando_aprovacao'
   | 'em_analise_documentacao'
   | 'elaboracao_documentacao_tecnica'
   | 'aguardando_assinatura_cliente'
@@ -16,6 +15,7 @@ export type KanbanStatus =
   | 'projeto_encerrado';
 
 const legacyStatusMap: Record<string, KanbanStatus> = {
+  aguardando_aprovacao: 'em_analise_documentacao',
   pendente: 'em_analise_documentacao',
   novo: 'em_analise_documentacao',
   em_andamento: 'em_analise_concessionaria',
@@ -27,11 +27,6 @@ const legacyStatusMap: Record<string, KanbanStatus> = {
 };
 
 export const columns: Array<{ id: KanbanStatus; label: string; className: string }> = [
-  {
-    id: 'aguardando_aprovacao',
-    label: 'Aguardando Aprovação',
-    className: 'border-white/10 bg-sky-900/20',
-  },
   {
     id: 'em_analise_documentacao',
     label: 'Em Análise da Documentação',

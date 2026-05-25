@@ -90,7 +90,6 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
   handleDocumentosChange,
   handleCriarProjeto,
   salvando,
-  validarPasso3,
   setPassoAtual,
 }) => {
   const isFotovoltaico = dadosBasicos.tipoProjeto === 'fotovoltaico';
@@ -516,11 +515,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
         <Button variant="outline" onClick={() => setPassoAtual(2)} disabled={salvando}>
           Voltar
         </Button>
-        <Button
-          onClick={handleCriarProjeto}
-          loading={salvando}
-          disabled={!validarPasso3() && !salvando}
-        >
+        <Button onClick={handleCriarProjeto} loading={salvando} disabled={salvando}>
           Criar Projeto
         </Button>
       </div>

@@ -20,9 +20,7 @@ export const LoginFooter: React.FC = () => (
       </div>
 
       <div className="flex flex-col items-center text-center lg:items-end lg:text-right">
-        <p className="text-xs text-slate-400">
-          Ambiente seguro e em conformidade com as politicas da concessionaria.
-        </p>
+        <p className="text-xs text-slate-400">OPJ Engenharia - CNPJ: 40.888.978/0001-56</p>
         <span className="mt-1 text-xs text-slate-500">
           © 2024 Lumina Infrastructure Group. All rights reserved.
         </span>
