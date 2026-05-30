@@ -1,83 +1,42 @@
-/** Pagina 'FinanceiroPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
-import React, { useEffect, useState } from 'react';
+/** Pagina 'FinanceiroPage': lista e cadastra lancamentos financeiros da API. */
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  CurrencyDollar,
-  TrendUp,
-  TrendDown,
-  Plus,
-  DownloadSimple,
   Calendar,
+  CurrencyDollar,
+  DownloadSimple,
   PencilSimple,
+  Plus,
+  TrendDown,
+  TrendUp,
   X,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
-import { projectsService } from '@/services';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { formatCurrencyBRL } from '@/core/utils/masks';
-
-interface Transacao {
-  id: string;
-  descricao: string;
-  tipo: 'receita' | 'despesa';
-  valor: number;
-  data: string;
-  categoria: string;
-  status: 'pago' | 'pendente';
-}
+import {
+  financeiroService,
+  type LedgerKind,
+  type TransacaoFinanceira,
+} from '../services/financeiroService';
 
 type TransactionFormState = {
   descricao: string;
-  categoria: string;
-  tipo: Transacao['tipo'];
-  status: Transacao['status'];
+  tipo: LedgerKind;
   valor: string;
-  data: string;
 };
-
-const TRANSACTION_OVERRIDES_STORAGE_KEY = 'opj_finance_transaction_overrides';
-const CUSTOM_TRANSACTIONS_STORAGE_KEY = 'opj_finance_custom_transactions';
 
 const createEmptyTransactionForm = (): TransactionFormState => ({
   descricao: '',
-  categoria: '',
   tipo: 'receita',
-  status: 'pendente',
   valor: '',
-  data: new Date().toISOString().split('T')[0],
 });
 
-const readStoredTransactions = (key: string): Transacao[] => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeStoredTransactions = (key: string, items: Transacao[]) => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(key, JSON.stringify(items));
-};
-
 export const FinanceiroPage: React.FC = () => {
-  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [loadingProjetos, setLoadingProjetos] = useState(false);
-
+  const [transacoes, setTransacoes] = useState<TransacaoFinanceira[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -86,47 +45,33 @@ export const FinanceiroPage: React.FC = () => {
     createEmptyTransactionForm(),
   );
 
+  const loadTransacoes = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const nextTransacoes = await financeiroService.listTransacoes();
+      setTransacoes(nextTransacoes);
+    } catch (error) {
+      console.error('Erro ao carregar lancamentos financeiros:', error);
+      setErrorMessage('Nao foi possivel carregar os lancamentos financeiros.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadTransacoesFromProjetos = async () => {
-      setLoadingProjetos(true);
-
-      try {
-        const projetos = await projectsService.getProjetos();
-        const transacoesProjetos: Transacao[] = projetos
-          .filter((projeto) => projeto.valor > 0)
-          .map((projeto) => ({
-            id: `projeto-${projeto.id}`,
-            descricao: `Projeto ${projeto.protocolo} - ${projeto.cliente.nome}`,
-            tipo: 'receita',
-            valor: projeto.valor,
-            data: (projeto.dataCriacao || new Date().toISOString()).split('T')[0],
-            categoria: 'Projetos',
-            status:
-              projeto.status === 'concluido' || projeto.status === 'aprovado' ? 'pago' : 'pendente',
-          }));
-
-        const customTransactions = readStoredTransactions(CUSTOM_TRANSACTIONS_STORAGE_KEY);
-        const transactionOverrides = readStoredTransactions(TRANSACTION_OVERRIDES_STORAGE_KEY);
-        const overridesById = new Map(transactionOverrides.map((item) => [item.id, item]));
-        const mergedProjectTransactions = transacoesProjetos.map(
-          (transacao) => overridesById.get(transacao.id) ?? transacao,
-        );
-
-        setTransacoes([...customTransactions, ...mergedProjectTransactions]);
-      } catch (error) {
-        console.error('Erro ao carregar transacoes de projetos:', error);
-      } finally {
-        setLoadingProjetos(false);
-      }
-    };
-
-    void loadTransacoesFromProjetos();
+    void loadTransacoes();
   }, []);
 
-  const filteredTransacoes = transacoes.filter(
-    (transacao) =>
-      transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredTransacoes = useMemo(
+    () =>
+      transacoes.filter(
+        (transacao) =>
+          transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
+    [searchTerm, transacoes],
   );
 
   const totalReceitas = transacoes
@@ -135,22 +80,12 @@ export const FinanceiroPage: React.FC = () => {
   const totalDespesas = transacoes
     .filter((t) => t.tipo === 'despesa')
     .reduce((sum, t) => sum + t.valor, 0);
-  const totalPendentes = transacoes
-    .filter((t) => t.status === 'pendente')
-    .reduce((sum, t) => sum + t.valor, 0);
   const saldo = totalReceitas - totalDespesas;
 
   const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
-  const getTipoColor = (tipo: string) => {
-    return tipo === 'receita' ? 'text-green-400' : 'text-red-400';
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === 'pago'
-      ? 'bg-green-900/50 text-green-300 border-green-700'
-      : 'bg-yellow-900/50 text-yellow-300 border-yellow-700';
-  };
+  const getTipoColor = (tipo: LedgerKind) =>
+    tipo === 'receita' ? 'text-green-400' : 'text-red-400';
 
   const resetForm = () => {
     setNovaTransacao(createEmptyTransactionForm());
@@ -162,58 +97,46 @@ export const FinanceiroPage: React.FC = () => {
     resetForm();
   };
 
-  const persistTransactions = (nextTransactions: Transacao[]) => {
-    const customTransactions = nextTransactions.filter((item) => !item.id.startsWith('projeto-'));
-    const transactionOverrides = nextTransactions.filter((item) => item.id.startsWith('projeto-'));
-    writeStoredTransactions(CUSTOM_TRANSACTIONS_STORAGE_KEY, customTransactions);
-    writeStoredTransactions(TRANSACTION_OVERRIDES_STORAGE_KEY, transactionOverrides);
-  };
-
-  const handleSubmitTransacao = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitTransacao = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const valor = Number(novaTransacao.valor);
-    if (
-      !novaTransacao.descricao.trim() ||
-      !novaTransacao.categoria.trim() ||
-      !novaTransacao.data ||
-      Number.isNaN(valor) ||
-      valor <= 0
-    ) {
+    const valor = Number(novaTransacao.valor.replace(',', '.'));
+    if (!novaTransacao.descricao.trim() || Number.isNaN(valor) || valor <= 0) {
       return;
     }
 
-    const transactionId = editingTransactionId ?? String(Date.now());
-    const updatedEntry: Transacao = {
-      id: transactionId,
-      descricao: novaTransacao.descricao.trim(),
-      categoria: novaTransacao.categoria.trim(),
-      tipo: novaTransacao.tipo,
-      status: novaTransacao.status,
-      valor,
-      data: novaTransacao.data,
-    };
+    setLoading(true);
+    setErrorMessage(null);
 
-    setTransacoes((prev) => {
-      const nextTransactions = editingTransactionId
-        ? prev.map((item) => (item.id === transactionId ? updatedEntry : item))
-        : [updatedEntry, ...prev];
-      persistTransactions(nextTransactions);
-      return nextTransactions;
-    });
+    try {
+      const payload = {
+        amount: valor,
+        reason: novaTransacao.tipo,
+        description: novaTransacao.descricao.trim(),
+      };
 
-    closeForm();
+      if (editingTransactionId) {
+        await financeiroService.updateLedger(editingTransactionId, payload);
+      } else {
+        await financeiroService.createLedger(payload);
+      }
+
+      closeForm();
+      await loadTransacoes();
+    } catch (error) {
+      console.error('Erro ao salvar lancamento financeiro:', error);
+      setErrorMessage('Nao foi possivel salvar o lancamento financeiro.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEditTransacao = (transacao: Transacao) => {
+  const handleEditTransacao = (transacao: TransacaoFinanceira) => {
     setEditingTransactionId(transacao.id);
     setNovaTransacao({
       descricao: transacao.descricao,
-      categoria: transacao.categoria,
       tipo: transacao.tipo,
-      status: transacao.status,
       valor: String(transacao.valor),
-      data: transacao.data,
     });
     setIsFormOpen(true);
   };
@@ -224,9 +147,8 @@ export const FinanceiroPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Financeiro</h1>
           <p className="text-gray-400 mt-1">Controle financeiro da OPJ Engenharia</p>
-          {loadingProjetos && (
-            <p className="text-xs text-gray-500 mt-1">Carregando dados de projetos...</p>
-          )}
+          {loading && <p className="text-xs text-gray-500 mt-1">Sincronizando com a API...</p>}
+          {errorMessage && <p className="text-xs text-red-300 mt-1">{errorMessage}</p>}
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
           <Button variant="outline">
@@ -282,15 +204,6 @@ export const FinanceiroPage: React.FC = () => {
                 }
                 required
               />
-              <Input
-                label="Categoria"
-                placeholder="Ex: Projetos"
-                value={novaTransacao.categoria}
-                onChange={(e) =>
-                  setNovaTransacao((prev) => ({ ...prev, categoria: e.target.value }))
-                }
-                required
-              />
               <label className="block text-sm text-gray-300">
                 <span className="mb-1 block">Tipo</span>
                 <select
@@ -298,29 +211,13 @@ export const FinanceiroPage: React.FC = () => {
                   onChange={(e) =>
                     setNovaTransacao((prev) => ({
                       ...prev,
-                      tipo: e.target.value as Transacao['tipo'],
+                      tipo: e.target.value as LedgerKind,
                     }))
                   }
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
                 >
                   <option value="receita">Receita</option>
                   <option value="despesa">Despesa</option>
-                </select>
-              </label>
-              <label className="block text-sm text-gray-300">
-                <span className="mb-1 block">Status</span>
-                <select
-                  value={novaTransacao.status}
-                  onChange={(e) =>
-                    setNovaTransacao((prev) => ({
-                      ...prev,
-                      status: e.target.value as Transacao['status'],
-                    }))
-                  }
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="pendente">Pendente</option>
-                  <option value="pago">Pago</option>
                 </select>
               </label>
               <Input
@@ -333,18 +230,11 @@ export const FinanceiroPage: React.FC = () => {
                 onChange={(e) => setNovaTransacao((prev) => ({ ...prev, valor: e.target.value }))}
                 required
               />
-              <Input
-                label="Data"
-                type="date"
-                value={novaTransacao.data}
-                onChange={(e) => setNovaTransacao((prev) => ({ ...prev, data: e.target.value }))}
-                required
-              />
               <div className="md:col-span-2 flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={closeForm}>
                   Cancelar
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={loading}>
                   {editingTransactionId ? 'Salvar alteracoes' : 'Salvar transacao'}
                 </Button>
               </div>
@@ -402,10 +292,8 @@ export const FinanceiroPage: React.FC = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Pendentes</p>
-                <p className="text-2xl font-bold text-yellow-400">
-                  {formatCurrencyBRL(totalPendentes)}
-                </p>
+                <p className="text-sm text-gray-400">Lancamentos</p>
+                <p className="text-2xl font-bold text-yellow-400">{transacoes.length}</p>
               </div>
               <Calendar className="h-8 w-8 text-yellow-400" />
             </div>
@@ -488,10 +376,8 @@ export const FinanceiroPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-gray-100">{formatDateBR(transacao.data)}</td>
                     <td className="py-3 px-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(transacao.status)}`}
-                      >
-                        {transacao.status === 'pago' ? 'Pago' : 'Pendente'}
+                      <span className="px-2 py-1 rounded-full text-xs font-medium border bg-green-900/50 text-green-300 border-green-700">
+                        Pago
                       </span>
                     </td>
                     <td className="py-3 px-4">
@@ -509,7 +395,7 @@ export const FinanceiroPage: React.FC = () => {
                 {filteredTransacoes.length === 0 && (
                   <tr>
                     <td colSpan={7} className="py-6 px-4 text-center text-gray-400">
-                      Nenhuma transacao de projeto encontrada.
+                      Nenhuma transacao financeira encontrada.
                     </td>
                   </tr>
                 )}
