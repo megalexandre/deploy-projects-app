@@ -5,7 +5,7 @@ import { ArrowLeft, Calendar, CurrencyDollar, WarningCircle, X } from '@phosphor
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
-import { formatCurrencyBRL } from '@/core/utils/masks';
+import { formatCurrencyBRL, maskCurrencyBRL, parseCurrencyBRL } from '@/core/utils/masks';
 import { financeiroService, type TransacaoFinanceira } from '../services/financeiroService';
 
 const emptyForm = {
@@ -46,7 +46,7 @@ export const PagamentosPage: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const valor = Number(form.valor.replace(',', '.'));
+    const valor = parseCurrencyBRL(form.valor);
     if (!form.descricao.trim() || Number.isNaN(valor) || valor <= 0) {
       return;
     }
@@ -122,13 +122,11 @@ export const PagamentosPage: React.FC = () => {
               />
               <Input
                 label="Valor"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
+                inputMode="numeric"
+                placeholder="R$ 0,00"
                 value={form.valor}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, valor: event.target.value }))
+                  setForm((current) => ({ ...current, valor: maskCurrencyBRL(event.target.value) }))
                 }
                 required
               />

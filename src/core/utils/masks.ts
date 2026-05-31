@@ -50,6 +50,16 @@ export const maskCurrencyBRL = (value: string) => {
   return formatCurrencyBRL(numericValue);
 };
 
+export const parseCurrencyBRL = (value: string) => {
+  const normalized = value
+    .replace(/[^\d,.-]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export const formatCurrencyBRL = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',

@@ -1,11 +1,19 @@
 /** Pagina 'ServicosPage': implementa cadastro e acompanhamento dos servicos descritos no documento funcional. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { FloppyDisk, MagnifyingGlass, PencilSimple, PlusCircle, X } from '@phosphor-icons/react';
+import {
+  Buildings,
+  FloppyDisk,
+  MagnifyingGlass,
+  MapPinLine,
+  PlusCircle,
+  X,
+} from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Input } from '@/shared/components/Input';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { ViewButton } from '@/shared/components/ViewButton';
 import {
   concessionairesService,
   customersService,
@@ -38,6 +46,7 @@ import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { useDragToScroll } from '@/features/projects/hooks/useDragToScroll';
 
 type PersonType = 'cpf' | 'cnpj';
+const DEFAULT_VISIBLE_SERVICES = 5;
 
 interface AddressForm {
   cep: string;
@@ -298,6 +307,197 @@ const formatAddressSummary = (endereco?: Endereco) => {
   );
 };
 
+type ServiceColumn = { status: StatusServico; etapa: string };
+
+type ServicoCardProps = {
+  servico: Servico;
+  draggedId: string | null;
+  canManageStatus: boolean;
+  onDragStart: (id: string, event: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd: () => void;
+  onStatusChange: (serviceId: string, nextStatus: StatusServico) => void;
+};
+
+const ServicoStatusSelect: React.FC<{
+  serviceId: string;
+  status: StatusServico;
+  canManageStatus: boolean;
+  onStatusChange: (serviceId: string, nextStatus: StatusServico) => void;
+}> = ({ serviceId, status, canManageStatus, onStatusChange }) => (
+  <select
+    value={status}
+    onChange={(event) => {
+      if (!canManageStatus) return;
+      onStatusChange(serviceId, event.target.value as StatusServico);
+    }}
+    disabled={!canManageStatus}
+    className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200"
+  >
+    {servicosService.statusFlow.map((option) => (
+      <option key={option.status} value={option.status}>
+        {option.etapa}
+      </option>
+    ))}
+  </select>
+);
+
+const ServicoCard: React.FC<ServicoCardProps> = ({
+  servico,
+  draggedId,
+  canManageStatus,
+  onDragStart,
+  onDragEnd,
+  onStatusChange,
+}) => {
+  const detailValue =
+    servico.tipo === 'alteracao_compartilhamento_credito'
+      ? `UC Geradora: ${servico.ucGeradora || '-'}`
+      : formatAddressSummary(servico.enderecoObra);
+
+  return (
+    <div
+      data-no-drag-scroll="true"
+      draggable={canManageStatus}
+      onDragStart={(event) => {
+        if (!canManageStatus) return;
+        onDragStart(servico.id, event);
+      }}
+      onDragEnd={onDragEnd}
+      className={[
+        'group relative flex flex-col overflow-hidden rounded-xl border border-white/10',
+        'bg-[rgba(21,27,43,0.6)] backdrop-blur-[12px] transition-all',
+        'hover:border-cyan-300/40 hover:bg-[rgba(21,27,43,0.78)]',
+        canManageStatus ? 'cursor-grab' : 'cursor-default',
+        draggedId === servico.id ? 'opacity-50' : '',
+      ].join(' ')}
+    >
+      <div className="space-y-4 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#a9c7ff]">
+              ID {servico.protocolo}
+            </div>
+            <h4 className="mt-1 text-xl font-bold leading-tight text-slate-100">{servico.nome}</h4>
+          </div>
+          <div className="shrink-0 rounded-lg border border-white/10 bg-slate-950/45 px-2.5 py-2 text-xs font-semibold uppercase tracking-wide text-cyan-200">
+            {getTipoLabel(servico.tipo)}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-base font-semibold text-slate-100">{servico.cliente}</p>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <Buildings className="h-4 w-4 text-[#43dde6]" />
+          <span>Concessionaria {servico.concessionaria || 'nao informada'}</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <MapPinLine className="h-4 w-4 text-[#43dde6]" />
+          <span>{detailValue}</span>
+        </div>
+
+        <p className="text-base font-bold text-[#a9c7ff]">
+          {formatCurrencyBRL(servico.valorFinal)}
+        </p>
+      </div>
+
+      <div className="mt-auto flex items-center gap-2 border-t border-white/10 bg-black/10 p-3">
+        <ServicoStatusSelect
+          serviceId={servico.id}
+          status={servico.status}
+          canManageStatus={canManageStatus}
+          onStatusChange={onStatusChange}
+        />
+
+        <ViewButton to={`/servicos/${servico.id}`} />
+      </div>
+    </div>
+  );
+};
+
+type ServicoKanbanColumnProps = {
+  column: ServiceColumn;
+  servicos: Servico[];
+  draggedId: string | null;
+  canManageStatus: boolean;
+  onDragStart: (id: string, event: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd: () => void;
+  onDrop: (columnId: StatusServico, event: React.DragEvent<HTMLDivElement>) => void;
+  onStatusChange: (serviceId: string, nextStatus: StatusServico) => void;
+};
+
+const ServicoKanbanColumn: React.FC<ServicoKanbanColumnProps> = ({
+  column,
+  servicos,
+  draggedId,
+  canManageStatus,
+  onDragStart,
+  onDragEnd,
+  onDrop,
+  onStatusChange,
+}) => {
+  const [showAll, setShowAll] = useState(false);
+  const visibleServicos = showAll ? servicos : servicos.slice(0, DEFAULT_VISIBLE_SERVICES);
+  const hiddenServicesCount = Math.max(servicos.length - visibleServicos.length, 0);
+
+  return (
+    <Card
+      className={`w-[340px] shrink-0 self-start snap-start border ${statusColumnStyles[column.status]}`}
+    >
+      <CardContent className="p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+            {column.etapa}
+          </h2>
+          <span className="rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">
+            {servicos.length}
+          </span>
+        </div>
+
+        <div
+          className="max-h-[68vh] space-y-3 overflow-y-auto pr-1"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            if (!canManageStatus) return;
+            event.preventDefault();
+            onDrop(column.status, event);
+          }}
+        >
+          {visibleServicos.map((servico) => (
+            <ServicoCard
+              key={servico.id}
+              servico={servico}
+              draggedId={draggedId}
+              canManageStatus={canManageStatus}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onStatusChange={onStatusChange}
+            />
+          ))}
+
+          {servicos.length > DEFAULT_VISIBLE_SERVICES && (
+            <button
+              type="button"
+              className="w-full rounded-lg border border-white/10 bg-slate-950/45 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:bg-slate-900"
+              onClick={() => setShowAll((current) => !current)}
+            >
+              {showAll ? 'Mostrar menos' : `Mostrar mais ${hiddenServicesCount}`}
+            </button>
+          )}
+
+          {servicos.length === 0 && (
+            <div className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-slate-400">
+              Nenhum servico nesta coluna.
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const ServicosPage: React.FC = () => {
   const currentUser = useCurrentUser();
   const canManageStatus = currentUser?.isAdmin === true;
@@ -443,6 +643,14 @@ export const ServicosPage: React.FC = () => {
         {} as Record<StatusServico, Servico[]>,
       ),
     [filteredServicos],
+  );
+
+  const visibleStatusColumns = useMemo(
+    () =>
+      statusFilter === 'todos'
+        ? servicosService.statusFlow
+        : servicosService.statusFlow.filter((column) => column.status === statusFilter),
+    [statusFilter],
   );
 
   const stats = useMemo(() => {
@@ -619,6 +827,18 @@ export const ServicosPage: React.FC = () => {
       setServicos(previous);
       setError('Nao foi possivel atualizar o status do servico.');
     }
+  };
+
+  const handleDragStart = (id: string, event: React.DragEvent<HTMLDivElement>) => {
+    setDraggedId(id);
+    event.dataTransfer.setData('text/service-id', id);
+  };
+
+  const handleDrop = (columnId: StatusServico, event: React.DragEvent<HTMLDivElement>) => {
+    const id = event.dataTransfer.getData('text/service-id');
+    if (!id) return;
+    setDraggedId(null);
+    void updateStatus(id, columnId);
   };
 
   const handleFilesChange = (key: string, files: FileList | null) => {
@@ -1522,103 +1742,19 @@ export const ServicosPage: React.FC = () => {
         ].join(' ')}
         {...dragBindings}
       >
-        <div className="flex min-w-max snap-x snap-mandatory gap-4">
-          {servicosService.statusFlow.map((column) => (
-            <Card
+        <div className="flex min-w-max snap-x snap-mandatory items-start gap-4">
+          {visibleStatusColumns.map((column) => (
+            <ServicoKanbanColumn
               key={column.status}
-              className={`w-[340px] shrink-0 snap-start border ${statusColumnStyles[column.status]}`}
-            >
-              <CardContent className="p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
-                    {column.etapa}
-                  </h2>
-                  <span className="rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">
-                    {groupedServicos[column.status].length}
-                  </span>
-                </div>
-                <div
-                  className="space-y-3"
-                  onDragOver={(event: React.DragEvent<HTMLDivElement>) => event.preventDefault()}
-                  onDrop={(event: React.DragEvent<HTMLDivElement>) => {
-                    if (!canManageStatus) return;
-                    event.preventDefault();
-                    const id = event.dataTransfer.getData('text/service-id');
-                    if (!id) return;
-                    setDraggedId(null);
-                    void updateStatus(id, column.status);
-                  }}
-                >
-                  {groupedServicos[column.status].map((servico) => (
-                    <div
-                      key={servico.id}
-                      data-no-drag-scroll="true"
-                      draggable={canManageStatus}
-                      onDragStart={(event) => {
-                        if (!canManageStatus) return;
-                        setDraggedId(servico.id);
-                        event.dataTransfer.setData('text/service-id', servico.id);
-                      }}
-                      onDragEnd={() => setDraggedId(null)}
-                      className={`rounded-xl border border-white/10 bg-slate-900/80 p-4 transition hover:border-cyan-300/40 hover:bg-slate-800/80 ${draggedId === servico.id ? 'opacity-50' : ''}`}
-                    >
-                      <div className="mb-2 text-xs uppercase tracking-wide text-cyan-200">
-                        {servico.protocolo}
-                      </div>
-                      <div className="text-sm font-semibold text-slate-100">{servico.nome}</div>
-                      <div className="mt-1 text-sm text-slate-300">{servico.cliente}</div>
-                      <div className="mt-1 text-xs text-slate-400">
-                        {getTipoLabel(servico.tipo)} •{' '}
-                        {servico.concessionaria || 'Sem concessionaria'}
-                      </div>
-                      <div className="mt-1 text-xs text-slate-400">
-                        Abertura: {new Date(servico.dataAbertura).toLocaleDateString('pt-BR')}
-                      </div>
-                      <div className="mt-1 text-xs text-slate-400">
-                        Valor final: {formatCurrencyBRL(servico.valorFinal)}
-                      </div>
-                      <div className="mt-2 rounded-lg border border-white/10 bg-slate-950/40 px-3 py-2 text-xs text-slate-300">
-                        {servico.tipo === 'alteracao_compartilhamento_credito'
-                          ? `UC Geradora: ${servico.ucGeradora || '-'}`
-                          : `Endereco: ${formatAddressSummary(servico.enderecoObra)}`}
-                      </div>
-                      <div className="mt-3 flex items-center gap-2">
-                        <select
-                          value={servico.status}
-                          onChange={(event) =>
-                            void updateStatus(servico.id, event.target.value as StatusServico)
-                          }
-                          disabled={!canManageStatus}
-                          className="min-w-0 flex-1 rounded-lg border border-white/20 bg-slate-950/70 px-2 py-1 text-xs text-slate-200"
-                        >
-                          {servicosService.statusFlow.map((option) => (
-                            <option key={option.status} value={option.status}>
-                              {option.etapa}
-                            </option>
-                          ))}
-                        </select>
-                        <Link to={`/servicos/${servico.id}`}>
-                          <Button type="button" variant="outline" size="sm">
-                            Abrir
-                          </Button>
-                        </Link>
-                        <Link to={`/servicos/${servico.id}?tab=editar`}>
-                          <Button type="button" variant="outline" size="sm">
-                            <PencilSimple className="mr-1 h-4 w-4" />
-                            Editar
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                  {groupedServicos[column.status].length === 0 && (
-                    <div className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-slate-400">
-                      Nenhum servico nesta coluna.
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              column={column}
+              servicos={groupedServicos[column.status]}
+              draggedId={draggedId}
+              canManageStatus={canManageStatus}
+              onDragStart={handleDragStart}
+              onDragEnd={() => setDraggedId(null)}
+              onDrop={handleDrop}
+              onStatusChange={(serviceId, nextStatus) => void updateStatus(serviceId, nextStatus)}
+            />
           ))}
         </div>
       </div>

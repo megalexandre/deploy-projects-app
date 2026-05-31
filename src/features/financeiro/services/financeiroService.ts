@@ -90,13 +90,14 @@ export const ledgerAmountToNumber = (ledger: Pick<Ledger, 'amount' | 'amount_cen
 };
 
 export const ledgerToTransacao = (ledger: Ledger): TransacaoFinanceira => {
-  const tipo = normalizeReason(ledger.reason);
+  const rawValor = ledgerAmountToNumber(ledger);
+  const tipo = rawValor < 0 ? 'despesa' : normalizeReason(ledger.reason);
 
   return {
     id: ledger.id,
     descricao: ledger.description?.trim() || 'Lancamento financeiro',
     tipo,
-    valor: ledgerAmountToNumber(ledger),
+    valor: Math.abs(rawValor),
     data: (ledger.created_at || new Date().toISOString()).slice(0, 10),
     categoria: tipo === 'receita' ? 'Receitas' : 'Despesas',
     status: 'pago',
