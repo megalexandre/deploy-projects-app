@@ -15,14 +15,14 @@ const cards = [
   {
     icon: Toolbox,
     title: 'Servicos Gerais',
-    description: 'Gestao integrada de demandas e servicos operacionais.',
+    description: 'Gestão integrada de demandas e servicos operacionais.',
   },
 ];
 
 export const LoginHeroPanel: React.FC = () => (
   <div className="hidden md:col-span-7 md:flex md:flex-col md:space-y-8">
     <h1 className="max-w-[720px] text-[56px] font-extrabold leading-[1.12] tracking-[-0.02em] text-[#dce2f8] xl:text-[64px]">
-      Gestao inteligente. Resultados que energizam <span className="text-[#a9c7ff]">o futuro.</span>
+      Gestão inteligente. Resultados que energizam <span className="text-[#a9c7ff]">o futuro.</span>
     </h1>
 
     <p className="max-w-[640px] text-[20px] leading-[1.7] text-[#c1c6d5]">

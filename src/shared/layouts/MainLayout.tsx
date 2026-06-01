@@ -161,7 +161,7 @@ export const MainLayout: React.FC = () => {
               </button>
               <div className="hidden lg:block" />
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/90 sm:text-sm">
-                Sistema de Gestao Fotovoltaica
+                Sistema de Gestão Fotovoltaica
               </div>
             </div>
           </header>

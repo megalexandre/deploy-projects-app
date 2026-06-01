@@ -30,6 +30,172 @@ const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
   return Array.from(merged.values());
 };
 
+const publicAssetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
+const procuracaoTemplates: Record<
+  string,
+  { buttonLabel: string; title: string; grantee: string; validityDays: number; powers: string }
+> = {
+  fotovoltaico: {
+    buttonLabel: 'Gerar procuracao Solar',
+    title: 'INSTRUMENTO PARTICULAR DE PROCURAÇÃO PARA PROJETOS FOTOVOLTAICOS',
+    grantee:
+      'OPJ Engenharia, com sede na Rua Pelotas, 256, Centro, Campina das Missões, RS, CEP: 98975-000, inscrita no CNPJ: 40.888.978/0001-56, neste ato representada pelo ENG. ORLEI PETRY JUNIOR, brasileiro, solteiro, empresário, portador do CPF 028.141.010-05, RG n° 1092760741 expedido por SSP/DI RS, registro geral CREA n° RS260827, residente e domiciliado em Rua Pelotas, 256, Centro, Campina das Missões, RS, Telefone (51) 99783-6992, E-mail orlei@opjengenharia.com',
+    validityDays: 180,
+    powers:
+      'Atuar junto à concessionária de energia elétrica, podendo solicitar orçamento de conexão para mini ou microgeração distribuída, dar entrada em consulta de acesso, solicitar parecer de acesso, aumento de carga, adequação do ramal de entrada, protocolar, acompanhar e responder exigências técnicas, assinar documentos, cadastros, projetos e demais formulários necessários, bem como representar o(a) OUTORGANTE perante a Ouvidoria da concessionária e junto à Agência Nacional de Energia Elétrica (ANEEL), podendo registrar, acompanhar e responder reclamações, manifestações, recursos administrativos e demais procedimentos relacionados ao objeto deste mandato, praticando, ainda, todos os atos necessários ao fiel cumprimento deste instrumento, inclusive dar vistas e assinar documentos, como se o(a) OUTORGANTE pessoalmente os praticasse.',
+  },
+  padrao_entrada: {
+    buttonLabel: 'Gerar procuracao EMUC',
+    title:
+      'INSTRUMENTO PARTICULAR DE PROCURAÇÃO PARA PROJETOS DE EMPREENDIMENTOS DE MÚLTIPLAS UNIDADES CONSUMIDORAS (EMUC)',
+    grantee:
+      'OPJ Engenharia, com sede na Rua Pelotas, 256, Centro, Campina das Missões, RS, CEP 98975-000, inscrita no CNPJ: 40.888.978/0001-56, registrada no CREA-RS n° 271024, neste ato representada pelo ENG. ORLEI PETRY JUNIOR, brasileiro, solteiro, empresário, portador do CPF 028.141.010-05, registro geral CREA n° RS260827, residente e domiciliado em Rua Pelotas, 256, Centro, Campina das Missões, RS, Telefone (51) 99783-6992, E-mail orlei@opjengenharia.com',
+    validityDays: 365,
+    powers:
+      'Representar o(a) OUTORGANTE perante a concessionária de energia elétrica, sua Ouvidoria, a Agência Nacional de Energia Elétrica (ANEEL) e demais órgãos competentes, com poderes para protocolar, acompanhar e praticar todos os atos necessários à elaboração, análise, aprovação e conclusão de processos relativos a Empreendimentos de Múltiplas Unidades Consumidoras (EMUC), incluindo solicitação de orçamento e parecer de conexão, consulta de acesso, aumento de carga, adequação de ramal de entrada, apresentação, assinatura e retificação de projetos e documentos, cadastramentos, recursos, manifestações e reclamações administrativas, bem como assinar requerimentos, declarações e demais documentos, solicitar vistas, prestar esclarecimentos e adotar todas as providências necessárias ao fiel cumprimento deste mandato, como se o(a) OUTORGANTE pessoalmente praticasse tais atos.',
+  },
+};
+
+const normalizeTipoProjeto = (
+  projeto?: Partial<
+    Pick<Projeto, 'tipoProjeto' | 'dadosProjeto' | 'modulos' | 'inversores' | 'padraoEntradaItens'>
+  > | null,
+) => {
+  const tipo = (projeto?.tipoProjeto ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (
+    ['fotovoltaico', 'projeto_fotovoltaico', 'solar', 'projeto_solar', 'energia_solar'].includes(
+      tipo,
+    )
+  ) {
+    return 'fotovoltaico';
+  }
+
+  if (['padrao_entrada', 'padrao de entrada', 'emuc', 'projeto_emuc'].includes(tipo)) {
+    return 'padrao_entrada';
+  }
+
+  if (['orcamento_conexao', 'orcamento de conexao', 'orçamento de conexão'].includes(tipo)) {
+    return 'orcamento_conexao';
+  }
+
+  if (
+    (projeto?.modulos?.length ?? 0) > 0 ||
+    (projeto?.inversores?.length ?? 0) > 0 ||
+    (projeto?.dadosProjeto?.potenciaSistema ?? 0) > 0
+  ) {
+    return 'fotovoltaico';
+  }
+
+  if ((projeto?.padraoEntradaItens?.length ?? 0) > 0) {
+    return 'padrao_entrada';
+  }
+
+  return '';
+};
+
+const getProcuracaoTemplate = (projeto?: Projeto | null) =>
+  procuracaoTemplates[normalizeTipoProjeto(projeto)];
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+const formatEnderecoCompleto = (endereco?: Projeto['endereco']) =>
+  [
+    endereco?.logradouro,
+    endereco?.numero ? `, ${endereco.numero}` : '',
+    endereco?.complemento ? ` - ${endereco.complemento}` : '',
+    endereco?.bairro ? `, ${endereco.bairro}` : '',
+    endereco?.cidade ? `, ${endereco.cidade}` : '',
+    endereco?.estado ? `/${endereco.estado}` : '',
+  ]
+    .join('')
+    .trim();
+
+const buildProcuracaoHtml = (
+  projeto: Projeto,
+  clienteDetalhe: Customer | null,
+  template: (typeof procuracaoTemplates)[string],
+) => {
+  const documento = onlyDigits(projeto.cliente.cpfCnpj);
+  const tipoDocumento = documento.length > 11 ? 'CNPJ' : 'CPF';
+  const enderecoCliente = clienteDetalhe?.endereco ?? projeto.cliente.endereco ?? projeto.endereco;
+  const nomeCliente = projeto.cliente.nome || 'NOME DO CLIENTE';
+  const documentoCliente = maskCpfOrCnpj(projeto.cliente.cpfCnpj) || 'CPF/CNPJ';
+  const enderecoCompleto = formatEnderecoCompleto(enderecoCliente) || 'ENDEREÇO COMPLETO';
+  const cep = enderecoCliente?.cep || 'CEP';
+  const qualificacao =
+    tipoDocumento === 'CNPJ'
+      ? `com sede na ${enderecoCompleto}, CEP: ${cep}.`
+      : `residente e domiciliado na ${enderecoCompleto}, CEP: ${cep}.`;
+  const timbradoUrl = publicAssetUrl('timbrado.png');
+
+  return `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Procuração - ${escapeHtml(nomeCliente)}</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e5e7eb; font-family: Arial, Helvetica, sans-serif; color: #111827; }
+    .page {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 39mm 24mm 28mm;
+      background: #fff url("${timbradoUrl}") center / cover no-repeat;
+    }
+    .content { position: relative; z-index: 1; font-size: 11.8pt; line-height: 1.34; }
+    h1 { margin: 0 0 11mm; text-align: center; font-size: 13.5pt; line-height: 1.25; font-weight: 700; }
+    p { margin: 0 0 5mm; text-align: justify; }
+    strong { font-weight: 700; }
+    .signature-place { margin-top: 8mm; text-align: left; }
+    .signature { margin-top: 17mm; text-align: center; }
+    .signature-line { width: 76mm; margin: 0 auto 2mm; border-top: 1px solid #111827; }
+    .signature p { margin: 0; text-align: center; line-height: 1.35; }
+    @media print {
+      body { background: #fff; }
+      .page { margin: 0; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="content">
+      <h1>${escapeHtml(template.title)}</h1>
+      <p><strong>OUTORGANTE:</strong> ${escapeHtml(nomeCliente)}, inscrito no ${tipoDocumento} n° ${escapeHtml(documentoCliente)}, ${escapeHtml(qualificacao)}</p>
+      <p><strong>OUTORGADO:</strong> ${escapeHtml(template.grantee)}</p>
+      <p><strong>PODERES:</strong> ${escapeHtml(template.powers)}</p>
+      <p>Esta procuração é válida por ${template.validityDays} dias contado a partir de sua assinatura.</p>
+      <p class="signature-place">________________________________, _____ de _____________ de _____.</p>
+      <div class="signature">
+        <div class="signature-line"></div>
+        <p>Outorgante: ${escapeHtml(nomeCliente)}</p>
+        <p>${tipoDocumento}: ${escapeHtml(documentoCliente)}</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 300);
+    });
+  </script>
+</body>
+</html>`;
+};
+
 export const ProjetoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
@@ -101,6 +267,28 @@ export const ProjetoDetailPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao baixar documento do projeto:', error);
     }
+  };
+
+  const handleCreateProcuracao = () => {
+    if (!projeto) {
+      return;
+    }
+
+    const template = getProcuracaoTemplate(projeto);
+
+    if (!template) {
+      return;
+    }
+
+    const popup = window.open('', '_blank');
+
+    if (!popup) {
+      return;
+    }
+
+    popup.document.open();
+    popup.document.write(buildProcuracaoHtml(projeto, clienteDetalhe, template));
+    popup.document.close();
   };
 
   const getStatusText = (status: string) => {
@@ -178,12 +366,18 @@ export const ProjetoDetailPage: React.FC = () => {
   };
 
   const formatTipoProjeto = (tipoProjeto?: string) => {
-    if (tipoProjeto === 'fotovoltaico') {
-      return 'Projeto Fotovoltaico';
+    const tipoNormalizado = normalizeTipoProjeto({ tipoProjeto });
+
+    if (tipoNormalizado === 'fotovoltaico') {
+      return 'Projeto Solar';
     }
 
-    if (tipoProjeto === 'padrao_entrada') {
-      return 'Padrao de Entrada';
+    if (tipoNormalizado === 'padrao_entrada') {
+      return 'Projeto EMUC';
+    }
+
+    if (tipoNormalizado === 'orcamento_conexao') {
+      return 'Orçamento de Conexão';
     }
 
     return tipoProjeto || '-';
@@ -226,6 +420,8 @@ export const ProjetoDetailPage: React.FC = () => {
     potenciaTotalModulos > 0 && potenciaTotalInversores > 0
       ? Math.min(potenciaTotalModulos, potenciaTotalInversores)
       : Math.max(potenciaTotalModulos, potenciaTotalInversores);
+  const tipoProjetoNormalizado = normalizeTipoProjeto(projeto);
+  const procuracaoTemplate = getProcuracaoTemplate(projeto);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -535,7 +731,7 @@ export const ProjetoDetailPage: React.FC = () => {
                     {formatBinaryChoice(projeto.zeroGridControleExportacao)}
                   </p>
                 </div>
-                {projeto.tipoProjeto === 'fotovoltaico' && (
+                {tipoProjetoNormalizado === 'fotovoltaico' && (
                   <>
                     <div>
                       <label className="text-sm font-medium text-gray-400">
@@ -917,22 +1113,35 @@ export const ProjetoDetailPage: React.FC = () => {
         {activeTab === 'documentos' && (
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle>Documentos</CardTitle>
-                <label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50">
-                  <UploadSimple className="mr-2 h-4 w-4" />
-                  {savingDocuments ? 'Enviando...' : 'Adicionar documentos'}
-                  <input
-                    type="file"
-                    className="hidden"
-                    multiple
-                    disabled={savingDocuments}
-                    onChange={(event) => {
-                      void handleSaveDocuments(event.target.files);
-                      event.target.value = '';
-                    }}
-                  />
-                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  {procuracaoTemplate && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCreateProcuracao}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      {procuracaoTemplate.buttonLabel}
+                    </Button>
+                  )}
+                  <label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50">
+                    <UploadSimple className="mr-2 h-4 w-4" />
+                    {savingDocuments ? 'Enviando...' : 'Adicionar documentos'}
+                    <input
+                      type="file"
+                      className="hidden"
+                      multiple
+                      disabled={savingDocuments}
+                      onChange={(event) => {
+                        void handleSaveDocuments(event.target.files);
+                        event.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

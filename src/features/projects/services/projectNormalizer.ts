@@ -2,7 +2,6 @@ import type { PadraoEntradaItem, Projeto, PaginatedResponse, StatusProjeto } fro
 import { asArray, asBooleanString, asNumber, asString, isRecord } from '@/core/utils/normalize';
 
 export const projectStatusFlow: Array<{ status: StatusProjeto; etapa: string }> = [
-  { status: 'aguardando_aprovacao', etapa: 'Aguardando Aprovacao' },
   { status: 'em_analise_documentacao', etapa: 'Em Analise da Documentacao' },
   { status: 'elaboracao_documentacao_tecnica', etapa: 'Elaboracao da Documentacao Tecnica' },
   { status: 'aguardando_assinatura_cliente', etapa: 'Aguardando Assinatura do Cliente' },

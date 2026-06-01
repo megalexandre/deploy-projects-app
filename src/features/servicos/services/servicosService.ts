@@ -110,24 +110,39 @@ const normalizeStatus = (value?: string): StatusServico => {
   return found?.status ?? 'abertura_servico';
 };
 
-const getTimelineStatus = (
+const getTimelineStageLabel = (status: StatusServico) =>
+  SERVICE_STATUS_FLOW.find((item) => item.status === status)?.etapa ?? status;
+
+const getRecordedTimelineStatus = (status: StatusServico): TimelineItem['status'] =>
+  status === 'servico_aprovado' || status === 'servico_encerrado' ? 'concluido' : 'em_andamento';
+
+const buildTimelineEntry = (
+  service: Pick<Servico, 'id' | 'protocolo' | 'dataAbertura' | 'dataCriacao'>,
   status: StatusServico,
-  currentStatus: StatusServico,
-): TimelineItem['status'] => {
-  const currentIndex = SERVICE_STATUS_FLOW.findIndex((item) => item.status === currentStatus);
-  const itemIndex = SERVICE_STATUS_FLOW.findIndex((item) => item.status === status);
+  descricaoAtual?: string,
+  data?: string,
+): TimelineItem => ({
+  id: crypto.randomUUID(),
+  etapa: getTimelineStageLabel(status),
+  data: data || new Date().toISOString(),
+  status: getRecordedTimelineStatus(status),
+  descricao: descricaoAtual || `Status atual do servico ${service.protocolo}.`,
+  comentarios: [],
+});
 
-  if (itemIndex < currentIndex) {
-    return 'concluido';
-  }
+const appendTimelineEntryForServiceStatus = (
+  service: Pick<Servico, 'id' | 'protocolo' | 'dataAbertura' | 'dataCriacao'>,
+  currentTimeline: TimelineItem[],
+  status: StatusServico,
+  descricaoAtual?: string,
+): TimelineItem[] => {
+  const previousTimeline = currentTimeline.map((item, index, array) =>
+    index === array.length - 1 && item.status === 'em_andamento'
+      ? { ...item, status: 'concluido' as const }
+      : item,
+  );
 
-  if (itemIndex === currentIndex) {
-    return currentStatus === 'servico_aprovado' || currentStatus === 'servico_encerrado'
-      ? 'concluido'
-      : 'em_andamento';
-  }
-
-  return 'pendente';
+  return [...previousTimeline, buildTimelineEntry(service, status, descricaoAtual)];
 };
 
 const buildTimeline = (
@@ -135,14 +150,19 @@ const buildTimeline = (
   status: StatusServico,
   dataAbertura: string,
   dataAtualizacao: string,
-): TimelineItem[] =>
-  SERVICE_STATUS_FLOW.map((item, index) => ({
-    id: `${id}-${item.status}`,
-    etapa: item.etapa,
-    data: index === 0 ? dataAbertura : dataAtualizacao,
-    status: getTimelineStatus(item.status, status),
-    descricao: item.status === status ? 'Etapa atual do servico.' : undefined,
-  }));
+): TimelineItem[] => [
+  buildTimelineEntry(
+    {
+      id,
+      protocolo: id,
+      dataAbertura,
+      dataCriacao: dataAtualizacao,
+    },
+    status,
+    'Etapa atual do servico.',
+    dataAtualizacao || dataAbertura,
+  ),
+];
 
 const createProtocol = () => `SERV-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`;
 const buildStableProtocol = (id: string, createdAt: string) => {
@@ -203,13 +223,24 @@ const normalizeTimeline = (
     return buildTimeline(serviceId, status, dataAbertura, dataAtualizacao);
   }
 
-  return timeline.map((item) => ({
+  const normalizedTimeline = timeline.map((item) => ({
     id: normalizeText(item.id) || crypto.randomUUID(),
     etapa: normalizeText(item.etapa),
     data: normalizeText(item.data) || dataAtualizacao,
     status: item.status,
     descricao: normalizeText(item.descricao) || undefined,
+    comentarios: item.comentarios,
   }));
+
+  const isGeneratedFullFlow =
+    normalizedTimeline.length === SERVICE_STATUS_FLOW.length &&
+    SERVICE_STATUS_FLOW.every((flowItem) =>
+      normalizedTimeline.some((item) => item.id === `${serviceId}-${flowItem.status}`),
+    );
+
+  return isGeneratedFullFlow
+    ? buildTimeline(serviceId, status, dataAbertura, dataAtualizacao)
+    : normalizedTimeline;
 };
 
 const buildTimelineFromStatus = (
@@ -691,12 +722,16 @@ export const servicosService = {
     nextStatus: StatusServico = 'abertura_servico',
   ): Promise<Servico> {
     const currentService = await servicosService.getById(id);
-    const nextUpdatedAt = new Date().toISOString();
 
     updateServiceEnhancement(id, (current) => ({
       ...current,
       status: nextStatus,
-      timeline: buildTimeline(id, nextStatus, currentService.dataAbertura, nextUpdatedAt),
+      timeline: appendTimelineEntryForServiceStatus(
+        currentService,
+        current?.timeline ?? currentService.timeline,
+        nextStatus,
+        'Servico aprovado no frontend e liberado para o fluxo operacional.',
+      ),
     }));
 
     return servicosService.getById(id);
@@ -713,8 +748,15 @@ export const servicosService = {
       status: nextStatus,
       timeline:
         payload.timeline ??
-        current?.timeline ??
-        buildTimeline(id, nextStatus, currentService.dataAbertura, nextUpdatedAt),
+        (payload.status && payload.status !== currentService.status
+          ? appendTimelineEntryForServiceStatus(
+              currentService,
+              current?.timeline ?? currentService.timeline,
+              nextStatus,
+              payload.observacoes,
+            )
+          : (current?.timeline ??
+            buildTimeline(id, nextStatus, currentService.dataAbertura, nextUpdatedAt))),
       documentos: payload.documentos
         ? normalizeDocumentos(payload.documentos)
         : current?.documentos,
@@ -742,7 +784,11 @@ export const servicosService = {
     updateServiceEnhancement(id, (current) => ({
       ...current,
       status,
-      timeline: buildTimeline(id, status, currentService.dataAbertura, new Date().toISOString()),
+      timeline: appendTimelineEntryForServiceStatus(
+        currentService,
+        current?.timeline ?? currentService.timeline,
+        status,
+      ),
     }));
 
     return servicosService.getById(id);

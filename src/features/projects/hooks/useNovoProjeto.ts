@@ -669,8 +669,8 @@ export const useNovoProjeto = () => {
     if (!validarPasso3()) {
       setErro(
         projetoFotovoltaico
-          ? 'Preencha latitude e longitude em formato valido, alem de modulos e inversores, para calcular corretamente a potencia do sistema.'
-          : 'Preencha tensao, latitude e longitude em formato valido e ao menos uma linha do quadro de padrao de entrada.',
+          ? 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, alem de modulos e inversores, para calcular corretamente a potencia do sistema.'
+          : 'Preencha tensao, latitude entre -90 e 90, longitude entre -180 e 180 e ao menos uma linha do quadro de padrao de entrada.',
       );
       setPassoAtual(3);
       return;
@@ -783,7 +783,7 @@ export const useNovoProjeto = () => {
         framework: enquadramento,
         dcProtection: projetoFotovoltaico ? 'Disjuntor CC 20A' : undefined,
         systemPower: projetoFotovoltaico ? potenciaSistemaKw : 0,
-        status: currentUser?.isAdmin ? StatusProjeto.APROVADO : StatusProjeto.AGUARDANDO_APROVACAO,
+        status: StatusProjeto.EM_ANALISE_DOCUMENTACAO,
         amount: valorProjetoNumerico,
         projectType: dadosBasicos.tipoProjeto,
         servicesNames: servicosSelecionados,
@@ -837,6 +837,25 @@ export const useNovoProjeto = () => {
       console.log('Enviando dados para API:', projectData);
 
       const projetoCriado = await projectsService.create(projectData);
+      const projetoOrcamentoConexao =
+        dadosBasicos.tipoProjeto === 'padrao_entrada'
+          ? await projectsService.create({
+              ...projectData,
+              id: crypto.randomUUID(),
+              utilityProtocol: gerarProtocolo(),
+              projectType: 'orcamento_conexao',
+              servicesNames: ['Orçamento de Conexão'],
+              amount: 0,
+              padraoEntradaItens: [],
+              tensaoFornecimento: undefined,
+              description: [
+                'Projeto gerado automaticamente a partir do Projeto EMUC.',
+                detalhesProjeto.observacoes.trim(),
+              ]
+                .filter(Boolean)
+                .join('\n\n'),
+            })
+          : null;
       const documentosSelecionados = buildSelectedDocumentFiles();
 
       if (documentosSelecionados.length > 0) {
@@ -857,8 +876,29 @@ export const useNovoProjeto = () => {
             url: uploadedFile.urlS3,
           })),
         ]);
+        if (projetoOrcamentoConexao) {
+          const uploadedOrcamentoFiles = await filesService.uploadFiles(
+            projetoOrcamentoConexao.id,
+            documentosSelecionados.map((item) => item.file),
+          );
+          projectsService.saveDocuments(projetoOrcamentoConexao.id, [
+            ...reusedCustomerDocuments,
+            ...uploadedOrcamentoFiles.map((uploadedFile, index) => ({
+              id: uploadedFile.id,
+              fileId: uploadedFile.id,
+              nome: uploadedFile.fileName,
+              tipo: documentosSelecionados[index]?.categoria ?? 'Documento',
+              dataUpload: uploadedFile.createdAt ?? new Date().toISOString(),
+              tamanho: uploadedFile.size,
+              url: uploadedFile.urlS3,
+            })),
+          ]);
+        }
       } else if (reusedCustomerDocuments.length > 0) {
         projectsService.saveDocuments(projetoCriado.id, reusedCustomerDocuments);
+        if (projetoOrcamentoConexao) {
+          projectsService.saveDocuments(projetoOrcamentoConexao.id, reusedCustomerDocuments);
+        }
       }
 
       navigate('/projetos');

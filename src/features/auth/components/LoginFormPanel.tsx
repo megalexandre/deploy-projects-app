@@ -49,7 +49,7 @@ export const LoginFormPanel: React.FC<LoginFormPanelProps> = ({
                 id="email"
                 name="email"
                 type="email"
-                placeholder="seu.email@concessionaria.com.br"
+                placeholder="Login"
                 value={credentials.email}
                 onChange={onChange}
                 required
@@ -68,7 +68,7 @@ export const LoginFormPanel: React.FC<LoginFormPanelProps> = ({
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Sua senha"
+                placeholder="Senha"
                 value={credentials.password}
                 onChange={onChange}
                 required
