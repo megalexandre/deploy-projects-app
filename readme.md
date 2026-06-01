@@ -1,3 +1,8 @@
+
+npm run build &&
+docker build -t alexandreqrz/opjapp:latest . &&
+docker push alexandreqrz/opjapp:latest
+
 # OPJ Engenharia
 
 Frontend interno da OPJ Engenharia para operacao de projetos fotovoltaicos, servicos tecnicos, clientes, financeiro e configuracoes.
