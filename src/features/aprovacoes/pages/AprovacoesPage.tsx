@@ -20,7 +20,7 @@ type EntitySnapshot = {
 type ApprovalTab = 'pendente' | 'aprovado' | 'rejeitado';
 
 const formatEntityType = (type: ApprovalRequest['entityType']) =>
-  type === 'projeto' ? 'Projeto' : 'Servico';
+  type === 'projeto' ? 'Projeto' : 'Serviço';
 
 const formatApprovalStatus = (status: ApprovalRequest['status']) =>
   status === 'pendente' ? 'Pendente' : status === 'aprovado' ? 'Aprovado' : 'Rejeitado';
@@ -37,19 +37,19 @@ const tabConfig: Record<
   pendente: {
     title: 'Aguardando',
     description: 'Solicitacoes aguardando decisao. Ao aprovar ou rejeitar, saem desta lista.',
-    emptyMessage: 'Nao ha solicitacoes pendentes no momento.',
+    emptyMessage: 'Não há solicitações pendentes no momento.',
     icon: Hourglass,
   },
   aprovado: {
     title: 'Aprovado',
-    description: 'Historico das solicitacoes que ja foram aprovadas.',
-    emptyMessage: 'Nenhuma solicitacao aprovada ate o momento.',
+    description: 'Histórico das solicitações que já foram aprovadas.',
+    emptyMessage: 'Nenhuma solicitação aprovada até o momento.',
     icon: CheckCircle,
   },
   rejeitado: {
     title: 'Rejeitado',
-    description: 'Historico das solicitacoes que foram rejeitadas.',
-    emptyMessage: 'Nenhuma solicitacao rejeitada ate o momento.',
+    description: 'Histórico das solicitações que foram rejeitadas.',
+    emptyMessage: 'Nenhuma solicitação rejeitada até o momento.',
     icon: XCircle,
   },
 };
@@ -167,8 +167,8 @@ export const AprovacoesPage: React.FC = () => {
     return (
       <div className="space-y-6 page-enter">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">Aprovacoes</h1>
-          <p className="mt-1 text-gray-400">Area restrita a usuarios com perfil main.</p>
+          <h1 className="text-2xl font-bold text-gray-100">Aprovações</h1>
+          <p className="mt-1 text-gray-400">Área restrita a usuários com perfil main.</p>
         </div>
       </div>
     );
@@ -189,10 +189,10 @@ export const AprovacoesPage: React.FC = () => {
             <th className="px-6 py-4">Projeto / ID</th>
             <th className="px-6 py-4">Cliente</th>
             <th className="px-6 py-4">Solicitante</th>
-            <th className="px-6 py-4">Aprovacao</th>
+            <th className="px-6 py-4">Aprovação</th>
             <th className="px-6 py-4">Status Kanban</th>
             <th className="px-6 py-4">Data</th>
-            <th className="px-6 py-4 text-right">Acoes</th>
+            <th className="px-6 py-4 text-right">Ações</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
@@ -281,7 +281,7 @@ export const AprovacoesPage: React.FC = () => {
                       <ClockCounterClockwise className="mr-2 h-4 w-4" />
                       {request.decidedByName
                         ? `Decidido por ${request.decidedByName}`
-                        : 'Decisao registrada'}
+                        : 'Decisão registrada'}
                     </div>
                   )}
                 </div>
@@ -305,14 +305,14 @@ export const AprovacoesPage: React.FC = () => {
     <div className="space-y-8 page-enter">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-100">Aprovacoes de Infraestrutura</h1>
+          <h1 className="text-3xl font-bold text-slate-100">Aprovações de Infraestrutura</h1>
           <p className="mt-2 text-slate-400">
-            Gerencie solicitacoes de projetos e vistorias tecnicas do grid.
+            Gerencie solicitações de projetos e vistorias técnicas do grid.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-[rgba(22,31,48,0.7)] px-4 py-3 backdrop-blur-[20px]">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 backdrop-blur-[20px]">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-amber-400/10 p-2">
                 <Hourglass className="h-5 w-5 text-amber-300" />
@@ -326,7 +326,7 @@ export const AprovacoesPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[rgba(22,31,48,0.7)] px-4 py-3 backdrop-blur-[20px]">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 backdrop-blur-[20px]">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-cyan-400/10 p-2">
                 <CheckCircle className="h-5 w-5 text-cyan-300" weight="fill" />
@@ -340,7 +340,7 @@ export const AprovacoesPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[rgba(22,31,48,0.7)] px-4 py-3 backdrop-blur-[20px]">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 backdrop-blur-[20px]">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-rose-400/10 p-2">
                 <XCircle className="h-5 w-5 text-rose-300" weight="fill" />
@@ -356,7 +356,7 @@ export const AprovacoesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[rgba(22,31,48,0.7)] shadow-2xl backdrop-blur-[20px]">
+      <div className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/70 shadow-2xl backdrop-blur-[20px]">
         <div className="flex border-b border-white/10 px-6 pt-6">
           {(Object.keys(tabConfig) as ApprovalTab[]).map((tab) => {
             const Icon = tabConfig[tab].icon;
@@ -387,7 +387,7 @@ export const AprovacoesPage: React.FC = () => {
               <p className="mt-1 text-sm text-slate-400">{currentTab.description}</p>
             </div>
             <div className="text-sm text-slate-400">
-              Responsavel atual:{' '}
+              Responsável atual:{' '}
               <span className="text-slate-100">{sessionUser?.name || 'Main'}</span>
             </div>
           </div>
@@ -397,7 +397,7 @@ export const AprovacoesPage: React.FC = () => {
 
         <div className="flex items-center justify-between border-t border-white/5 bg-slate-950/25 px-4 py-4 text-xs text-slate-400">
           <div>
-            Exibindo {currentItems.length} solicitacao(oes) na aba {currentTab.title.toLowerCase()}
+            Exibindo {currentItems.length} solicitação(ões) na aba {currentTab.title.toLowerCase()}
           </div>
           <div className="rounded-full bg-cyan-300/10 px-3 py-1 font-semibold text-cyan-300">
             {currentItems.length} item(ns)

@@ -33,11 +33,11 @@ export const UserFormModal: React.FC<Props> = ({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-slate-100">
-            {editingUserId ? 'Editar Usuario' : 'Novo Usuario'}
+            {editingUserId ? 'Editar Usuário' : 'Novo Usuário'}
           </h2>
           <p className="mt-1 text-sm text-slate-400">
             {editingUserId
-              ? 'Atualize os dados basicos do usuario.'
+              ? 'Atualize os dados básicos do usuário.'
               : 'Cadastro enviado para POST /auth/register.'}
           </p>
         </div>
@@ -83,7 +83,7 @@ export const UserFormModal: React.FC<Props> = ({
             }
             className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
           >
-            <option value="user">Usuario</option>
+            <option value="user">Usuário</option>
             <option value="main">Main</option>
           </select>
         </div>
@@ -132,8 +132,8 @@ export const UserFormModal: React.FC<Props> = ({
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 transition hover:text-white"
                   aria-label={
                     showPasswordConfirmation
-                      ? 'Ocultar confirmacao de senha'
-                      : 'Mostrar confirmacao de senha'
+                      ? 'Ocultar confirmação de senha'
+                      : 'Mostrar confirmação de senha'
                   }
                 >
                   {showPasswordConfirmation ? (
@@ -152,7 +152,7 @@ export const UserFormModal: React.FC<Props> = ({
             Cancelar
           </Button>
           <Button type="submit" loading={saving}>
-            {editingUserId ? 'Salvar alteracoes' : 'Criar usuario'}
+            {editingUserId ? 'Salvar alterações' : 'Criar usuário'}
           </Button>
         </div>
       </form>

@@ -5,17 +5,17 @@ const cards = [
   {
     icon: SolarPanel,
     title: 'Fotovoltaicos',
-    description: 'Planeje, acompanhe e entregue projetos solares com precisao.',
+    description: 'Planeje, acompanhe e entregue projetos solares com precisão.',
   },
   {
     icon: ClipboardText,
     title: 'EMUCs',
-    description: 'Controle e monitoramento de execucoes de obras e manutencoes.',
+    description: 'Controle e monitoramento de execuções de obras e manutenções.',
   },
   {
     icon: Toolbox,
-    title: 'Servicos Gerais',
-    description: 'Gestão integrada de demandas e servicos operacionais.',
+    title: 'Serviços Gerais',
+    description: 'Gestão integrada de demandas e serviços operacionais.',
   },
 ];
 
@@ -26,8 +26,8 @@ export const LoginHeroPanel: React.FC = () => (
     </h1>
 
     <p className="max-w-[640px] text-[20px] leading-[1.7] text-[#c1c6d5]">
-      Gerencie projetos fotovoltaicos, EMUCs e servicos gerais com eficiencia, seguranca e visao
-      completa do portfolio da concessionaria.
+      Gerencie projetos fotovoltaicos, EMUCs e serviços gerais com eficiência, segurança e visão
+      completa do portfólio da concessionária.
     </p>
 
     <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-3">

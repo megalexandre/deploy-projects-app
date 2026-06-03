@@ -1,4 +1,4 @@
-/** Pagina 'ConfiguracoesPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
+/** Página 'ConfiguracoesPage': orquestra estado da tela, eventos do usuário e renderização dos componentes. */
 import React, { useState } from 'react';
 import {
   Bell,
@@ -36,12 +36,12 @@ const tabs: Array<{
   icon: React.ComponentType<{ className?: string }>;
 }> = [
   { id: 'geral', label: 'Geral', icon: Buildings },
-  { id: 'precos', label: 'Precos', icon: CurrencyCircleDollar },
+  { id: 'precos', label: 'Preços', icon: CurrencyCircleDollar },
   { id: 'cupons', label: 'Cupons', icon: Percent },
-  { id: 'concessionarias', label: 'Concessionarias', icon: Buildings },
-  { id: 'notificacoes', label: 'Notificacoes', icon: Bell },
+  { id: 'concessionarias', label: 'Concessionárias', icon: Buildings },
+  { id: 'notificacoes', label: 'Notificações', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
-  { id: 'seguranca', label: 'Seguranca', icon: Shield },
+  { id: 'seguranca', label: 'Segurança', icon: Shield },
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
@@ -124,7 +124,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
   const handleSalvar = () => {
     saveConfiguracoesSistema(formData);
-    setSaveMessage('Configuracoes salvas. Novos projetos passam a usar esses valores.');
+    setSaveMessage('Configurações salvas. Novos projetos passam a usar esses valores.');
     window.setTimeout(() => setSaveMessage(null), 3000);
   };
 
@@ -133,14 +133,14 @@ export const ConfiguracoesPage: React.FC = () => {
       <div className="space-y-6 page-enter">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Meu Perfil</h1>
-          <p className="mt-1 text-gray-400">Visualizacao do proprio usuario autenticado.</p>
+          <p className="mt-1 text-gray-400">Visualização do próprio usuário autenticado.</p>
         </div>
 
         <Card>
           <CardContent className="space-y-6 p-6">
             <div className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-              A API atual nao possui endpoint para editar o proprio perfil. Por isso, os dados
-              abaixo estao disponiveis apenas para consulta no frontend.
+              A API atual não possui endpoint para editar o próprio perfil. Por isso, os dados
+              abaixo estão disponíveis apenas para consulta no frontend.
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -149,7 +149,7 @@ export const ConfiguracoesPage: React.FC = () => {
               <Input label="Perfil" value={currentUser?.role ?? 'user'} readOnly />
               <Input
                 label="Acesso"
-                value={currentUser?.isAdmin ? 'Perfil Main' : 'Usuario'}
+                value={currentUser?.isAdmin ? 'Perfil Main' : 'Usuário'}
                 readOnly
               />
             </div>
@@ -163,7 +163,7 @@ export const ConfiguracoesPage: React.FC = () => {
     <div className="space-y-6 page-enter">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">Configuracoes</h1>
+          <h1 className="text-2xl font-bold text-gray-100">Configurações</h1>
           <p className="mt-1 text-gray-400">
             Defina preferencias do sistema e as tabelas de valores.
           </p>
@@ -172,7 +172,7 @@ export const ConfiguracoesPage: React.FC = () => {
           {saveMessage && <p className="text-sm text-emerald-300">{saveMessage}</p>}
           <Button onClick={handleSalvar}>
             <FloppyDisk className="mr-2 h-4 w-4" />
-            Salvar Alteracoes
+            Salvar Alterações
           </Button>
         </div>
       </div>
@@ -199,7 +199,7 @@ export const ConfiguracoesPage: React.FC = () => {
         <CardContent className="p-6">
           {activeTab === 'geral' && (
             <div className="space-y-6 page-enter">
-              <h3 className="mb-4 text-lg font-medium text-gray-100">Informacoes da Empresa</h3>
+              <h3 className="mb-4 text-lg font-medium text-gray-100">Informações da Empresa</h3>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <Input
@@ -231,7 +231,7 @@ export const ConfiguracoesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-300">Endereco</label>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Endereço</label>
                 <textarea
                   value={formData.endereco}
                   onChange={(e) => handleInputChange('endereco', e.target.value)}
@@ -255,7 +255,7 @@ export const ConfiguracoesPage: React.FC = () => {
                 <div>
                   <h4 className="text-base font-semibold text-gray-100">Projeto Fotovoltaico</h4>
                   <p className="text-sm text-gray-400">
-                    Faixas de potencia em kW e valor cobrado por faixa.
+                    Faixas de potência em kW e valor cobrado por faixa.
                   </p>
                 </div>
 
@@ -263,8 +263,8 @@ export const ConfiguracoesPage: React.FC = () => {
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead className="bg-gray-900/60">
                       <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
-                        <th className="px-4 py-3">Potencia Minima</th>
-                        <th className="px-4 py-3">Potencia Maxima</th>
+                        <th className="px-4 py-3">Potência Mínima</th>
+                        <th className="px-4 py-3">Potência Máxima</th>
                         <th className="px-4 py-3">Valor</th>
                       </tr>
                     </thead>
@@ -314,10 +314,10 @@ export const ConfiguracoesPage: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <h4 className="text-base font-semibold text-gray-100">
-                    Padrao de Entrada / EMUC
+                    Padrão de Entrada / EMUC
                   </h4>
                   <p className="text-sm text-gray-400">
-                    Valor unitario usado em cada combinacao de classificacao e ligacao.
+                    Valor unitário usado em cada combinação de classificação e ligação.
                   </p>
                 </div>
 
@@ -325,9 +325,9 @@ export const ConfiguracoesPage: React.FC = () => {
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead className="bg-gray-900/60">
                       <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
-                        <th className="px-4 py-3">Classificacao</th>
-                        <th className="px-4 py-3">Tipo de Ligacao</th>
-                        <th className="px-4 py-3">Valor Unitario</th>
+                        <th className="px-4 py-3">Classificação</th>
+                        <th className="px-4 py-3">Tipo de Ligação</th>
+                        <th className="px-4 py-3">Valor Unitário</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -361,8 +361,8 @@ export const ConfiguracoesPage: React.FC = () => {
                 <div>
                   <h3 className="mb-2 text-lg font-medium text-gray-100">Cupons de Desconto</h3>
                   <p className="text-sm text-gray-400">
-                    Cadastre os cupons usados no fluxo de servicos. Cupons inativos deixam de
-                    aparecer na selecao.
+                    Cadastre os cupons usados no fluxo de serviços. Cupons inativos deixam de
+                    aparecer na seleção.
                   </p>
                 </div>
                 <Button type="button" variant="outline" onClick={handleAdicionarCupom}>
@@ -429,13 +429,13 @@ export const ConfiguracoesPage: React.FC = () => {
           {activeTab === 'notificacoes' && (
             <div className="space-y-6 page-enter">
               <h3 className="mb-4 text-lg font-medium text-gray-100">
-                Preferencias de Notificacao
+                Preferências de Notificação
               </h3>
 
               <div className="space-y-4">
                 <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
                   <div>
-                    <div className="font-medium text-gray-100">Notificacoes por E-mail</div>
+                    <div className="font-medium text-gray-100">Notificações por E-mail</div>
                     <div className="text-sm text-gray-400">
                       Receba avisos importantes por e-mail
                     </div>
@@ -450,7 +450,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
                 <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
                   <div>
-                    <div className="font-medium text-gray-100">Notificacoes por SMS</div>
+                    <div className="font-medium text-gray-100">Notificações por SMS</div>
                     <div className="text-sm text-gray-400">Receba alertas criticos por SMS</div>
                   </div>
                   <input
@@ -464,7 +464,7 @@ export const ConfiguracoesPage: React.FC = () => {
                 <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
                   <div>
                     <div className="font-medium text-gray-100">Projetos</div>
-                    <div className="text-sm text-gray-400">Atualizacoes sobre projetos</div>
+                    <div className="text-sm text-gray-400">Atualizações sobre projetos</div>
                   </div>
                   <input
                     type="checkbox"
@@ -490,7 +490,7 @@ export const ConfiguracoesPage: React.FC = () => {
                 <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
                   <div>
                     <div className="font-medium text-gray-100">Servicos</div>
-                    <div className="text-sm text-gray-400">Avisos relacionados a servicos</div>
+                    <div className="text-sm text-gray-400">Avisos relacionados a serviços</div>
                   </div>
                   <input
                     type="checkbox"
@@ -505,7 +505,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {activeTab === 'sistema' && (
             <div className="space-y-6 page-enter">
-              <h3 className="mb-4 text-lg font-medium text-gray-100">Configuracoes do Sistema</h3>
+              <h3 className="mb-4 text-lg font-medium text-gray-100">Configurações do Sistema</h3>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
@@ -519,7 +519,7 @@ export const ConfiguracoesPage: React.FC = () => {
                   >
                     <option value="dark">Escuro</option>
                     <option value="light">Claro</option>
-                    <option value="auto">Automatico</option>
+                    <option value="auto">Automático</option>
                   </select>
                 </div>
 
@@ -530,15 +530,15 @@ export const ConfiguracoesPage: React.FC = () => {
                     onChange={(e) => handleInputChange('idioma', e.target.value)}
                     className="w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
                   >
-                    <option value="pt-BR">Portugues (Brasil)</option>
+                    <option value="pt-BR">Português (Brasil)</option>
                     <option value="en-US">English</option>
-                    <option value="es-ES">Espanol</option>
+                    <option value="es-ES">Español</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-300">
-                    Fuso Horario
+                    Fuso Horário
                   </label>
                   <select
                     value={formData.fusoHorario}
@@ -571,14 +571,14 @@ export const ConfiguracoesPage: React.FC = () => {
 
           {activeTab === 'seguranca' && (
             <div className="space-y-6 page-enter">
-              <h3 className="mb-4 text-lg font-medium text-gray-100">Configuracoes de Seguranca</h3>
+              <h3 className="mb-4 text-lg font-medium text-gray-100">Configurações de Segurança</h3>
 
               <div className="space-y-4">
                 <Card>
                   <CardContent className="p-4">
-                    <h4 className="mb-2 font-medium text-gray-100">Autenticacao de Dois Fatores</h4>
+                    <h4 className="mb-2 font-medium text-gray-100">Autenticação de Dois Fatores</h4>
                     <p className="mb-4 text-sm text-gray-400">
-                      Adicione uma camada extra de seguranca a sua conta.
+                      Adicione uma camada extra de segurança à sua conta.
                     </p>
                     <Button variant="outline">Configurar 2FA</Button>
                   </CardContent>
@@ -588,7 +588,7 @@ export const ConfiguracoesPage: React.FC = () => {
                   <CardContent className="p-4">
                     <h4 className="mb-2 font-medium text-gray-100">Senha</h4>
                     <p className="mb-4 text-sm text-gray-400">
-                      Altere sua senha regularmente para manter a seguranca.
+                      Altere sua senha regularmente para manter a segurança.
                     </p>
                     <Button variant="outline">Alterar Senha</Button>
                   </CardContent>

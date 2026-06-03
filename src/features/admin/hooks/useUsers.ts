@@ -23,7 +23,7 @@ export const formatRoleLabel = (role?: string) => {
     return 'Main';
   }
 
-  return 'Usuario';
+  return 'Usuário';
 };
 
 export const formatUserDate = (value?: string) => {
@@ -57,8 +57,8 @@ export const useUsers = () => {
       try {
         setUsuarios(await usersService.getAll());
       } catch (loadError) {
-        console.error('Erro ao carregar usuarios:', loadError);
-        setError('Nao foi possivel carregar os usuarios do sistema.');
+        console.error('Erro ao carregar usuários:', loadError);
+        setError('Não foi possível carregar os usuários do sistema.');
       } finally {
         setLoading(false);
       }
@@ -115,7 +115,7 @@ export const useUsers = () => {
 
   const showConstructionNotice = () => {
     setConstructionMessage(
-      'Em construcao: o backend atual ainda nao possui suporte completo para essa acao.',
+      'Em construção: o backend atual ainda não possui suporte completo para essa ação.',
     );
   };
 
@@ -147,7 +147,7 @@ export const useUsers = () => {
     }
 
     if (!editingUserId && form.password !== form.passwordConfirmation) {
-      setError('A confirmacao de senha precisa ser igual a senha.');
+      setError('A confirmação de senha precisa ser igual à senha.');
       return;
     }
 
@@ -186,14 +186,14 @@ export const useUsers = () => {
       setFormOpen(false);
       resetForm();
     } catch (saveError) {
-      console.error('Erro ao salvar usuario:', saveError);
+      console.error('Erro ao salvar usuário:', saveError);
       if (saveError instanceof ApiError) {
         setError(saveError.message);
       } else {
         setError(
           editingUserId
-            ? 'Nao foi possivel atualizar o usuario.'
-            : 'Nao foi possivel criar o usuario.',
+            ? 'Não foi possível atualizar o usuário.'
+            : 'Não foi possível criar o usuário.',
         );
       }
     } finally {

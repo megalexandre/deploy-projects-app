@@ -1,4 +1,4 @@
-/** Layout 'MainLayout': define a estrutura base compartilhada entre paginas. */
+/** Layout 'MainLayout': define a estrutura base compartilhada entre páginas. */
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
@@ -36,22 +36,22 @@ export const MainLayout: React.FC = () => {
   const menuItems = isAdmin
     ? [
         { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
-        { icon: CheckSquare, label: 'Aprovacoes', path: '/aprovacoes' },
+        { icon: CheckSquare, label: 'Aprovações', path: '/aprovacoes' },
         { icon: Folder, label: 'Projetos', path: '/projetos' },
-        { icon: Wrench, label: 'Servicos', path: '/servicos' },
+        { icon: Wrench, label: 'Serviços', path: '/servicos' },
         { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
-        { icon: Calendar, label: 'Calendario', path: '/calendario' },
+        { icon: Calendar, label: 'Calendário', path: '/calendario' },
         { icon: Users, label: 'Clientes', path: '/clientes' },
-        { icon: Users, label: 'Usuarios', path: '/usuarios' },
-        { icon: Gear, label: 'Configuracoes', path: '/configuracoes' },
+        { icon: Users, label: 'Usuários', path: '/usuarios' },
+        { icon: Gear, label: 'Configurações', path: '/configuracoes' },
       ]
     : [
         { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
         { icon: Folder, label: 'Projetos', path: '/projetos' },
-        { icon: Wrench, label: 'Servicos', path: '/servicos' },
+        { icon: Wrench, label: 'Serviços', path: '/servicos' },
         { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
-        { icon: Calendar, label: 'Calendario', path: '/calendario' },
-        { icon: Gear, label: 'Configuracoes', path: '/configuracoes' },
+        { icon: Calendar, label: 'Calendário', path: '/calendario' },
+        { icon: Gear, label: 'Configurações', path: '/configuracoes' },
       ];
 
   return (

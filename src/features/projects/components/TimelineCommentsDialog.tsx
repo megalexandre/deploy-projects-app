@@ -21,7 +21,7 @@ const formatDateTime = (value: string) => {
 const CommentRow: React.FC<{ comment: TimelineComment }> = ({ comment }) => (
   <div className="rounded-xl border border-white/10 bg-slate-950/40 p-4">
     <div className="flex items-center justify-between gap-3">
-      <strong className="text-sm text-slate-100">{comment.autor || 'Comentario interno'}</strong>
+      <strong className="text-sm text-slate-100">{comment.autor || 'Comentário interno'}</strong>
       <span className="text-xs text-slate-400">{formatDateTime(comment.data)}</span>
     </div>
     <p className="mt-2 text-sm text-slate-300">{comment.texto}</p>
@@ -43,7 +43,7 @@ export const TimelineCommentsDialog: React.FC<Props> = ({
         <div className="flex items-center justify-between gap-4">
           <div>
             <CardTitle>
-              {mode === 'add' ? 'Adicionar Comentario' : 'Comentarios do Status'}
+              {mode === 'add' ? 'Adicionar Comentário' : 'Comentários do Status'}
             </CardTitle>
             <p className="mt-1 text-sm text-slate-400">{item.etapa}</p>
           </div>
@@ -56,7 +56,7 @@ export const TimelineCommentsDialog: React.FC<Props> = ({
       <CardContent className="space-y-4 p-6">
         {(item.comentarios?.length ?? 0) === 0 ? (
           <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/30 px-4 py-5 text-sm text-slate-400">
-            Nenhum comentario registrado para este status.
+            Nenhum comentário registrado para este status.
           </div>
         ) : (
           <div className="space-y-3">
@@ -68,12 +68,12 @@ export const TimelineCommentsDialog: React.FC<Props> = ({
 
         {mode === 'add' && (
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">Novo comentario</label>
+            <label className="mb-2 block text-sm font-medium text-slate-300">Novo comentário</label>
             <textarea
               value={commentText}
               onChange={(event) => onCommentTextChange(event.target.value)}
               rows={5}
-              placeholder="Escreva um comentario para este status..."
+              placeholder="Escreva um comentário para este status..."
               className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
             />
           </div>
@@ -85,7 +85,7 @@ export const TimelineCommentsDialog: React.FC<Props> = ({
               Cancelar
             </Button>
             <Button type="button" loading={saving} onClick={onSave}>
-              Salvar comentario
+              Salvar comentário
             </Button>
           </div>
         )}

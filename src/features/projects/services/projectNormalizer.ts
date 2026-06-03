@@ -2,16 +2,16 @@ import type { PadraoEntradaItem, Projeto, PaginatedResponse, StatusProjeto } fro
 import { asArray, asBooleanString, asNumber, asString, isRecord } from '@/core/utils/normalize';
 
 export const projectStatusFlow: Array<{ status: StatusProjeto; etapa: string }> = [
-  { status: 'em_analise_documentacao', etapa: 'Em Analise da Documentacao' },
-  { status: 'elaboracao_documentacao_tecnica', etapa: 'Elaboracao da Documentacao Tecnica' },
+  { status: 'em_analise_documentacao', etapa: 'Em Análise da Documentação' },
+  { status: 'elaboracao_documentacao_tecnica', etapa: 'Elaboração da Documentação Técnica' },
   { status: 'aguardando_assinatura_cliente', etapa: 'Aguardando Assinatura do Cliente' },
   {
     status: 'projeto_enviado_aguardando_protocolo_concessionaria',
-    etapa: 'Projeto Enviado para Concessionaria',
+    etapa: 'Projeto Enviado para Concessionária',
   },
-  { status: 'em_analise_concessionaria', etapa: 'Em Analise na Concessionaria' },
+  { status: 'em_analise_concessionaria', etapa: 'Em Análise na Concessionária' },
   { status: 'ressalvas_projetos', etapa: 'Ressalvas de Projeto' },
-  { status: 'obras_concessionaria', etapa: 'Obras da Concessionaria' },
+  { status: 'obras_concessionaria', etapa: 'Obras da Concessionária' },
   { status: 'projeto_aprovado', etapa: 'Projeto Aprovado' },
   { status: 'vistoria_solicitada', etapa: 'Vistoria Solicitada' },
   { status: 'vistoria_reprovada', etapa: 'Vistoria Reprovada' },

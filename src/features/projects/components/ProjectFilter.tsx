@@ -21,7 +21,7 @@ export const ProjetosFilter: React.FC<Props> = ({
     <CardContent className="p-6">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_280px]">
         <Input
-          placeholder="Buscar por protocolo, cliente ou concessionaria..."
+          placeholder="Buscar por protocolo, cliente ou concessionária..."
           value={searchTerm}
           onChange={(event) => onSearchChange(event.target.value)}
           icon={<MagnifyingGlass />}

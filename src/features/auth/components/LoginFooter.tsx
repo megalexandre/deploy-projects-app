@@ -3,8 +3,8 @@ import React from 'react';
 
 const indicators = [
   'Acesso seguro e controlado',
-  'Dados centralizados e confiaveis',
-  'Insights para decisoes com mais assertividade',
+  'Dados centralizados e confiáveis',
+  'Insights para decisões com mais assertividade',
 ];
 
 export const LoginFooter: React.FC = () => (

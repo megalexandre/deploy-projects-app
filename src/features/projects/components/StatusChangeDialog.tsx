@@ -33,12 +33,12 @@ export const StatusChangeDialog: React.FC<Props> = ({
       </p>
 
       <div className="mt-4">
-        <label className="mb-2 block text-sm font-medium text-slate-300">Comentario</label>
+        <label className="mb-2 block text-sm font-medium text-slate-300">Comentário</label>
         <textarea
           value={statusComment}
           onChange={(event) => onCommentChange(event.target.value)}
           rows={5}
-          placeholder="Escreva um comentario sobre esta alteracao de status..."
+          placeholder="Escreva um comentário sobre esta alteração de status..."
           className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
         />
       </div>
