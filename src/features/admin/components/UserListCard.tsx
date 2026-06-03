@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnvelopeSimple, PencilSimple } from '@phosphor-icons/react';
+import { EnvelopeSimple, TrashSimple } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import type { User as SystemUser } from '@/services';
@@ -7,10 +7,10 @@ import { formatRoleLabel, formatUserDate } from '../hooks/useUsers';
 
 type Props = {
   users: SystemUser[];
-  onEdit: (user: SystemUser) => void;
+  onDelete: (user: SystemUser) => void;
 };
 
-export const UserListCard: React.FC<Props> = ({ users, onEdit }) => (
+export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
   <Card>
     <CardHeader>
       <CardTitle>Lista de Usuarios</CardTitle>
@@ -54,9 +54,15 @@ export const UserListCard: React.FC<Props> = ({ users, onEdit }) => (
                 <td className="px-4 py-3 text-gray-100">{formatUserDate(usuario.createdAt)}</td>
                 <td className="px-4 py-3 text-gray-100">{formatUserDate(usuario.updatedAt)}</td>
                 <td className="px-4 py-3 text-right">
-                  <Button type="button" variant="outline" size="sm" onClick={() => onEdit(usuario)}>
-                    <PencilSimple className="mr-2 h-4 w-4" />
-                    Editar
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-red-700 text-red-400 hover:bg-red-900/30"
+                    onClick={() => onDelete(usuario)}
+                  >
+                    <TrashSimple className="mr-2 h-4 w-4" />
+                    Deletar
                   </Button>
                 </td>
               </tr>
@@ -64,7 +70,7 @@ export const UserListCard: React.FC<Props> = ({ users, onEdit }) => (
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">
-                  Nenhum usuario encontrado para os filtros atuais.
+                  Nenhum usuário encontrado para os filtros atuais.
                 </td>
               </tr>
             )}

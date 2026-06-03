@@ -3,6 +3,7 @@ import { Plus } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { ErrorAlert } from '@/shared/components/ErrorAlert';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
 import { UserFiltersCard } from '../components/UserFiltersCard';
 import { UserFormModal } from '../components/UserFormModal';
 import { UserListCard } from '../components/UserListCard';
@@ -19,7 +20,6 @@ export const UsuariosPage: React.FC = () => {
     loading,
     saving,
     error,
-    constructionMessage,
     searchTerm,
     selectedRole,
     formOpen,
@@ -32,9 +32,12 @@ export const UsuariosPage: React.FC = () => {
     setForm,
     setShowPassword,
     setShowPasswordConfirmation,
+    userToDelete,
     handleOpenCreateForm,
     handleCloseForm,
-    handleEditUser,
+    handleDeleteUser,
+    handleConfirmDelete,
+    handleCancelDelete,
     handleSaveUser,
   } = useUsers();
 
@@ -71,9 +74,16 @@ export const UsuariosPage: React.FC = () => {
       />
 
       {error && <ErrorAlert message={error} />}
-      {constructionMessage && <ErrorAlert message={constructionMessage} />}
 
-      <UserListCard users={filteredUsuarios} onEdit={handleEditUser} />
+      <UserListCard users={filteredUsuarios} onDelete={handleDeleteUser} />
+
+      {userToDelete && (
+        <ConfirmDeleteModal
+          user={userToDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
 
       {formOpen && (
         <UserFormModal

@@ -47,7 +47,7 @@ export const useUsers = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
-  const [constructionMessage, setConstructionMessage] = useState<string | null>(null);
+  const [userToDelete, setUserToDelete] = useState<SystemUser | null>(null);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -113,14 +113,9 @@ export const useUsers = () => {
     setError(null);
   };
 
-  const showConstructionNotice = () => {
-    setConstructionMessage(
-      'Em construção: o backend atual ainda não possui suporte completo para essa ação.',
-    );
-  };
-
   const handleOpenCreateForm = () => {
-    showConstructionNotice();
+    resetForm();
+    setFormOpen(true);
   };
 
   const handleCloseForm = () => {
@@ -128,9 +123,30 @@ export const useUsers = () => {
     resetForm();
   };
 
-  const handleEditUser = (user: SystemUser) => {
-    void user;
-    showConstructionNotice();
+  const handleDeleteUser = (user: SystemUser) => {
+    setUserToDelete(user);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+    const user = userToDelete;
+    setUserToDelete(null);
+
+    try {
+      await usersService.delete(user.id);
+      setUsuarios((current) => current.filter((u) => u.id !== user.id));
+    } catch (deleteError) {
+      console.error('Erro ao deletar usuário:', deleteError);
+      if (deleteError instanceof ApiError) {
+        setError(deleteError.message);
+      } else {
+        setError('Não foi possível deletar o usuário.');
+      }
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setUserToDelete(null);
   };
 
   const handleSaveUser = async (event: React.FormEvent) => {
@@ -210,7 +226,6 @@ export const useUsers = () => {
     loading,
     saving,
     error,
-    constructionMessage,
     searchTerm,
     selectedRole,
     formOpen,
@@ -223,10 +238,12 @@ export const useUsers = () => {
     setForm,
     setShowPassword,
     setShowPasswordConfirmation,
-    setConstructionMessage,
+    userToDelete,
     handleOpenCreateForm,
     handleCloseForm,
-    handleEditUser,
+    handleDeleteUser,
+    handleConfirmDelete,
+    handleCancelDelete,
     handleSaveUser,
   };
 };
