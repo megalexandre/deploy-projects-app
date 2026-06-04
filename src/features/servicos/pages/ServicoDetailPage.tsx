@@ -20,7 +20,10 @@ import {
   type Customer,
 } from '@/services';
 import type { Documento, Servico, StatusServico } from '@/types';
-import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import {
+  getCuponsDescontoServicosAtivos,
+  loadConfiguracoesSistema,
+} from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '@/core/utils/masks';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { EntityFinanceTab } from '@/features/financeiro/components/EntityFinanceTab';
@@ -75,7 +78,7 @@ const handleDownload = async (fileId?: string) => {
   try {
     await filesService.downloadFile(fileId);
   } catch (error) {
-    console.error('Erro ao baixar documento do servico:', error);
+    console.error('Erro ao baixar documento do serviço:', error);
   }
 };
 
@@ -113,7 +116,13 @@ export const ServicoDetailPage: React.FC = () => {
   const [savingDocuments, setSavingDocuments] = useState(false);
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [cupons] = useState(() => getCuponsDescontoAtivos(loadConfiguracoesSistema()));
+  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const cupons = useMemo(() => {
+    if (!currentUser?.id) return [];
+    return getCuponsDescontoServicosAtivos(configuracoesSistema).filter((cupom) =>
+      (cupom.usuariosAutorizados ?? []).includes(currentUser.id),
+    );
+  }, [configuracoesSistema, currentUser?.id]);
 
   const activeTab = searchParams.get('tab') ?? 'dados';
 
@@ -132,8 +141,8 @@ export const ServicoDetailPage: React.FC = () => {
         setConcessionarias(utilitiesData);
         setForm(buildForm(serviceData));
       } catch (loadError) {
-        console.error('Erro ao carregar servico:', loadError);
-        setError('Nao foi possivel carregar o servico.');
+        console.error('Erro ao carregar serviço:', loadError);
+        setError('Nao foi possivel carregar o serviço.');
       } finally {
         setLoading(false);
       }
@@ -153,12 +162,22 @@ export const ServicoDetailPage: React.FC = () => {
     [selectedCustomer?.documentos, selectedCustomerDocumentIds],
   );
 
+  useEffect(() => {
+    if (
+      form?.cupomDescontoPct &&
+      form.cupomDescontoPct !== '0' &&
+      !cupons.some((cupom) => String(cupom.percentual) === form.cupomDescontoPct)
+    ) {
+      setForm((prev) => (prev ? { ...prev, cupomDescontoPct: '0' } : prev));
+    }
+  }, [cupons, form?.cupomDescontoPct]);
+
   if (loading) {
     return <LoadingSpinner />;
   }
 
   if (!servico || !form) {
-    return <div className="py-12 text-center text-slate-400">Servico nao encontrado.</div>;
+    return <div className="py-12 text-center text-slate-400">Serviço nao encontrado.</div>;
   }
 
   const handleSave = async (event: React.FormEvent) => {
@@ -191,8 +210,8 @@ export const ServicoDetailPage: React.FC = () => {
       setForm(buildForm(updated));
       setSearchParams({ tab: 'dados' });
     } catch (saveError) {
-      console.error('Erro ao salvar servico:', saveError);
-      setError('Nao foi possivel salvar o servico.');
+      console.error('Erro ao salvar serviço:', saveError);
+      setError('Nao foi possivel salvar o serviço.');
     } finally {
       setSaving(false);
     }
@@ -245,8 +264,8 @@ export const ServicoDetailPage: React.FC = () => {
       setServico(updated);
       setSelectedCustomerDocumentIds([]);
     } catch (saveError) {
-      console.error('Erro ao salvar documentos do servico:', saveError);
-      setError('Nao foi possivel salvar os documentos do servico.');
+      console.error('Erro ao salvar documentos do serviço:', saveError);
+      setError('Nao foi possivel salvar os documentos do serviço.');
     } finally {
       setSavingDocuments(false);
     }
@@ -324,7 +343,7 @@ export const ServicoDetailPage: React.FC = () => {
                 <p className="text-gray-100">{formatCurrencyBRL(servico.valorFinal)}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-400">Observacoes</label>
+                <label className="text-sm font-medium text-gray-400">Observações</label>
                 <p className="whitespace-pre-wrap text-gray-100">{servico.observacoes || '-'}</p>
               </div>
             </CardContent>
@@ -489,7 +508,7 @@ export const ServicoDetailPage: React.FC = () => {
                         Data
                       </th>
                       <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                        Acoes
+                        Ações
                       </th>
                     </tr>
                   </thead>
@@ -529,7 +548,7 @@ export const ServicoDetailPage: React.FC = () => {
       {activeTab === 'editar' && (
         <Card>
           <CardHeader>
-            <CardTitle>Editar Servico</CardTitle>
+            <CardTitle>Editar Serviço</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-6">
@@ -723,7 +742,7 @@ export const ServicoDetailPage: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="mb-2 block text-sm text-slate-300">Observacoes</label>
+                <label className="mb-2 block text-sm text-slate-300">Observações</label>
                 <textarea
                   value={form.observacoes}
                   onChange={(event) =>

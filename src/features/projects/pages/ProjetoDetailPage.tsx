@@ -569,7 +569,7 @@ export const ProjetoDetailPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Informacoes do Cliente</CardTitle>
+                <CardTitle>Informações do Cliente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -593,7 +593,7 @@ export const ProjetoDetailPage: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Endereco</CardTitle>
+                <CardTitle>Endereço</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -666,7 +666,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Potencia do Sistema</label>
+                  <label className="text-sm font-medium text-gray-400">Potência do Sistema</label>
                   <p className="text-gray-100">{projeto.dadosProjeto.potenciaSistema} kWp</p>
                 </div>
                 <div>
@@ -686,7 +686,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Servicos</label>
+                  <label className="text-sm font-medium text-gray-400">Serviços</label>
                   <p className="text-gray-100">
                     {projeto.servicos?.length ? projeto.servicos.join(', ') : '-'}
                   </p>
@@ -696,7 +696,7 @@ export const ProjetoDetailPage: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Informacoes Adicionais</CardTitle>
+                <CardTitle>Informações Adicionais</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -735,34 +735,34 @@ export const ProjetoDetailPage: React.FC = () => {
                   <>
                     <div>
                       <label className="text-sm font-medium text-gray-400">
-                        Potencia total dos Modulos
+                        Potência total dos Modulos
                       </label>
                       <p className="text-gray-100">{potenciaTotalModulos} W</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-400">
-                        Potencia total dos Inversores
+                        Potência total dos Inversores
                       </label>
                       <p className="text-gray-100">{potenciaTotalInversores} W</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-400">
-                        Potencia total do Sistema
+                        Potência total do Sistema
                       </label>
                       <p className="text-gray-100">{potenciaTotalSistema} W</p>
                     </div>
                   </>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Observacoes</label>
+                  <label className="text-sm font-medium text-gray-400">Observações</label>
                   <p className="text-gray-100 whitespace-pre-wrap">{projeto.observacoes || '-'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Data de Criacao</label>
+                  <label className="text-sm font-medium text-gray-400">Data de Criação</label>
                   <p className="text-gray-100">{formatDate(projeto.dataCriacao)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Ultima Atualizacao</label>
+                  <label className="text-sm font-medium text-gray-400">Última Atualização</label>
                   <p className="text-gray-100">{formatDate(projeto.dataAtualizacao)}</p>
                 </div>
               </CardContent>
@@ -773,15 +773,15 @@ export const ProjetoDetailPage: React.FC = () => {
         {activeTab === 'tecnicos' && (
           <Card>
             <CardHeader>
-              <CardTitle>Dados Tecnicos</CardTitle>
+              <CardTitle>Dados Técnicos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                <h4 className="text-lg font-semibold text-gray-100">Resumo Eletrico</h4>
+                <h4 className="text-lg font-semibold text-gray-100">Resumo Elétrico</h4>
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
                     <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Tensao (V)
+                      Tensão (V)
                     </label>
                     <p className="mt-2 text-2xl font-semibold text-gray-100">
                       {projeto.dadosTecnicos.tensao || 0}V
@@ -789,7 +789,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   </div>
                   <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
                     <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Numero de Fases
+                      Número de Fases
                     </label>
                     <p className="mt-2 text-2xl font-semibold text-gray-100">
                       {projeto.dadosTecnicos.numeroFases || '-'}
@@ -835,17 +835,17 @@ export const ProjetoDetailPage: React.FC = () => {
               {projeto.padraoEntradaItens && projeto.padraoEntradaItens.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
                   <h4 className="text-lg font-semibold text-gray-100">
-                    Quadro de Padrao de Entrada
+                    Quadro de Padrão de Entrada
                   </h4>
                   <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
-                            Tipo de Ligacao
+                            Tipo de Ligação
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
-                            Classificacao
+                            Classificação
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                             Quantidade
@@ -896,13 +896,13 @@ export const ProjetoDetailPage: React.FC = () => {
                             Modelo
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potencia (W)
+                            Potência (W)
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Quantidade
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potencia Total (kWp)
+                            Potência Total (kWp)
                           </th>
                         </tr>
                       </thead>
@@ -950,13 +950,13 @@ export const ProjetoDetailPage: React.FC = () => {
                             Modelo
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potencia (W)
+                            Potência (W)
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Quantidade
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potencia Total (kW)
+                            Potência Total (kW)
                           </th>
                         </tr>
                       </thead>
@@ -987,10 +987,10 @@ export const ProjetoDetailPage: React.FC = () => {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                <h4 className="text-lg font-semibold text-gray-100">Divisao de Creditos</h4>
+                <h4 className="text-lg font-semibold text-gray-100">Divisão de Creditos</h4>
                 {projeto.dadosTecnicos.divisaoCreditos.length === 0 ? (
                   <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
-                    Nenhuma divisao de creditos cadastrada.
+                    Nenhuma divisão de creditos cadastrada.
                   </div>
                 ) : (
                   <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
@@ -1007,7 +1007,7 @@ export const ProjetoDetailPage: React.FC = () => {
                             Classe
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Endereco
+                            Endereço
                           </th>
                         </tr>
                       </thead>
@@ -1214,7 +1214,7 @@ export const ProjetoDetailPage: React.FC = () => {
                           Tamanho
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Acoes
+                          Ações
                         </th>
                       </tr>
                     </thead>

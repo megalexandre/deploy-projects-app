@@ -28,7 +28,7 @@ export const EquipamentosTable: React.FC<EquipamentosTableProps> = ({
     <div className="border border-gray-700 rounded p-4 space-y-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-300">
         <span>Qtd</span>
-        <span>Potencia (W)</span>
+        <span>Potência (W)</span>
         <span>Marca</span>
         <span>Modelo</span>
       </div>

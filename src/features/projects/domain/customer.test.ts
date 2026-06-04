@@ -58,7 +58,7 @@ describe('toCustomer', () => {
     expect(result.addressId).toBe('a-1');
   });
 
-  it('endereco é undefined quando address não vem na resposta', () => {
+  it('endereço é undefined quando address não vem na resposta', () => {
     const result = toCustomer(makeCustomerResponse({ address: undefined }));
 
     expect(result.endereco).toBeUndefined();

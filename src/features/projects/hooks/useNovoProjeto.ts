@@ -38,6 +38,7 @@ import {
 } from '@/services';
 import {
   buildTabelaPrecoPadraoEntradaMap,
+  getCuponsDescontoProjetosAtivos,
   loadConfiguracoesSistema,
 } from '@/utils/configuracoesSistema';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
@@ -47,13 +48,13 @@ import { useNavigate } from 'react-router-dom';
 const integradoresPadrao = ['OPJ Engenharia', 'Parceiro Externo'];
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
-  { value: 'padrao_entrada' as const, label: 'Padrao de entrada' },
+  { value: 'padrao_entrada' as const, label: 'Padrão de entrada' },
 ];
 export const servicosDisponiveis = [
-  'Ligacao Nova',
+  'Ligação Nova',
   'Aumento de Carga',
   'Troca de Titularidade',
-  'Alteracao no Compartilhamento de creditos',
+  'Alteração no Compartilhamento de Creditos',
   'Projeto Eletrico',
 ];
 
@@ -61,7 +62,7 @@ export const documentosFotovoltaico: DocumentoCategoria[] = [
   { key: 'fatura_energia', label: 'Fatura de Energia' },
   { key: 'procuracao', label: 'Procuracao' },
   { key: 'documento_titular', label: 'Documento Titular' },
-  { key: 'foto_padrao_entrada', label: 'Foto Padrao de Entrada' },
+  { key: 'foto_padrao_entrada', label: 'Foto Padrão de Entrada' },
   { key: 'foto_disjuntor_geral', label: 'Foto Disjuntor Geral' },
   { key: 'foto_interconexao', label: 'Foto Interconexao' },
   { key: 'numero_poste_tr', label: 'Numero do Poste / TR' },
@@ -72,7 +73,7 @@ export const documentosEmucPessoaFisica: DocumentoCategoria[] = [
   { key: 'carta_prefeitura', label: 'Carta da prefeitura / habite-se' },
   { key: 'matricula_imovel', label: 'Matricula do Imovel' },
   { key: 'projeto_edificacao', label: 'Projeto da edificacao', maxFiles: 3 },
-  { key: 'foto_padrao_instalado', label: 'Foto do padrao instalado', maxFiles: 3 },
+  { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
   { key: 'foto_numero_poste', label: 'Foto do poste / transformador', maxFiles: 3 },
   { key: 'documento_cnh', label: 'CNH' },
   { key: 'documento_procuracao', label: 'Procuracao' },
@@ -84,7 +85,7 @@ export const documentosEmucPessoaJuridica: DocumentoCategoria[] = [
   { key: 'carta_prefeitura', label: 'Carta da prefeitura / habite-se' },
   { key: 'matricula_imovel', label: 'Matricula do Imovel' },
   { key: 'projeto_edificacao', label: 'Projeto da edificacao', maxFiles: 3 },
-  { key: 'foto_padrao_instalado', label: 'Foto do padrao instalado', maxFiles: 3 },
+  { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
   { key: 'foto_numero_poste', label: 'Foto do poste / transformador', maxFiles: 3 },
   { key: 'contrato_social', label: 'Contrato Social' },
   { key: 'cartao_cnpj', label: 'Cartao CNPJ' },
@@ -129,14 +130,21 @@ export const buildItemVazio = (): ItemEquipamentoForm => ({
   modelo: '',
 });
 
-const buildPadraoEntradaLinhas = (): PadraoEntradaItemForm[] =>
-  padraoEntradaLinhasBase.map((item) => ({
+const buildPadraoEntradaLinhas = (
+  tabelaConfigurada?: Array<Pick<PadraoEntradaItemForm, 'tipoLigacao' | 'classificacao'>>,
+): PadraoEntradaItemForm[] => {
+  const linhas =
+    tabelaConfigurada?.filter((item) => item.tipoLigacao.trim() && item.classificacao.trim()) ?? [];
+  const linhasBase = linhas.length > 0 ? linhas : padraoEntradaLinhasBase;
+
+  return linhasBase.map((item) => ({
     id: crypto.randomUUID(),
     tipoLigacao: item.tipoLigacao,
     classificacao: item.classificacao,
     quantidade: '',
     disjuntor: '',
   }));
+};
 
 const buildEnderecoVazio = (): EnderecoForm => ({
   cep: '',
@@ -284,14 +292,16 @@ export const useNovoProjeto = () => {
 
   const [modulos, setModulos] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
   const [inversores, setInversores] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
-  const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(
-    buildPadraoEntradaLinhas(),
+  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(() =>
+    buildPadraoEntradaLinhas(configuracoesSistema.tabelaPrecoPadraoEntrada),
   );
   const [documentos, setDocumentos] = useState<Record<string, File[]>>({});
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
-  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
   const [valorProjeto, setValorProjeto] = useState('');
   const [valorProjetoEditado, setValorProjetoEditado] = useState(false);
+  const [usuariosIntegradores, setUsuariosIntegradores] = useState<User[]>([]);
+  const [cupomProjetoId, setCupomProjetoId] = useState('');
 
   const tabelaPrecoPadraoEntradaMap = useMemo(
     () => buildTabelaPrecoPadraoEntradaMap(configuracoesSistema.tabelaPrecoPadraoEntrada),
@@ -365,6 +375,40 @@ export const useNovoProjeto = () => {
 
   const valorProjetoNumerico = useMemo(() => parseCurrencyInput(valorProjeto), [valorProjeto]);
 
+  const usuarioIntegradorSelecionado = useMemo(
+    () =>
+      usuariosIntegradores.find(
+        (usuario) => usuario.name.trim() === dadosBasicos.integrador.trim(),
+      ) ?? null,
+    [dadosBasicos.integrador, usuariosIntegradores],
+  );
+
+  const cuponsProjetoDisponiveis = useMemo(() => {
+    const userId = usuarioIntegradorSelecionado?.id;
+    if (!userId) return [];
+    return getCuponsDescontoProjetosAtivos(configuracoesSistema).filter((cupom) => {
+      const autorizados = cupom.usuariosAutorizados ?? [];
+      return autorizados.includes(userId);
+    });
+  }, [configuracoesSistema, usuarioIntegradorSelecionado?.id]);
+
+  useEffect(() => {
+    if (cupomProjetoId && !cuponsProjetoDisponiveis.some((cupom) => cupom.id === cupomProjetoId)) {
+      setCupomProjetoId('');
+    }
+  }, [cupomProjetoId, cuponsProjetoDisponiveis]);
+
+  const cupomProjetoSelecionado = useMemo(
+    () => cuponsProjetoDisponiveis.find((cupom) => cupom.id === cupomProjetoId) ?? null,
+    [cupomProjetoId, cuponsProjetoDisponiveis],
+  );
+
+  const descontoProjetoPct = cupomProjetoSelecionado?.percentual ?? 0;
+  const valorProjetoFinalNumerico = useMemo(
+    () => Math.max(valorProjetoNumerico - valorProjetoNumerico * (descontoProjetoPct / 100), 0),
+    [descontoProjetoPct, valorProjetoNumerico],
+  );
+
   const tipoDocumentoCliente = useMemo(() => {
     if (modoCliente === 'novo') return tipoDocumento;
     const cliente = clientes.find((item) => item.id === clienteSelecionadoId);
@@ -433,8 +477,8 @@ export const useNovoProjeto = () => {
       try {
         setConcessionarias(await concessionairesService.getAll());
       } catch (loadError) {
-        console.error('Erro ao carregar concessionarias:', loadError);
-        setErro('Nao foi possivel carregar as concessionarias disponiveis.');
+        console.error('Erro ao carregar concessionárias:', loadError);
+        setErro('Nao foi possivel carregar as concessionárias disponiveis.');
       } finally {
         setConcessionariasLoading(false);
       }
@@ -446,6 +490,7 @@ export const useNovoProjeto = () => {
     const loadIntegradores = async () => {
       try {
         const users = await usersService.getAll();
+        setUsuariosIntegradores(users);
         const names = Array.from(
           new Set(users.map((user: User) => user.name.trim()).filter((name) => name.length > 0)),
         ).sort((left, right) => left.localeCompare(right, 'pt-BR'));
@@ -669,8 +714,8 @@ export const useNovoProjeto = () => {
     if (!validarPasso3()) {
       setErro(
         projetoFotovoltaico
-          ? 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, alem de modulos e inversores, para calcular corretamente a potencia do sistema.'
-          : 'Preencha tensao, latitude entre -90 e 90, longitude entre -180 e 180 e ao menos uma linha do quadro de padrao de entrada.',
+          ? 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, alem de modulos e inversores, para calcular corretamente a potência do sistema.'
+          : 'Preencha tensao, latitude entre -90 e 90, longitude entre -180 e 180 e ao menos uma linha do quadro de padrão de entrada.',
       );
       setPassoAtual(3);
       return;
@@ -752,12 +797,12 @@ export const useNovoProjeto = () => {
           : detalhesProjeto.modalidadeGeracao === 'autoconsumo_remoto'
             ? 'AUTOCONSUMO REMOTO'
             : 'GERACAO COMPARTILHADA'
-        : 'Padrao de Entrada';
+        : 'Padrão de Entrada';
       const enquadramento = projetoFotovoltaico
         ? potenciaSistemaKw <= 75
           ? 'Microgeracao'
           : 'Minigeracao'
-        : 'Padrao de Entrada';
+        : 'Padrão de Entrada';
       const latitudeFormatada = maskLatitude(detalhesProjeto.coordenadas.latitude);
       const longitudeFormatada = maskLongitude(detalhesProjeto.coordenadas.longitude);
       const latitudeNumero = parseCoordinate(latitudeFormatada);
@@ -784,7 +829,7 @@ export const useNovoProjeto = () => {
         dcProtection: projetoFotovoltaico ? 'Disjuntor CC 20A' : undefined,
         systemPower: projetoFotovoltaico ? potenciaSistemaKw : 0,
         status: StatusProjeto.EM_ANALISE_DOCUMENTACAO,
-        amount: valorProjetoNumerico,
+        amount: valorProjetoFinalNumerico,
         projectType: dadosBasicos.tipoProjeto,
         servicesNames: servicosSelecionados,
         unitControl: dadosBasicos.numeroUc,
@@ -976,6 +1021,11 @@ export const useNovoProjeto = () => {
     valorProjeto,
     setValorProjeto,
     setValorProjetoEditado,
+    cupomProjetoId,
+    setCupomProjetoId,
+    cuponsProjetoDisponiveis,
+    descontoProjetoPct,
+    valorProjetoFinalNumerico,
     potenciaTotalModulosW,
     potenciaTotalInversoresW,
     potenciaTotalSistemaW,

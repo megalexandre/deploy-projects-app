@@ -176,7 +176,7 @@ export const useClientes = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!isFormValid()) {
-      setError('Preencha todos os campos obrigatorios do cliente e endereco.');
+      setError('Preencha todos os campos obrigatorios do cliente e endereço.');
       return;
     }
 

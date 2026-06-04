@@ -13,7 +13,7 @@ type Props = {
 export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
   <Card>
     <CardHeader>
-      <CardTitle>Lista de Usuarios</CardTitle>
+      <CardTitle>Lista de Usuários</CardTitle>
     </CardHeader>
     <CardContent>
       <div className="overflow-x-auto">
@@ -25,7 +25,7 @@ export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
               <th className="px-4 py-3 text-left font-medium text-gray-300">Perfil</th>
               <th className="px-4 py-3 text-left font-medium text-gray-300">Criado em</th>
               <th className="px-4 py-3 text-left font-medium text-gray-300">Atualizado em</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-300">Acoes</th>
+              <th className="px-4 py-3 text-right font-medium text-gray-300">Ações</th>
             </tr>
           </thead>
           <tbody>

@@ -49,8 +49,8 @@ export const UsuariosPage: React.FC = () => {
     <div className="space-y-6 page-enter">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">Usuarios</h1>
-          <p className="mt-1 text-gray-400">Gerenciamento de usuarios via autenticacao da API.</p>
+          <h1 className="text-2xl font-bold text-gray-100">Usuários</h1>
+          <p className="mt-1 text-gray-400">Gerenciamento de usuários via autenticação da API.</p>
         </div>
         <Button className="mt-4 sm:mt-0" onClick={handleOpenCreateForm}>
           <Plus className="mr-2 h-4 w-4" />

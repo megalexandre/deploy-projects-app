@@ -127,7 +127,7 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
         </div>
 
         <div className="md:col-span-2 rounded-lg border border-gray-700 p-4 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-100">Endereco do projeto</h3>
+          <h3 className="text-lg font-semibold text-gray-100">Endereço do projeto</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <SelectionCard
@@ -139,8 +139,8 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
             <SelectionCard
               active={modoEnderecoProjeto === 'novo'}
               onClick={() => setModoEnderecoProjeto('novo')}
-              title="Cadastrar novo endereco"
-              description="Informar um endereco diferente para este projeto."
+              title="Cadastrar novo endereço"
+              description="Informar um endereço diferente para este projeto."
             />
           </div>
 
@@ -148,8 +148,8 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
             <div className="space-y-3">
               {!enderecoClienteDisponivel && (
                 <p className="rounded border border-yellow-700 bg-yellow-900/20 px-3 py-3 text-sm text-yellow-200">
-                  O cliente selecionado nao possui endereco completo cadastrado. Escolha
-                  &quot;Cadastrar novo endereco&quot; para continuar.
+                  O cliente selecionado nao possui endereço completo cadastrado. Escolha
+                  &quot;Cadastrar novo endereço&quot; para continuar.
                 </p>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

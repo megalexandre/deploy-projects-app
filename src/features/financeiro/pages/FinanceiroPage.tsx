@@ -510,7 +510,7 @@ export const FinanceiroPage: React.FC = () => {
                 className="grid grid-cols-1 gap-4 md:grid-cols-2"
               >
                 <Input
-                  label="Descricao"
+                  label="Descrição"
                   placeholder="Ex: Entrada projeto comercial"
                   value={novaTransacao.descricao}
                   onChange={(event) =>
@@ -552,7 +552,7 @@ export const FinanceiroPage: React.FC = () => {
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={loading}>
-                    {editingTransactionId ? 'Salvar alteracoes' : 'Salvar lancamento'}
+                    {editingTransactionId ? 'Salvar alterações' : 'Salvar lançamento'}
                   </Button>
                 </div>
               </form>
@@ -826,10 +826,10 @@ export const FinanceiroPage: React.FC = () => {
 
       <section className={`${glassCardClass} overflow-hidden`}>
         <div className="flex flex-col gap-4 border-b border-white/10 p-5 md:flex-row md:items-center md:justify-between">
-          <h3 className="text-lg font-semibold text-slate-100">Transacoes Recentes</h3>
+          <h3 className="text-lg font-semibold text-slate-100">Transações Recentes</h3>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Input
-              placeholder="Buscar transacoes..."
+              placeholder="Buscar transações..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               icon={<MagnifyingGlass />}
@@ -861,14 +861,14 @@ export const FinanceiroPage: React.FC = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-950/35">
-                <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Descricao</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Descrição</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Categoria</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Tipo</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Valor</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Data</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase text-slate-400">Status</th>
                 <th className="px-6 py-4 text-right text-xs font-bold uppercase text-slate-400">
-                  Acoes
+                  Ações
                 </th>
               </tr>
             </thead>
