@@ -16,12 +16,12 @@ export const NotificationsSettingsSection: React.FC<NotificationsSettingsSection
   onInputChange,
 }) => (
   <div className="space-y-6 page-enter">
-    <h3 className="mb-4 text-lg font-medium text-gray-100">Preferencias de Notificacao</h3>
+    <h3 className="mb-4 text-lg font-medium text-gray-100">Preferências de Notificação</h3>
 
     <div className="space-y-4">
       <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
         <div>
-          <div className="font-medium text-gray-100">Notificacoes por E-mail</div>
+          <div className="font-medium text-gray-100">Notificações por E-mail</div>
           <div className="text-sm text-gray-400">Receba avisos importantes por e-mail</div>
         </div>
         <input
@@ -34,7 +34,7 @@ export const NotificationsSettingsSection: React.FC<NotificationsSettingsSection
 
       <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
         <div>
-          <div className="font-medium text-gray-100">Notificacoes por SMS</div>
+          <div className="font-medium text-gray-100">Notificações por SMS</div>
           <div className="text-sm text-gray-400">Receba alertas criticos por SMS</div>
         </div>
         <input
@@ -48,7 +48,7 @@ export const NotificationsSettingsSection: React.FC<NotificationsSettingsSection
       <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
         <div>
           <div className="font-medium text-gray-100">Projetos</div>
-          <div className="text-sm text-gray-400">Atualizacoes sobre projetos</div>
+          <div className="text-sm text-gray-400">Atualizações sobre projetos</div>
         </div>
         <input
           type="checkbox"
@@ -73,8 +73,8 @@ export const NotificationsSettingsSection: React.FC<NotificationsSettingsSection
 
       <label className="flex items-center justify-between rounded-lg bg-gray-800 p-4">
         <div>
-          <div className="font-medium text-gray-100">Servicos</div>
-          <div className="text-sm text-gray-400">Avisos relacionados a servicos</div>
+          <div className="font-medium text-gray-100">Serviços</div>
+          <div className="text-sm text-gray-400">Avisos relacionados a serviços</div>
         </div>
         <input
           type="checkbox"

@@ -53,7 +53,7 @@ const formatEnderecoResumo = (projeto: ProjetoKanbanCard) => {
     .join('')
     .trim();
 
-  return endereco || 'Endereco nao informado';
+  return endereco || 'Endereço nao informado';
 };
 
 export const ProjetoCard: React.FC<ProjetoCardProps> = ({

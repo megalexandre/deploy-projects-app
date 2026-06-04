@@ -371,7 +371,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
           <CardContent>
             <form onSubmit={handleSaveReceipt} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input
-                label="Descricao"
+                label="Descrição"
                 value={receiptForm.descricao}
                 onChange={(event) =>
                   setReceiptForm((current) => ({ ...current, descricao: event.target.value }))
@@ -425,7 +425,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 <thead>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Descricao
+                      Descrição
                     </th>
                     <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
                       Valor
@@ -470,7 +470,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
           <CardContent>
             <form onSubmit={handleSaveExpense} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input
-                label="Descricao"
+                label="Descrição"
                 value={form.descricao}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, descricao: event.target.value }))
@@ -566,7 +566,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 <thead>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Descricao
+                      Descrição
                     </th>
                     <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
                       Categoria
@@ -581,7 +581,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Acoes
+                      Ações
                     </th>
                   </tr>
                 </thead>

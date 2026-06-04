@@ -17,7 +17,6 @@ import { apiClient } from '@/shared/api/apiClient';
 import { filesService } from '@/shared/api/filesService';
 import { concessionairesService } from '@/features/concessionaries/services/concessionairesService';
 import { customersService } from '@/features/clientes/services/customersService';
-import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
 import { getSessionUser } from '@/shared/session/sessionUser';
 
 export interface CreateServicoPayload {
@@ -65,7 +64,7 @@ const serviceEnhancementStorage = createRecordStorage<ServiceEnhancement>(
 
 const SERVICE_STATUS_FLOW: Array<{ status: StatusServico; etapa: string }> = [
   { status: 'aguardando_aprovacao', etapa: 'Aguardando Aprovacao' },
-  { status: 'abertura_servico', etapa: 'Abertura do Servico' },
+  { status: 'abertura_servico', etapa: 'Abertura do Serviço' },
   { status: 'elaboracao_documentacao', etapa: 'Elaboracao da Documentacao' },
   { status: 'aguardando_assinatura_cliente', etapa: 'Aguardando Assinatura do Cliente' },
   {
@@ -75,10 +74,10 @@ const SERVICE_STATUS_FLOW: Array<{ status: StatusServico; etapa: string }> = [
   { status: 'em_analise_concessionaria', etapa: 'Em Analise na Concessionaria' },
   { status: 'ressalvas', etapa: 'Ressalvas' },
   { status: 'obras_concessionaria', etapa: 'Obras Concessionaria' },
-  { status: 'servico_aprovado', etapa: 'Servico Aprovado' },
+  { status: 'servico_aprovado', etapa: 'Serviço Aprovado' },
   { status: 'vistoria_solicitada', etapa: 'Vistoria Solicitada' },
   { status: 'vistoria_reprovada', etapa: 'Vistoria Reprovada' },
-  { status: 'servico_encerrado', etapa: 'Servico Encerrado' },
+  { status: 'servico_encerrado', etapa: 'Serviço Encerrado' },
 ];
 
 const SERVICE_TYPE_LABELS: Record<TipoServico, string> = {
@@ -126,7 +125,7 @@ const buildTimelineEntry = (
   etapa: getTimelineStageLabel(status),
   data: data || new Date().toISOString(),
   status: getRecordedTimelineStatus(status),
-  descricao: descricaoAtual || `Status atual do servico ${service.protocolo}.`,
+  descricao: descricaoAtual || `Status atual do serviço ${service.protocolo}.`,
   comentarios: [],
 });
 
@@ -159,7 +158,7 @@ const buildTimeline = (
       dataCriacao: dataAtualizacao,
     },
     status,
-    'Etapa atual do servico.',
+    'Etapa atual do serviço.',
     dataAtualizacao || dataAbertura,
   ),
 ];
@@ -518,7 +517,7 @@ const resolveCustomerId = async (payload: Pick<CreateServicoPayload, 'clienteId'
 
   const customerName = normalizeText(payload.cliente).toLowerCase();
   if (!customerName) {
-    throw new Error('Selecione um cliente cadastrado para salvar o servico na API.');
+    throw new Error('Selecione um cliente cadastrado para salvar o serviço na API.');
   }
 
   const customers = await customersService.getAll();
@@ -540,7 +539,7 @@ const resolveConcessionaireId = async (concessionaria: string) => {
   );
 
   if (!matched) {
-    throw new Error('Selecione uma concessionaria valida para salvar o servico na API.');
+    throw new Error('Selecione uma concessionaria valida para salvar o serviço na API.');
   }
 
   return matched.id;
@@ -707,13 +706,6 @@ export const servicosService = {
       return createdService;
     }
 
-    approvalsService.createForNonAdmin({
-      entityType: 'servico',
-      entityId: createdService.id,
-      entityLabel: createdService.protocolo,
-      clientName: createdService.cliente,
-    });
-
     return createdService;
   },
 
@@ -730,7 +722,7 @@ export const servicosService = {
         currentService,
         current?.timeline ?? currentService.timeline,
         nextStatus,
-        'Servico aprovado no frontend e liberado para o fluxo operacional.',
+        'Serviço aprovado no frontend e liberado para o fluxo operacional.',
       ),
     }));
 

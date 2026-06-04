@@ -1,17 +1,14 @@
 import { asString, isRecord } from '@/core/utils/normalize';
-import { approvalsService } from '@/features/aprovacoes/services/approvalsService';
 import { customersService } from '@/features/clientes/services/customersService';
 import { apiClient } from '@/shared/api/apiClient';
+import { filesService, type UploadedFileResponse } from '@/shared/api/filesService';
 import type { DashboardStats, Documento, Projeto, StatusProjeto } from '@/types';
 import {
-  appendTimelineEntryForProjectStatus,
-  buildInitialTimeline,
   hasAddressData,
   mergeProjectEnhancement,
   saveProjectEnhancement,
-  updateProjectEnhancement,
 } from './projectEnhancements';
-import { extractDataFromList, normalizeProjeto, toProjetoStatus } from './projectNormalizer';
+import { extractDataFromList, normalizeProjeto } from './projectNormalizer';
 import type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
 
 export { projectStatusFlow } from './projectNormalizer';
@@ -25,7 +22,6 @@ const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   modulos: projectData.modulos ?? [],
   inversores: projectData.inversores ?? [],
   divisaoCreditos: projectData.divisaoCreditos ?? [],
-  documentos: projectData.documentos ?? [],
   coordenadas: projectData.coordinates,
   latitude: asString(projectData.latitude) || undefined,
   longitude: asString(projectData.longitude) || undefined,
@@ -39,9 +35,37 @@ const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   projetoNovo: projectData.projetoNovo,
   zeroGridControleExportacao: projectData.zeroGridControleExportacao,
   observacoes: projectData.description,
-  status: toProjetoStatus(projectData.status),
-  timeline: buildInitialTimeline({ ...projectData, id: projectData.id }),
 });
+
+const buildBackendDocument = (
+  uploadedFile: UploadedFileResponse,
+  current?: Documento,
+): Documento => ({
+  id: uploadedFile.id,
+  fileId: uploadedFile.id,
+  nome: uploadedFile.fileName,
+  tipo: current?.tipo ?? 'Documento',
+  dataUpload: uploadedFile.createdAt ?? current?.dataUpload ?? new Date().toISOString(),
+  tamanho: uploadedFile.size,
+  url: uploadedFile.urlS3,
+});
+
+const attachBackendDocuments = async (project: Project): Promise<Project> => {
+  const uploads = await filesService.listByItem(project.id).catch(() => []);
+  const currentDocuments = project.documentos ?? [];
+
+  return {
+    ...project,
+    documentos: uploads.map((uploadedFile) =>
+      buildBackendDocument(
+        uploadedFile,
+        currentDocuments.find(
+          (documento) => (documento.fileId || documento.id) === uploadedFile.id,
+        ),
+      ),
+    ),
+  };
+};
 
 const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
   const payload: Record<string, unknown> = {
@@ -151,20 +175,14 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
 
 export const projectsService = {
   saveDocuments(projectId: string, documentos: Documento[]) {
-    // Documentos enviados apos a criacao precisam ser persistidos no enhancement local
-    // porque o fluxo de upload e separado do POST principal de projeto.
-    updateProjectEnhancement(projectId, (current) => ({ ...current, documentos }));
+    void projectId;
+    void documentos;
   },
 
   saveStatusTimeline(projectId: string, item: Projeto['timeline'][number], observacoes?: string) {
-    updateProjectEnhancement(projectId, (current) => {
-      const previousTimeline = current?.timeline ?? [];
-      return {
-        ...current,
-        observacoes: observacoes ?? current?.observacoes,
-        timeline: [...previousTimeline, item],
-      };
-    });
+    void projectId;
+    void item;
+    void observacoes;
   },
 
   saveTimelineComments(
@@ -172,12 +190,9 @@ export const projectsService = {
     timelineItemId: string,
     comentarios: NonNullable<Projeto['timeline'][number]['comentarios']>,
   ) {
-    updateProjectEnhancement(projectId, (current) => ({
-      ...current,
-      timeline: (current?.timeline ?? []).map((item) =>
-        item.id === timelineItemId ? { ...item, comentarios } : item,
-      ),
-    }));
+    void projectId;
+    void timelineItemId;
+    void comentarios;
   },
 
   async addTimelineComment(projectId: string, statusId: string, body: string): Promise<Project> {
@@ -194,12 +209,6 @@ export const projectsService = {
     const normalized = normalizeProjeto(response);
     saveProjectEnhancement(normalized.id, buildFrontendEnhancement(projectData));
     const mergedProject = mergeProjectEnhancement(normalized);
-    approvalsService.createForNonAdmin({
-      entityType: 'projeto',
-      entityId: mergedProject.id,
-      entityLabel: mergedProject.protocolo,
-      clientName: mergedProject.cliente.nome,
-    });
     return mergedProject;
   },
 
@@ -256,7 +265,7 @@ export const projectsService = {
           }
         : enrichedProject;
 
-    return enriched;
+    return attachBackendDocuments(enriched);
   },
 
   async getByIdRaw(id: string): Promise<Record<string, unknown>> {
@@ -325,18 +334,6 @@ export const projectsService = {
 
     await apiClient.post<unknown>(`${PROJECTS_ENDPOINT}/${id}/statuses`, payload);
     const normalized = normalizeProjeto(await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`));
-    const newStatus = normalized.status;
-
-    updateProjectEnhancement(id, (current) => ({
-      ...current,
-      status: newStatus,
-      timeline: appendTimelineEntryForProjectStatus(
-        normalized,
-        current?.timeline ?? normalized.timeline,
-        newStatus,
-        comment,
-      ),
-    }));
 
     return mergeProjectEnhancement(normalized);
   },

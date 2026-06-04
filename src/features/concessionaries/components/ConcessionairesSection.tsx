@@ -53,8 +53,8 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
       {!compactHeader && (
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">Concessionarias</h1>
-            <p className="mt-1 text-gray-400">Cadastro para uso em projetos e servicos.</p>
+            <h1 className="text-3xl font-bold text-gray-100">Concessionárias</h1>
+            <p className="mt-1 text-gray-400">Cadastro para uso em projetos e serviços.</p>
           </div>
           <Button type="button" onClick={handleOpenCreateModal}>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -91,7 +91,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
-            <CardTitle>Concessionarias Cadastradas ({filteredItems.length})</CardTitle>
+            <CardTitle>Concessionárias Cadastradas ({filteredItems.length})</CardTitle>
             <span className="text-xs text-slate-400">
               Pagina {safeCurrentPage} de {totalPages}
             </span>
@@ -108,7 +108,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
                   <th className="px-4 py-3">Regiao</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Logo</th>
-                  <th className="px-4 py-3 text-right">Acoes</th>
+                  <th className="px-4 py-3 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -155,7 +155,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
               <p className="text-sm text-slate-400">
                 Exibindo {(safeCurrentPage - 1) * ITEMS_PER_PAGE + 1}-
                 {Math.min(safeCurrentPage * ITEMS_PER_PAGE, filteredItems.length)} de{' '}
-                {filteredItems.length} concessionarias
+                {filteredItems.length} concessionárias
               </p>
               <div className="flex items-center gap-2">
                 <Button

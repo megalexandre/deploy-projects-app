@@ -11,7 +11,6 @@ type FrontendProjectEnhancement = Partial<
     | 'modulos'
     | 'inversores'
     | 'divisaoCreditos'
-    | 'documentos'
     | 'coordenadas'
     | 'latitude'
     | 'longitude'
@@ -25,8 +24,6 @@ type FrontendProjectEnhancement = Partial<
     | 'projetoNovo'
     | 'zeroGridControleExportacao'
     | 'observacoes'
-    | 'timeline'
-    | 'status'
   >
 >;
 
@@ -104,17 +101,14 @@ export const mergeProjectEnhancement = (project: Projeto): Projeto => {
   const modulos = enhancement.modulos ?? [];
   const inversores = enhancement.inversores ?? [];
   const divisaoCreditos = enhancement.divisaoCreditos ?? [];
-  const documentos = enhancement.documentos ?? [];
   const padraoEntradaItens = enhancement.padraoEntradaItens ?? [];
   const servicos = enhancement.servicos ?? [];
-  const timeline = enhancement.timeline ?? [];
 
   return applyDerivedDadosTecnicos({
     ...project,
     modulos: modulos.length > 0 ? modulos : project.modulos,
     inversores: inversores.length > 0 ? inversores : project.inversores,
     divisaoCreditos: divisaoCreditos.length > 0 ? divisaoCreditos : project.divisaoCreditos,
-    documentos: documentos.length > 0 ? documentos : project.documentos,
     coordenadas: enhancement.coordenadas || project.coordenadas,
     latitude: enhancement.latitude || project.latitude,
     longitude: enhancement.longitude || project.longitude,
@@ -128,8 +122,6 @@ export const mergeProjectEnhancement = (project: Projeto): Projeto => {
     zeroGridControleExportacao:
       enhancement.zeroGridControleExportacao || project.zeroGridControleExportacao,
     observacoes: enhancement.observacoes || project.observacoes,
-    status: project.status,
-    timeline: project.timeline.length > 0 ? project.timeline : timeline,
     padraoEntradaItens:
       padraoEntradaItens.length > 0 ? padraoEntradaItens : project.padraoEntradaItens,
     dadosTecnicos: {

@@ -209,7 +209,7 @@ export const ServicoKanbanColumn: React.FC<ServicoKanbanColumnProps> = ({
 
           {servicos.length === 0 && (
             <div className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-slate-400">
-              Nenhum servico nesta coluna.
+              Nenhum serviço nesta coluna.
             </div>
           )}
         </div>

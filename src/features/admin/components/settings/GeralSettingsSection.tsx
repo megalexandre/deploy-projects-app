@@ -16,7 +16,7 @@ export const GeralSettingsSection: React.FC<GeralSettingsSectionProps> = ({
   onInputChange,
 }) => (
   <div className="space-y-6 page-enter">
-    <h3 className="mb-4 text-lg font-medium text-gray-100">Informacoes da Empresa</h3>
+    <h3 className="mb-4 text-lg font-medium text-gray-100">Informações da Empresa</h3>
 
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Input
@@ -48,7 +48,7 @@ export const GeralSettingsSection: React.FC<GeralSettingsSectionProps> = ({
     </div>
 
     <div>
-      <label className="mb-2 block text-sm font-medium text-gray-300">Endereco</label>
+      <label className="mb-2 block text-sm font-medium text-gray-300">Endereço</label>
       <textarea
         value={formData.endereco}
         onChange={(event) => onInputChange('endereco', event.target.value)}

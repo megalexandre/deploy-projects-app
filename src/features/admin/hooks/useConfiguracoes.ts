@@ -1,10 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ConfiguracoesSistema } from '@/types';
 import { loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import { usersService, type User } from '@/features/admin/services/usersService';
 
 export const useConfiguracoes = () => {
   const [formData, setFormData] = useState<ConfiguracoesSistema>(loadConfiguracoesSistema());
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [usuarios, setUsuarios] = useState<User[]>([]);
+
+  useEffect(() => {
+    const loadUsuarios = async () => {
+      try {
+        setUsuarios(await usersService.getAll());
+      } catch (error) {
+        console.error('Erro ao carregar usuarios para cupons:', error);
+      }
+    };
+
+    void loadUsuarios();
+  }, []);
 
   const handleInputChange = <K extends keyof ConfiguracoesSistema>(
     field: K,
@@ -97,13 +111,14 @@ export const useConfiguracoes = () => {
   };
 
   const handleCupomChange = (
+    listKey: 'cuponsDescontoProjetos' | 'cuponsDescontoServicos',
     id: string,
-    field: 'nome' | 'percentual' | 'ativo',
-    value: string | boolean,
+    field: 'nome' | 'percentual' | 'ativo' | 'usuariosAutorizados',
+    value: string | boolean | string[],
   ) => {
     setFormData((prev) => ({
       ...prev,
-      cuponsDesconto: prev.cuponsDesconto.map((item) =>
+      [listKey]: prev[listKey].map((item) =>
         item.id === id
           ? {
               ...item,
@@ -119,16 +134,17 @@ export const useConfiguracoes = () => {
     }));
   };
 
-  const handleAdicionarCupom = () => {
+  const handleAdicionarCupom = (listKey: 'cuponsDescontoProjetos' | 'cuponsDescontoServicos') => {
     setFormData((prev) => ({
       ...prev,
-      cuponsDesconto: [
-        ...prev.cuponsDesconto,
+      [listKey]: [
+        ...prev[listKey],
         {
           id: crypto.randomUUID(),
           nome: '',
           percentual: 0,
           ativo: true,
+          usuariosAutorizados: [],
         },
       ],
     }));
@@ -136,12 +152,13 @@ export const useConfiguracoes = () => {
 
   const handleSalvar = () => {
     saveConfiguracoesSistema(formData);
-    setSaveMessage('Configuracoes salvas. Novos projetos passam a usar esses valores.');
+    setSaveMessage('Configurações salvas. Novos projetos passam a usar esses valores.');
     window.setTimeout(() => setSaveMessage(null), 3000);
   };
 
   return {
     formData,
+    usuarios,
     saveMessage,
     handleInputChange,
     handlePrecoFotovoltaicoChange,

@@ -44,7 +44,7 @@ export const UserStatsGrid: React.FC<Props> = ({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-400">Usuarios</p>
+            <p className="text-sm text-gray-400">Usuários</p>
             <p className="text-2xl font-bold text-green-400">{regularUsers}</p>
           </div>
           <User className="h-8 w-8 text-green-400" />

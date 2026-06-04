@@ -119,7 +119,7 @@ export const ConcessionaireFormModal: React.FC<ConcessionaireFormModalProps> = (
                   {editingId ? (
                     <>
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      Salvar Alteracoes
+                      Salvar Alterações
                     </>
                   ) : (
                     <>

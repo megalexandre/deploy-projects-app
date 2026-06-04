@@ -58,7 +58,7 @@ export const CustomerDocumentsCard: React.FC<Props> = ({
                 <th className="px-4 py-3">Nome</th>
                 <th className="px-4 py-3">Tipo</th>
                 <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3 text-right">Acoes</th>
+                <th className="px-4 py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">

@@ -15,7 +15,11 @@ import type {
   StatusServico,
   TipoServico,
 } from '@/types';
-import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import {
+  getCuponsDescontoServicosAtivos,
+  loadConfiguracoesSistema,
+} from '@/utils/configuracoesSistema';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import {
   formatCurrencyBRL,
   maskLatitude,
@@ -151,23 +155,23 @@ const personDocuments: Record<PersonType, DocumentoCategoria[]> = {
 const documentCategoriesByType: Record<TipoServico, DocumentoCategoria[]> = {
   ligacao_nova: [
     { key: 'matricula_imovel', label: 'Matricula do Imovel' },
-    { key: 'foto_padrao_instalado', label: 'Foto do padrao instalado', maxFiles: 3 },
+    { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
   aumento_carga: [
     { key: 'conta_energia_atual', label: 'Conta de Energia atual' },
-    { key: 'foto_padrao_entrada_atual', label: 'Foto do Padrao de Entrada atual' },
+    { key: 'foto_padrao_entrada_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
   troca_titularidade: [
     { key: 'conta_energia', label: 'Conta de Energia' },
-    { key: 'foto_padrao_atual', label: 'Foto do Padrao de Entrada atual' },
+    { key: 'foto_padrao_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
   alteracao_compartilhamento_credito: [
     { key: 'conta_geradora', label: 'Conta de Energia da Geradora' },
     { key: 'contas_beneficiarias', label: 'Conta de Energia da(s) Beneficiarias', maxFiles: 5 },
-    { key: 'foto_padrao_atual', label: 'Foto do Padrao de Entrada atual' },
+    { key: 'foto_padrao_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
 };
@@ -215,12 +219,19 @@ const buildSelectedDocumentFiles = (
     })),
   );
 export const ServicosPage: React.FC = () => {
+  const currentUser = useCurrentUser();
   const [saving, setSaving] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ServicoForm>(createEmptyForm());
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
-  const [cupons] = useState(() => getCuponsDescontoAtivos(loadConfiguracoesSistema()));
+  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const cupons = useMemo(() => {
+    if (!currentUser?.id) return [];
+    return getCuponsDescontoServicosAtivos(configuracoesSistema).filter((cupom) =>
+      (cupom.usuariosAutorizados ?? []).includes(currentUser.id),
+    );
+  }, [configuracoesSistema, currentUser?.id]);
   const kanban = useServicosKanban();
 
   const selectedCustomer = useMemo(
@@ -239,6 +250,15 @@ export const ServicosPage: React.FC = () => {
     () => Math.max(valorNumerico - valorNumerico * (descontoPct / 100), 0),
     [descontoPct, valorNumerico],
   );
+
+  useEffect(() => {
+    if (
+      form.cupomDescontoPct !== '0' &&
+      !cupons.some((cupom) => String(cupom.percentual) === form.cupomDescontoPct)
+    ) {
+      setForm((prev) => ({ ...prev, cupomDescontoPct: '0' }));
+    }
+  }, [cupons, form.cupomDescontoPct]);
 
   useEffect(() => {
     setUploadedFiles((current) =>
@@ -324,7 +344,7 @@ export const ServicosPage: React.FC = () => {
     event.preventDefault();
 
     if (!validateForm()) {
-      kanban.setError('Preencha os campos obrigatorios do servico antes de salvar.');
+      kanban.setError('Preencha os campos obrigatorios do serviço antes de salvar.');
       return;
     }
 
@@ -426,8 +446,8 @@ export const ServicosPage: React.FC = () => {
       resetForm();
       setFormOpen(false);
     } catch (saveError) {
-      console.error('Erro ao salvar servico:', saveError);
-      kanban.setError('Nao foi possivel salvar o servico.');
+      console.error('Erro ao salvar serviço:', saveError);
+      kanban.setError('Nao foi possivel salvar o serviço.');
     } finally {
       setSaving(false);
     }
@@ -452,16 +472,16 @@ export const ServicosPage: React.FC = () => {
     <div className="space-y-6 page-enter">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-100">Servicos</h1>
+          <h1 className="text-3xl font-bold text-gray-100">Serviços</h1>
           <p className="mt-1 max-w-3xl text-gray-400">
-            Implementacao baseada nas paginas 9 a 16 do documento: Ligacao Nova, Aumento de Carga,
-            Troca de Titularidade, Alteracao Compartilhamento de Credito e kanban com 11 etapas.
+            Implementação baseada nas paginas 9 a 16 do documento: Ligação Nova, Aumento de Carga,
+            Troca de Titularidade, Alteração Compartilhamento de Crédito e kanban com 11 etapas.
           </p>
         </div>
         <Link to="/servicos/novo">
           <Button type="button">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Novo Servico
+            Novo Serviço
           </Button>
         </Link>
       </div>
@@ -469,7 +489,7 @@ export const ServicosPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-5">
-            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Servicos</div>
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Serviços</div>
             <div className="mt-2 text-3xl font-semibold text-slate-100">{kanban.stats.total}</div>
           </CardContent>
         </Card>

@@ -38,6 +38,7 @@ export interface CupomDesconto {
   nome: string;
   percentual: number;
   ativo: boolean;
+  usuariosAutorizados?: string[];
 }
 
 export interface ConfiguracoesSistema {
@@ -58,4 +59,6 @@ export interface ConfiguracoesSistema {
   tabelaPrecoFotovoltaico: FaixaPrecoFotovoltaico[];
   tabelaPrecoPadraoEntrada: PrecoPadraoEntrada[];
   cuponsDesconto: CupomDesconto[];
+  cuponsDescontoProjetos: CupomDesconto[];
+  cuponsDescontoServicos: CupomDesconto[];
 }

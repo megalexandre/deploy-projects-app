@@ -29,10 +29,11 @@ const normalizeUpload = (payload: BackendUploadResponse): UploadedFileResponse =
 const buildUrl = (path: string) => {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
   const baseUrl = apiClient.baseUrl;
-  // Em modo proxy (dev), baseUrl é relativo (/api). new URL exige base absoluta,
-  // então usa a origem atual — o proxy do Vite intercepta o request.
-  const absoluteBase = /^https?:\/\//i.test(baseUrl) ? `${baseUrl}/` : `${window.location.origin}/`;
-  return new URL(endpoint, absoluteBase).toString();
+  if (/^https?:\/\//i.test(baseUrl)) {
+    return new URL(endpoint, `${baseUrl.replace(/\/+$/, '')}/`).toString();
+  }
+
+  return `${baseUrl.replace(/\/+$/, '')}${endpoint}`;
 };
 
 const buildHeaders = () => {
@@ -56,7 +57,7 @@ export const filesService = {
     // O backend vincula os arquivos ao item pelo campo multipart "item_id".
     const formData = new FormData();
     formData.append('item_id', itemId);
-    files.forEach((file) => formData.append('files', file));
+    files.forEach((file) => formData.append('files[]', file));
 
     const response = await fetch(buildUrl(FILES_ENDPOINT), {
       method: 'POST',

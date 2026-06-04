@@ -170,7 +170,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Tipo de Servico</label>
+            <label className="mb-2 block text-sm text-slate-300">Tipo de Serviço</label>
             <select
               value={form.tipo}
               onChange={(event) =>
@@ -243,7 +243,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Custo do Servico (R$)</label>
+            <label className="mb-2 block text-sm text-slate-300">Custo do Serviço (R$)</label>
             <input
               value={form.valor}
               onChange={(event) =>
@@ -284,12 +284,12 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
         {isTechnicalType(form.tipo) && (
           <Card className="border-white/10 bg-slate-950/30">
             <CardHeader>
-              <CardTitle>Dados Tecnicos do Servico</CardTitle>
+              <CardTitle>Dados Tecnicos do Serviço</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
-                  Endereco da Obra
+                  Endereço da Obra
                 </h4>
                 <Button
                   type="button"
@@ -302,7 +302,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                     }))
                   }
                 >
-                  Usar endereco do cliente
+                  Usar endereço do cliente
                 </Button>
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -454,7 +454,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">Padrao a mais de 30m</label>
+                  <label className="mb-2 block text-sm text-slate-300">Padrão a mais de 30m</label>
                   <select
                     value={form.padraoMaisDe30m}
                     onChange={(event) =>
@@ -504,8 +504,8 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                   <table className="min-w-full divide-y divide-white/10">
                     <thead className="bg-slate-950/50">
                       <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
-                        <th className="px-4 py-3">Tipo de Ligacao</th>
-                        <th className="px-4 py-3">Classificacao</th>
+                        <th className="px-4 py-3">Tipo de Ligação</th>
+                        <th className="px-4 py-3">Classificação</th>
                         <th className="px-4 py-3">Quantidade</th>
                         <th className="px-4 py-3">Disjuntor</th>
                       </tr>
@@ -633,7 +633,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                       }))
                     }
                   >
-                    Usar endereco do cliente
+                    Usar endereço do cliente
                   </Button>
                 </div>
               </div>
@@ -765,8 +765,8 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                     <thead className="bg-slate-950/50">
                       <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
                         <th className="px-4 py-3">UC</th>
-                        <th className="px-4 py-3">Endereco</th>
-                        <th className="px-4 py-3">Classificacao</th>
+                        <th className="px-4 py-3">Endereço</th>
+                        <th className="px-4 py-3">Classificação</th>
                         <th className="px-4 py-3">Porcentagem</th>
                       </tr>
                     </thead>
@@ -857,7 +857,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
         )}
 
         <div>
-          <label className="mb-2 block text-sm text-slate-300">Observacoes / Comentarios</label>
+          <label className="mb-2 block text-sm text-slate-300">Observações / Comentários</label>
           <textarea
             value={form.observacoes}
             rows={4}
@@ -899,7 +899,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
           </Button>
           <Button type="submit" loading={saving}>
             <FloppyDisk className="mr-2 h-4 w-4" />
-            {editingId ? 'Salvar servico' : 'Criar servico'}
+            {editingId ? 'Salvar serviço' : 'Criar serviço'}
           </Button>
         </div>
       </form>

@@ -28,7 +28,7 @@ type AbaConfiguracoes =
   | 'concessionarias'
   | 'notificacoes'
   | 'sistema'
-  | 'seguranca';
+  | 'segurança';
 
 const tabs: Array<{
   id: AbaConfiguracoes;
@@ -39,9 +39,9 @@ const tabs: Array<{
   { id: 'precos', label: 'Precos', icon: CurrencyCircleDollar },
   { id: 'cupons', label: 'Cupons', icon: Percent },
   { id: 'concessionarias', label: 'Concessionarias', icon: Buildings },
-  { id: 'notificacoes', label: 'Notificacoes', icon: Bell },
+  { id: 'notificacoes', label: 'Notificações', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
-  { id: 'seguranca', label: 'Seguranca', icon: Shield },
+  { id: 'segurança', label: 'Segurança', icon: Shield },
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
@@ -82,6 +82,7 @@ export const ConfiguracoesPage: React.FC = () => {
       return (
         <CuponsSettingsSection
           formData={configuracoes.formData}
+          usuarios={configuracoes.usuarios}
           onCupomChange={configuracoes.handleCupomChange}
           onAdicionarCupom={configuracoes.handleAdicionarCupom}
         />
@@ -117,9 +118,9 @@ export const ConfiguracoesPage: React.FC = () => {
     <div className="space-y-6 page-enter">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">Configuracoes</h1>
+          <h1 className="text-2xl font-bold text-gray-100">Configurações</h1>
           <p className="mt-1 text-gray-400">
-            Defina preferencias do sistema e as tabelas de valores.
+            Defina preferências do sistema e as tabelas de valores.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -128,7 +129,7 @@ export const ConfiguracoesPage: React.FC = () => {
           )}
           <Button onClick={configuracoes.handleSalvar}>
             <FloppyDisk className="mr-2 h-4 w-4" />
-            Salvar Alteracoes
+            Salvar Alterações
           </Button>
         </div>
       </div>

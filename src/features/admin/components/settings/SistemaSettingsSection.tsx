@@ -16,7 +16,7 @@ export const SistemaSettingsSection: React.FC<SistemaSettingsSectionProps> = ({
   onInputChange,
 }) => (
   <div className="space-y-6 page-enter">
-    <h3 className="mb-4 text-lg font-medium text-gray-100">Configuracoes do Sistema</h3>
+    <h3 className="mb-4 text-lg font-medium text-gray-100">Configurações do Sistema</h3>
 
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <div>

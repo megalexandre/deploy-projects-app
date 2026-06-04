@@ -44,8 +44,8 @@ export const useServicosKanban = () => {
         setClientes(clientesData);
         setConcessionarias(concessionariasData);
       } catch (loadError) {
-        console.error('Erro ao carregar servicos:', loadError);
-        setError('Nao foi possivel carregar os servicos.');
+        console.error('Erro ao carregar serviços:', loadError);
+        setError('Nao foi possivel carregar os serviços.');
       } finally {
         setLoading(false);
       }
@@ -119,9 +119,9 @@ export const useServicosKanban = () => {
       const updated = await servicosService.updateStatus(serviceId, nextStatus);
       setServicos((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     } catch (updateError) {
-      console.error('Erro ao atualizar status do servico:', updateError);
+      console.error('Erro ao atualizar status do serviço:', updateError);
       setServicos(previous);
-      setError('Nao foi possivel atualizar o status do servico.');
+      setError('Nao foi possivel atualizar o status do serviço.');
     }
   };
 

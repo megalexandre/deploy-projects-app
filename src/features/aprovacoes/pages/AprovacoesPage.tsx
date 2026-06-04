@@ -3,10 +3,7 @@ import { CheckCircle, ClockCounterClockwise, Eye, Hourglass, XCircle } from '@ph
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
-import {
-  approvalsService,
-  type ApprovalRequest,
-} from '@/features/aprovacoes/services/approvalsService';
+import type { ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
 import { projectsService } from '@/features/projects/services/projectsService';
 import { servicosService } from '@/features/servicos/services/servicosService';
 import { getSessionUser, isAdminSessionUser } from '@/shared/session/sessionUser';
@@ -36,7 +33,7 @@ const tabConfig: Record<
 > = {
   pendente: {
     title: 'Aguardando',
-    description: 'Solicitacoes aguardando decisao. Ao aprovar ou rejeitar, saem desta lista.',
+    description: 'Solicitações aguardando decisao. Ao aprovar ou rejeitar, saem desta lista.',
     emptyMessage: 'Não há solicitações pendentes no momento.',
     icon: Hourglass,
   },
@@ -64,66 +61,59 @@ export const AprovacoesPage: React.FC = () => {
     const load = async () => {
       setLoading(true);
 
-      const bootstrapPendingRequests = async () => {
-        const [projetos, servicos] = await Promise.all([
-          projectsService.getProjetos().catch(() => []),
-          servicosService.list().catch(() => []),
-        ]);
+      const [projetos, servicos] = await Promise.all([
+        projectsService.getProjetos().catch(() => []),
+        servicosService.list().catch(() => []),
+      ]);
 
-        (projetos as Projeto[])
-          .filter((projeto) => projeto.status === 'aguardando_aprovacao')
-          .forEach((projeto) => {
-            approvalsService.ensurePendingRequest({
-              entityType: 'projeto',
-              entityId: projeto.id,
-              entityLabel: projeto.protocolo,
-              clientName: projeto.cliente.nome,
-              createdAt: projeto.dataCriacao,
-            });
-          });
+      const projectRequests: ApprovalRequest[] = (projetos as Projeto[])
+        .filter((projeto) => projeto.status === 'aguardando_aprovacao')
+        .map((projeto) => ({
+          id: `projeto-${projeto.id}`,
+          entityType: 'projeto',
+          entityId: projeto.id,
+          entityLabel: projeto.protocolo,
+          clientName: projeto.cliente.nome,
+          createdAt: projeto.dataCriacao,
+          createdByUserId: 'backend',
+          createdByName: 'API',
+          createdByRole: 'backend',
+          status: 'pendente',
+        }));
 
-        (servicos as Servico[])
-          .filter((servico) => servico.status === 'aguardando_aprovacao')
-          .forEach((servico) => {
-            approvalsService.ensurePendingRequest({
-              entityType: 'servico',
-              entityId: servico.id,
-              entityLabel: servico.protocolo,
-              clientName: servico.cliente,
-              createdAt: servico.dataCriacao,
-            });
-          });
-      };
+      const serviceRequests: ApprovalRequest[] = (servicos as Servico[])
+        .filter((servico) => servico.status === 'aguardando_aprovacao')
+        .map((servico) => ({
+          id: `servico-${servico.id}`,
+          entityType: 'servico',
+          entityId: servico.id,
+          entityLabel: servico.protocolo,
+          clientName: servico.cliente,
+          createdAt: servico.dataCriacao,
+          createdByUserId: 'backend',
+          createdByName: 'API',
+          createdByRole: 'backend',
+          status: 'pendente',
+        }));
 
-      await bootstrapPendingRequests();
-      const approvalRequests = approvalsService.list();
+      const approvalRequests = [...projectRequests, ...serviceRequests].sort(
+        (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+      );
       setRequests(approvalRequests);
 
       const nextSnapshots: Record<string, EntitySnapshot> = {};
-      await Promise.all(
-        approvalRequests.map(async (request) => {
-          try {
-            if (request.entityType === 'projeto') {
-              const projeto = await projectsService.getById(request.entityId);
-              nextSnapshots[request.id] = {
-                status: projeto.status,
-                destinationPath: `/projetos/${request.entityId}`,
-              };
-              return;
-            }
-
-            const servico = await servicosService.getById(request.entityId);
-            nextSnapshots[request.id] = {
-              status: servico.status,
-              destinationPath: `/servicos/${request.entityId}`,
-            };
-          } catch {
-            nextSnapshots[request.id] = {
-              destinationPath: request.entityType === 'projeto' ? '/projetos' : '/servicos',
-            };
-          }
-        }),
-      );
+      projectRequests.forEach((request) => {
+        nextSnapshots[request.id] = {
+          status: 'aguardando_aprovacao',
+          destinationPath: `/projetos/${request.entityId}`,
+        };
+      });
+      serviceRequests.forEach((request) => {
+        nextSnapshots[request.id] = {
+          status: 'aguardando_aprovacao',
+          destinationPath: `/servicos/${request.entityId}`,
+        };
+      });
 
       setSnapshots(nextSnapshots);
       setLoading(false);
@@ -158,8 +148,35 @@ export const AprovacoesPage: React.FC = () => {
     const request = requests.find((item) => item.id === id);
     if (!request) return;
 
-    approvalsService.decide(id, status);
-    setRequests(approvalsService.list());
+    if (request.entityType === 'projeto') {
+      if (status === 'aprovado') {
+        await projectsService.approvePending(request.entityId);
+      } else {
+        await projectsService.updateStatus(
+          request.entityId,
+          'projeto_encerrado',
+          'Solicitacao rejeitada na tela de aprovacoes.',
+        );
+      }
+    } else if (status === 'aprovado') {
+      await servicosService.approvePending(request.entityId);
+    } else {
+      await servicosService.updateStatus(request.entityId, 'servico_encerrado');
+    }
+
+    setRequests((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status,
+              decidedAt: new Date().toISOString(),
+              decidedByUserId: sessionUser?.id,
+              decidedByName: sessionUser?.name,
+            }
+          : item,
+      ),
+    );
     setActiveTab(status);
   };
 

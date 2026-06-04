@@ -107,7 +107,7 @@ export const NovoClienteForm: React.FC<NovoClienteFormProps> = ({
         </FormField>
 
         <div className="md:col-span-2 border-t border-gray-700 pt-4">
-          <h4 className="mb-3 text-base font-semibold text-gray-100">Endereco do cliente</h4>
+          <h4 className="mb-3 text-base font-semibold text-gray-100">Endereço do cliente</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <EnderecoFields
               endereco={clienteForm.endereco}

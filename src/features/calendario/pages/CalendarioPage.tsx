@@ -55,7 +55,7 @@ export const CalendarioPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Calendario</h1>
           <p className="text-gray-400 mt-1">
-            Agenda com eventos, projetos e servicos do mes atual.
+            Agenda com eventos, projetos e serviços do mes atual.
           </p>
           {loadingProjetos && (
             <p className="text-xs text-gray-500 mt-1">Carregando datas dos projetos...</p>
@@ -86,7 +86,7 @@ export const CalendarioPage: React.FC = () => {
               <Folder className="h-4 w-4" /> Projetos
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-green-700 text-green-300 bg-green-900/40">
-              <Wrench className="h-4 w-4" /> Servicos
+              <Wrench className="h-4 w-4" /> Serviços
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-orange-700 text-orange-300 bg-orange-900/40">
               <CalendarIcon className="h-4 w-4" /> Eventos
@@ -102,7 +102,7 @@ export const CalendarioPage: React.FC = () => {
                 <option value="todos">Mostrar tudo</option>
                 <option value="evento">So eventos</option>
                 <option value="projeto">So projetos</option>
-                <option value="servico">So servicos</option>
+                <option value="servico">So serviços</option>
               </select>
               {selectedDayFilter !== null && (
                 <Button variant="outline" size="sm" onClick={() => setSelectedDayFilter(null)}>
@@ -168,7 +168,7 @@ export const CalendarioPage: React.FC = () => {
               />
               <Input
                 label="Local"
-                placeholder="Endereco"
+                placeholder="Endereço"
                 value={novoEvento.local}
                 onChange={(event) =>
                   setNovoEvento((current) => ({ ...current, local: event.target.value }))

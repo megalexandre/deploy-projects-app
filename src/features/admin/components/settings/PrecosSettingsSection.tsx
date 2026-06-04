@@ -41,7 +41,7 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
         <div>
           <h4 className="text-base font-semibold text-gray-100">Projeto Fotovoltaico</h4>
           <p className="text-sm text-gray-400">
-            Faixas de potencia em kW e valor cobrado por faixa.
+            Faixas de potência em kW e valor cobrado por faixa.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={onAdicionarFaixaFotovoltaica}>
@@ -54,10 +54,10 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
         <table className="min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-900/60">
             <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
-              <th className="px-4 py-3">Potencia Minima</th>
-              <th className="px-4 py-3">Potencia Maxima</th>
+              <th className="px-4 py-3">Potência Mínima</th>
+              <th className="px-4 py-3">Potência Máxima</th>
               <th className="px-4 py-3">Valor</th>
-              <th className="w-20 px-4 py-3 text-right">Acoes</th>
+              <th className="w-20 px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800">
@@ -126,7 +126,7 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
         <div>
           <h4 className="text-base font-semibold text-gray-100">Padrao de Entrada / EMUC</h4>
           <p className="text-sm text-gray-400">
-            Valor unitario usado em cada combinacao de classificacao e ligacao.
+            Valor unitario usado em cada combinacao de classificação e ligacao.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={onAdicionarPrecoPadraoEntrada}>
@@ -139,10 +139,10 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
         <table className="min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-900/60">
             <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
-              <th className="px-4 py-3">Classificacao</th>
-              <th className="px-4 py-3">Tipo de Ligacao</th>
-              <th className="px-4 py-3">Valor Unitario</th>
-              <th className="w-20 px-4 py-3 text-right">Acoes</th>
+              <th className="px-4 py-3">Classificação</th>
+              <th className="px-4 py-3">Tipo de Ligação</th>
+              <th className="px-4 py-3">Valor Unitário</th>
+              <th className="w-20 px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800">

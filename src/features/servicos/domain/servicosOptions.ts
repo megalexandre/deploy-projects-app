@@ -10,7 +10,7 @@ export const tipoServicoOptions: Array<{
   {
     value: 'ligacao_nova',
     label: 'Ligacao Nova',
-    description: 'Endereco da obra, tensao, coordenadas, padrao e uploads.',
+    description: 'Endereço da obra, tensao, coordenadas, padrão e uploads.',
   },
   {
     value: 'aumento_carga',
@@ -25,7 +25,7 @@ export const tipoServicoOptions: Array<{
   {
     value: 'alteracao_compartilhamento_credito',
     label: 'Alteracao Compartilhamento de Credito',
-    description: 'UC geradora, endereco e rateio das beneficiarias.',
+    description: 'UC geradora, endereço e rateio das beneficiarias.',
   },
 ];
 
