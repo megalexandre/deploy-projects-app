@@ -129,14 +129,21 @@ export const buildItemVazio = (): ItemEquipamentoForm => ({
   modelo: '',
 });
 
-const buildPadraoEntradaLinhas = (): PadraoEntradaItemForm[] =>
-  padraoEntradaLinhasBase.map((item) => ({
+const buildPadraoEntradaLinhas = (
+  tabelaConfigurada?: Array<Pick<PadraoEntradaItemForm, 'tipoLigacao' | 'classificacao'>>,
+): PadraoEntradaItemForm[] => {
+  const linhas =
+    tabelaConfigurada?.filter((item) => item.tipoLigacao.trim() && item.classificacao.trim()) ?? [];
+  const linhasBase = linhas.length > 0 ? linhas : padraoEntradaLinhasBase;
+
+  return linhasBase.map((item) => ({
     id: crypto.randomUUID(),
     tipoLigacao: item.tipoLigacao,
     classificacao: item.classificacao,
     quantidade: '',
     disjuntor: '',
   }));
+};
 
 const buildEnderecoVazio = (): EnderecoForm => ({
   cep: '',
@@ -284,12 +291,12 @@ export const useNovoProjeto = () => {
 
   const [modulos, setModulos] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
   const [inversores, setInversores] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
-  const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(
-    buildPadraoEntradaLinhas(),
+  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(() =>
+    buildPadraoEntradaLinhas(configuracoesSistema.tabelaPrecoPadraoEntrada),
   );
   const [documentos, setDocumentos] = useState<Record<string, File[]>>({});
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
-  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
   const [valorProjeto, setValorProjeto] = useState('');
   const [valorProjetoEditado, setValorProjetoEditado] = useState(false);
 

@@ -5,7 +5,7 @@ import { Buildings, MapPinLine } from '@phosphor-icons/react';
 import React, { useState } from 'react';
 import { useIdentifier } from '../hooks/useIdentifyer';
 import { type KanbanStatus } from '../kanban/kanbanConfig';
-import type { ProjetoKanbanCard } from '../pages/ProjetosPage';
+import type { ProjetoKanbanCard } from '../hooks/useProjetosKanban';
 import { EditIdentifierDialog } from './EditIdentifierDialog';
 import { StatusSelect } from './kanban/StatusSelect';
 

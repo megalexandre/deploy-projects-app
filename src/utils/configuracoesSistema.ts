@@ -61,24 +61,22 @@ const normalizeConfig = (
   return {
     ...defaults,
     ...raw,
-    tabelaPrecoFotovoltaico:
-      Array.isArray(raw?.tabelaPrecoFotovoltaico) && raw.tabelaPrecoFotovoltaico.length > 0
-        ? raw.tabelaPrecoFotovoltaico.map((item, index) => ({
-            id: item.id || `fv-${index + 1}`,
-            min: sanitizeNumber(item.min),
-            max: sanitizeNumber(item.max),
-            valor: sanitizeNumber(item.valor),
-          }))
-        : defaults.tabelaPrecoFotovoltaico,
-    tabelaPrecoPadraoEntrada:
-      Array.isArray(raw?.tabelaPrecoPadraoEntrada) && raw.tabelaPrecoPadraoEntrada.length > 0
-        ? raw.tabelaPrecoPadraoEntrada.map((item, index) => ({
-            id: item.id || `emuc-${index + 1}`,
-            classificacao: item.classificacao || '',
-            tipoLigacao: item.tipoLigacao || '',
-            valor: sanitizeNumber(item.valor),
-          }))
-        : defaults.tabelaPrecoPadraoEntrada,
+    tabelaPrecoFotovoltaico: Array.isArray(raw?.tabelaPrecoFotovoltaico)
+      ? raw.tabelaPrecoFotovoltaico.map((item, index) => ({
+          id: item.id || `fv-${index + 1}`,
+          min: sanitizeNumber(item.min),
+          max: sanitizeNumber(item.max),
+          valor: sanitizeNumber(item.valor),
+        }))
+      : defaults.tabelaPrecoFotovoltaico,
+    tabelaPrecoPadraoEntrada: Array.isArray(raw?.tabelaPrecoPadraoEntrada)
+      ? raw.tabelaPrecoPadraoEntrada.map((item, index) => ({
+          id: item.id || `emuc-${index + 1}`,
+          classificacao: item.classificacao || '',
+          tipoLigacao: item.tipoLigacao || '',
+          valor: sanitizeNumber(item.valor),
+        }))
+      : defaults.tabelaPrecoPadraoEntrada,
     cuponsDesconto:
       Array.isArray(raw?.cuponsDesconto) && raw.cuponsDesconto.length > 0
         ? raw.cuponsDesconto.map((item, index) => ({
