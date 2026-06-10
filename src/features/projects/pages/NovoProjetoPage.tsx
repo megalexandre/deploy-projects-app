@@ -5,6 +5,8 @@ import { useNovoProjeto } from '@/features/projects/hooks/useNovoProjeto';
 import { Passo1Cliente } from '@/features/projects/components/form/passo1/Passo1Cliente';
 import { Passo2Basicos } from '@/features/projects/components/form/Passo2Basicos';
 import { Passo3Detalhes } from '@/features/projects/components/form/Passo3Detalhes';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 const StepIndicator: React.FC<{ current: number; total: number }> = ({ current, total }) => (
   <div className="flex items-center gap-2 pt-1">
@@ -22,8 +24,16 @@ const StepIndicator: React.FC<{ current: number; total: number }> = ({ current, 
 );
 
 export const NovoProjetoPage: React.FC = () => {
-  const props = useNovoProjeto();
-  const { navigate, passoAtual, erro } = props;
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const requestedStep = Number(searchParams.get('passo'));
+  const initialStep = requestedStep >= 1 && requestedStep <= 3 ? (requestedStep as 1 | 2 | 3) : 1;
+  const props = useNovoProjeto({ projectId: id, initialStep });
+  const { navigate, passoAtual, erro, isEditing, editingProject, carregandoProjeto } = props;
+
+  if (carregandoProjeto) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -32,14 +42,16 @@ export const NovoProjetoPage: React.FC = () => {
           <div className="flex items-start gap-3">
             <button
               type="button"
-              onClick={() => navigate('/projetos')}
+              onClick={() => navigate(isEditing && id ? `/projetos/${id}` : '/projetos')}
               className="mt-1 text-gray-400 hover:text-gray-200 transition-colors"
               aria-label="Voltar para projetos"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-100">Novo Projeto</h1>
+              <h1 className="text-3xl font-bold text-gray-100">
+                {isEditing ? `Editar ${editingProject?.protocolo ?? 'Projeto'}` : 'Novo Projeto'}
+              </h1>
               <p className="text-gray-400 text-xl">Passo {passoAtual} de 3</p>
             </div>
           </div>

@@ -18,6 +18,20 @@ const PROJECTS_ENDPOINT = '/projects';
 
 export const projectsResouces = {};
 
+const toCoordinatesWkt = (coordinates: unknown) => {
+  if (!isRecord(coordinates)) return undefined;
+
+  const rawLatitude = asString(coordinates.latitude);
+  const rawLongitude = asString(coordinates.longitude);
+  if (!rawLatitude || !rawLongitude) return undefined;
+
+  const latitude = Number(rawLatitude);
+  const longitude = Number(rawLongitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return undefined;
+
+  return `POINT(${longitude} ${latitude})`;
+};
+
 const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   modulos: projectData.modulos ?? [],
   inversores: projectData.inversores ?? [],
@@ -98,8 +112,7 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
     status: projectData.status,
     amount: projectData.amount !== undefined ? String(projectData.amount) : undefined,
     valor: projectData.amount !== undefined ? String(projectData.amount) : undefined,
-    coordinates: projectData.coordinates,
-    coordenadas: projectData.coordinates,
+    coordinates: toCoordinatesWkt(projectData.coordinates),
     services_names: projectData.servicesNames,
     servicesNames: projectData.servicesNames,
     servicos: projectData.servicesNames,
@@ -307,7 +320,7 @@ export const projectsService = {
             typeof projectData.amount === 'number'
               ? String(projectData.amount)
               : projectData.amount,
-          coordenadas: projectData.coordinates,
+          coordinates: toCoordinatesWkt(projectData.coordinates),
           services_names: projectData.servicesNames,
           servicos: projectData.servicesNames,
           project_type: projectData.projectType,
@@ -325,7 +338,33 @@ export const projectsService = {
         }
       : { id };
     const response = await apiClient.put<unknown>(`${PROJECTS_ENDPOINT}/${id}`, payloadWithId);
-    return normalizeProjeto(response);
+    if (isRecord(projectData)) {
+      saveProjectEnhancement(id, {
+        modulos: Array.isArray(projectData.modulos) ? projectData.modulos : undefined,
+        inversores: Array.isArray(projectData.inversores) ? projectData.inversores : undefined,
+        divisaoCreditos: Array.isArray(projectData.divisaoCreditos)
+          ? projectData.divisaoCreditos
+          : undefined,
+        coordenadas: isRecord(projectData.coordinates)
+          ? (projectData.coordinates as Projeto['coordenadas'])
+          : undefined,
+        latitude: asString(projectData.latitude) || undefined,
+        longitude: asString(projectData.longitude) || undefined,
+        tensaoFornecimento: asString(projectData.tensaoFornecimento) || undefined,
+        padraoEntradaItens: Array.isArray(projectData.padraoEntradaItens)
+          ? projectData.padraoEntradaItens
+          : undefined,
+        tipoProjeto: asString(projectData.projectType) || undefined,
+        servicos: Array.isArray(projectData.servicesNames) ? projectData.servicesNames : undefined,
+        numeroUc: asString(projectData.unitControl) || undefined,
+        dataAbertura: asString(projectData.dataAbertura) || undefined,
+        projetoFastTrack: asString(projectData.fastTrack) || undefined,
+        projetoNovo: asString(projectData.projetoNovo) || undefined,
+        zeroGridControleExportacao: asString(projectData.zeroGridControleExportacao) || undefined,
+        observacoes: asString(projectData.description) || undefined,
+      });
+    }
+    return mergeProjectEnhancement(normalizeProjeto(response));
   },
 
   async updateStatus(id: string, name: string, comment?: string): Promise<Project> {

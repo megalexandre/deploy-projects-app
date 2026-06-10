@@ -51,6 +51,14 @@ const AppRoutes: React.FC = () => {
         <Route path="/projetos" element={<ProjetosPage />} />
         <Route path="/projetos/novo" element={<NovoProjetoPage />} />
         <Route path="/projetos/:id" element={<ProjetoDetailPage />} />
+        <Route
+          path="/projetos/:id/editar"
+          element={
+            <AdminOnlyRoute>
+              <NovoProjetoPage />
+            </AdminOnlyRoute>
+          }
+        />
         <Route path="/servicos" element={<ServicosPage />} />
         <Route path="/servicos/novo" element={<NovoServicoPage />} />
         <Route path="/servicos/:id" element={<ServicoDetailPage />} />
