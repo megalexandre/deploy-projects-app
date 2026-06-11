@@ -33,7 +33,8 @@ export interface ProjectResponse {
   utility_company: string;
   utility_protocol: string;
   customer_class: string;
-  integrator: string;
+  integrator: string | null;
+  integrator_name?: string | null;
   modality: string;
   framework: string;
   status: string;
@@ -91,7 +92,7 @@ export const toProjeto = (
   dadosProjeto: {
     concessionaria: r.utility_company,
     classe: r.customer_class,
-    integrador: r.integrator,
+    integrador: r.integrator_name ?? r.integrator ?? '',
     modalidade: 'autoconsumo_local',
     enquadramento: r.framework,
     potenciaSistema: r.system_power,

@@ -9,7 +9,11 @@ import type {
   PadraoEntradaItemForm,
   Passo,
 } from '@/features/projects/domain/types';
-import { buildItemVazio, servicosDisponiveis } from '@/features/projects/hooks/useNovoProjeto';
+import {
+  buildItemVazio,
+  servicosDisponiveis,
+  type IntegradorOption,
+} from '@/features/projects/hooks/useNovoProjeto';
 import type { Customer } from '@/services';
 import type { Documento } from '@/types';
 import { Button } from '@/shared/components/Button';
@@ -23,7 +27,7 @@ interface Passo3DetalhesProps {
   setDadosBasicos: React.Dispatch<React.SetStateAction<DadosBasicosForm>>;
   detalhesProjeto: DadosDetalhesForm;
   setDetalhesProjeto: React.Dispatch<React.SetStateAction<DadosDetalhesForm>>;
-  integradores: string[];
+  integradores: IntegradorOption[];
   servicosSelecionados: string[];
   setServicosSelecionados: React.Dispatch<React.SetStateAction<string[]>>;
   modulos: ItemEquipamentoForm[];
@@ -110,8 +114,8 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
             >
               <option value="">Selecione...</option>
               {integradores.map((item) => (
-                <option key={item} value={item}>
-                  {item}
+                <option key={item.id} value={item.id}>
+                  {item.name}
                 </option>
               ))}
             </select>
