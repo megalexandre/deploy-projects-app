@@ -86,7 +86,7 @@ export const getLocalServico = (servico: Servico) => {
     return endereco.logradouro;
   }
 
-  return servico.concessionaria || 'Local nao informado';
+  return servico.concessionaria || 'Local não informado';
 };
 
 export const buildAgendaItems = (
@@ -174,7 +174,7 @@ export const buildAgendaItems = (
           hora: parsed.hora,
           local,
           descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-          participantes: ['Equipe de Servicos'],
+          participantes: ['Equipe de Serviços'],
         };
       })
       .filter((item): item is AgendaItem => item !== null);
@@ -192,12 +192,12 @@ export const buildAgendaItems = (
       {
         id: `servico-${servico.id}-abertura`,
         origem: 'servico' as const,
-        titulo: `${baseTitulo} - Abertura do servico`,
+        titulo: `${baseTitulo} - Abertura do serviço`,
         data: parsedAbertura.data,
         hora: parsedAbertura.hora,
         local,
-        descricao: servico.observacoes || 'Servico cadastrado no sistema.',
-        participantes: ['Equipe de Servicos'],
+        descricao: servico.observacoes || 'Serviço cadastrado no sistema.',
+        participantes: ['Equipe de Serviços'],
       },
     ];
   });

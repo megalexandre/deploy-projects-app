@@ -111,7 +111,7 @@ export const CustomerFormModal: React.FC<Props> = ({
           </div>
 
           <div className="border-t border-white/10 pt-2.5">
-            <h3 className="mb-1.5 text-base font-semibold text-slate-100">Endereco</h3>
+            <h3 className="mb-1.5 text-base font-semibold text-slate-100">Endereço</h3>
             <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm text-slate-300">CEP</label>
@@ -128,7 +128,7 @@ export const CustomerFormModal: React.FC<Props> = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm text-slate-300">Numero</label>
+                <label className="mb-1 block text-sm text-slate-300">Número</label>
                 <input
                   value={form.endereco.numero}
                   onChange={(event) =>
@@ -212,7 +212,7 @@ export const CustomerFormModal: React.FC<Props> = ({
           <div className="flex justify-end">
             <Button type="submit" loading={saving}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              {editingCustomerId ? 'Salvar Alteracoes' : 'Cadastrar Cliente'}
+              {editingCustomerId ? 'Salvar Alterações' : 'Cadastrar Cliente'}
             </Button>
           </div>
         </form>

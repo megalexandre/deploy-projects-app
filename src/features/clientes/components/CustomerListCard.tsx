@@ -29,7 +29,7 @@ export const CustomerListCard: React.FC<Props> = ({ customers, onEdit, onOpenDoc
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3">Contato</th>
               <th className="px-4 py-3">Localizacao</th>
-              <th className="px-4 py-3 text-right">Acoes</th>
+              <th className="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">

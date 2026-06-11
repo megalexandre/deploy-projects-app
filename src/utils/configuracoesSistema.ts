@@ -25,7 +25,7 @@ const defaultTabelaPrecoPadraoEntrada: PrecoPadraoEntrada[] = [
 ];
 
 const defaultCuponsDesconto: CupomDesconto[] = [
-  { id: 'cupom-10', nome: 'Cupom 10%', percentual: 10, ativo: true },
+  { id: 'cupom-10', nome: 'Cupom 10%', percentual: 10, ativo: true, usuariosAutorizados: [] },
 ];
 
 export const getDefaultConfiguracoesSistema = (): ConfiguracoesSistema => ({
@@ -46,6 +46,8 @@ export const getDefaultConfiguracoesSistema = (): ConfiguracoesSistema => ({
   tabelaPrecoFotovoltaico: defaultTabelaPrecoFotovoltaico,
   tabelaPrecoPadraoEntrada: defaultTabelaPrecoPadraoEntrada,
   cuponsDesconto: defaultCuponsDesconto,
+  cuponsDescontoProjetos: defaultCuponsDesconto,
+  cuponsDescontoServicos: defaultCuponsDesconto,
 });
 
 const sanitizeNumber = (value: unknown, fallback = 0) => {
@@ -57,37 +59,42 @@ const normalizeConfig = (
   raw: Partial<ConfiguracoesSistema> | null | undefined,
 ): ConfiguracoesSistema => {
   const defaults = getDefaultConfiguracoesSistema();
+  const normalizeCupons = (items: CupomDesconto[] | undefined, fallback: CupomDesconto[]) =>
+    Array.isArray(items) && items.length > 0
+      ? items.map((item, index) => ({
+          id: item.id || `cupom-${index + 1}`,
+          nome: item.nome || `Cupom ${index + 1}`,
+          percentual: sanitizeNumber(item.percentual),
+          ativo: item.ativo !== false,
+          usuariosAutorizados: Array.isArray(item.usuariosAutorizados)
+            ? item.usuariosAutorizados.filter((id) => typeof id === 'string' && id.trim())
+            : [],
+        }))
+      : fallback;
+  const legacyCupons = normalizeCupons(raw?.cuponsDesconto, defaults.cuponsDesconto);
 
   return {
     ...defaults,
     ...raw,
-    tabelaPrecoFotovoltaico:
-      Array.isArray(raw?.tabelaPrecoFotovoltaico) && raw.tabelaPrecoFotovoltaico.length > 0
-        ? raw.tabelaPrecoFotovoltaico.map((item, index) => ({
-            id: item.id || `fv-${index + 1}`,
-            min: sanitizeNumber(item.min),
-            max: sanitizeNumber(item.max),
-            valor: sanitizeNumber(item.valor),
-          }))
-        : defaults.tabelaPrecoFotovoltaico,
-    tabelaPrecoPadraoEntrada:
-      Array.isArray(raw?.tabelaPrecoPadraoEntrada) && raw.tabelaPrecoPadraoEntrada.length > 0
-        ? raw.tabelaPrecoPadraoEntrada.map((item, index) => ({
-            id: item.id || `emuc-${index + 1}`,
-            classificacao: item.classificacao || '',
-            tipoLigacao: item.tipoLigacao || '',
-            valor: sanitizeNumber(item.valor),
-          }))
-        : defaults.tabelaPrecoPadraoEntrada,
-    cuponsDesconto:
-      Array.isArray(raw?.cuponsDesconto) && raw.cuponsDesconto.length > 0
-        ? raw.cuponsDesconto.map((item, index) => ({
-            id: item.id || `cupom-${index + 1}`,
-            nome: item.nome || `Cupom ${index + 1}`,
-            percentual: sanitizeNumber(item.percentual),
-            ativo: item.ativo !== false,
-          }))
-        : defaults.cuponsDesconto,
+    tabelaPrecoFotovoltaico: Array.isArray(raw?.tabelaPrecoFotovoltaico)
+      ? raw.tabelaPrecoFotovoltaico.map((item, index) => ({
+          id: item.id || `fv-${index + 1}`,
+          min: sanitizeNumber(item.min),
+          max: sanitizeNumber(item.max),
+          valor: sanitizeNumber(item.valor),
+        }))
+      : defaults.tabelaPrecoFotovoltaico,
+    tabelaPrecoPadraoEntrada: Array.isArray(raw?.tabelaPrecoPadraoEntrada)
+      ? raw.tabelaPrecoPadraoEntrada.map((item, index) => ({
+          id: item.id || `emuc-${index + 1}`,
+          classificacao: item.classificacao || '',
+          tipoLigacao: item.tipoLigacao || '',
+          valor: sanitizeNumber(item.valor),
+        }))
+      : defaults.tabelaPrecoPadraoEntrada,
+    cuponsDesconto: legacyCupons,
+    cuponsDescontoProjetos: normalizeCupons(raw?.cuponsDescontoProjetos, legacyCupons),
+    cuponsDescontoServicos: normalizeCupons(raw?.cuponsDescontoServicos, legacyCupons),
   };
 };
 
@@ -124,3 +131,9 @@ export const buildTabelaPrecoPadraoEntradaMap = (items: PrecoPadraoEntrada[]) =>
 
 export const getCuponsDescontoAtivos = (config: ConfiguracoesSistema) =>
   config.cuponsDesconto.filter((item) => item.ativo && sanitizeNumber(item.percentual) > 0);
+
+export const getCuponsDescontoProjetosAtivos = (config: ConfiguracoesSistema) =>
+  config.cuponsDescontoProjetos.filter((item) => item.ativo && sanitizeNumber(item.percentual) > 0);
+
+export const getCuponsDescontoServicosAtivos = (config: ConfiguracoesSistema) =>
+  config.cuponsDescontoServicos.filter((item) => item.ativo && sanitizeNumber(item.percentual) > 0);

@@ -50,7 +50,7 @@ export const ClientesPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-100">Clientes</h1>
             <p className="mt-1 text-gray-400">
-              Lista de clientes cadastrados e novo cadastro com endereco.
+              Lista de clientes cadastrados e novo cadastro com endereço.
             </p>
           </div>
           <Button type="button" onClick={handleOpenCreateModal}>

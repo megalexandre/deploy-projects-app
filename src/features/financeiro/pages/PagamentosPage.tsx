@@ -112,7 +112,7 @@ export const PagamentosPage: React.FC = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input
-                label="Descricao"
+                label="Descrição"
                 placeholder="Ex: Compra de inversores"
                 value={form.descricao}
                 onChange={(event) =>
@@ -176,7 +176,7 @@ export const PagamentosPage: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Descricao</th>
+                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Descrição</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Data</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Valor</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Status</th>

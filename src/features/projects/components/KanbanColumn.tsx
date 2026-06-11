@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/shared/components/Card';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { type KanbanStatus } from '../kanban/kanbanConfig';
-import type { ProjetoKanbanCard } from '../pages/ProjetosPage';
+import type { ProjetoKanbanCard } from '../hooks/useProjetosKanban';
 import { ProjetoCard } from './ProjectCard';
 
 const DEFAULT_VISIBLE_PROJECTS = 5;

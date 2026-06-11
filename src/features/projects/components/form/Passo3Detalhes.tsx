@@ -15,7 +15,7 @@ import {
   type IntegradorOption,
 } from '@/features/projects/hooks/useNovoProjeto';
 import type { Customer } from '@/services';
-import type { Documento } from '@/types';
+import type { CupomDesconto, Documento } from '@/types';
 import { Button } from '@/shared/components/Button';
 import { formatCurrencyBRL } from '@/core/utils/masks';
 import { EquipamentosTable } from './EquipamentosTable';
@@ -43,6 +43,11 @@ interface Passo3DetalhesProps {
   setValorProjeto: (v: string) => void;
   valorProjetoEditado: boolean;
   setValorProjetoEditado: (v: boolean) => void;
+  cupomProjetoId: string;
+  setCupomProjetoId: (v: string) => void;
+  cuponsProjetoDisponiveis: CupomDesconto[];
+  descontoProjetoPct: number;
+  valorProjetoFinalNumerico: number;
   custoCalculadoProjeto: number;
   documentos: Record<string, File[]>;
   documentosTemplate: DocumentoCategoria[];
@@ -81,6 +86,11 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
   setValorProjeto,
   valorProjetoEditado,
   setValorProjetoEditado,
+  cupomProjetoId,
+  setCupomProjetoId,
+  cuponsProjetoDisponiveis,
+  descontoProjetoPct,
+  valorProjetoFinalNumerico,
   custoCalculadoProjeto,
   documentos,
   documentosTemplate,
@@ -123,7 +133,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
         </div>
 
         <div className="md:col-span-2">
-          <FormField label="Servicos">
+          <FormField label="Serviços">
             <div className="rounded-lg border border-gray-700 bg-gray-800/60 p-4 space-y-3">
               {servicosDisponiveis.map((servico) => (
                 <label
@@ -246,23 +256,23 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
                 <p className="text-sm uppercase tracking-wide text-blue-300">
-                  Potencia total dos modulos
+                  Potência total dos modulos
                 </p>
                 <p className="text-blue-100 text-2xl mt-1">{potenciaTotalModulosW} W</p>
               </div>
               <div>
                 <p className="text-sm uppercase tracking-wide text-blue-300">
-                  Potencia total dos inversores
+                  Potência total dos inversores
                 </p>
                 <p className="text-blue-100 text-2xl mt-1">{potenciaTotalInversoresW} W</p>
               </div>
               <div>
                 <p className="text-sm uppercase tracking-wide text-blue-300">
-                  Potencia total do sistema
+                  Potência total do sistema
                 </p>
                 <p className="text-blue-100 text-2xl mt-1">{potenciaTotalSistemaW} W</p>
                 <p className="mt-1 text-xs text-blue-200/80">
-                  Resultado considera a menor potencia entre modulos e inversores.
+                  Resultado considera a menor potência entre modulos e inversores.
                 </p>
               </div>
             </div>
@@ -323,8 +333,8 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-900/60">
                   <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
-                    <th className="px-4 py-3">Tipo de Ligacao</th>
-                    <th className="px-4 py-3">Classificacao</th>
+                    <th className="px-4 py-3">Tipo de Ligação</th>
+                    <th className="px-4 py-3">Classificação</th>
                     <th className="px-4 py-3">Valor Unitario</th>
                     <th className="px-4 py-3">Quantidade</th>
                     <th className="px-4 py-3">Disjuntor</th>
@@ -416,14 +426,41 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
           }}
           className={inputCls}
         />
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField label="Desconto do Projeto">
+            <select
+              value={cupomProjetoId}
+              onChange={(event) => setCupomProjetoId(event.target.value)}
+              className={selectCls}
+            >
+              <option value="">Sem desconto</option>
+              {cuponsProjetoDisponiveis.map((cupom) => (
+                <option key={cupom.id} value={cupom.id}>
+                  {cupom.nome} ({cupom.percentual}%)
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <div className="rounded border border-emerald-400/20 bg-emerald-500/10 px-4 py-3">
+            <div className="text-xs uppercase tracking-wide text-emerald-200/80">Valor final</div>
+            <div className="mt-1 text-xl font-semibold text-emerald-100">
+              {formatCurrencyBRL(valorProjetoFinalNumerico)}
+            </div>
+            {descontoProjetoPct > 0 && (
+              <div className="mt-1 text-xs text-emerald-200">
+                Desconto aplicado: {descontoProjetoPct}%
+              </div>
+            )}
+          </div>
+        </div>
         <p className="mt-2 text-sm text-gray-400">
           {isFotovoltaico
-            ? `Valor sugerido pela faixa de potencia: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
+            ? `Valor sugerido pela faixa de potência: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
             : `Valor sugerido pela tabela do EMUC: ${formatCurrencyBRL(custoCalculadoProjeto)}.`}
         </p>
         {valorProjetoEditado && (
           <p className="mt-1 text-xs text-amber-300">
-            Valor manual ativo. Alteracoes de potencia nao substituem o valor ate voce reaplicar o
+            Valor manual ativo. Alterações de potência nao substituem o valor ate você reaplicar o
             sugerido.
           </p>
         )}

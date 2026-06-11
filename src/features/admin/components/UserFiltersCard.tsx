@@ -24,7 +24,7 @@ export const UserFiltersCard: React.FC<Props> = ({
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1">
           <Input
-            placeholder="Buscar usuarios..."
+            placeholder="Buscar usuários..."
             value={searchTerm}
             onChange={(event) => onSearchChange(event.target.value)}
             icon={<MagnifyingGlass />}

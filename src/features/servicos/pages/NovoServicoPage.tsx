@@ -15,7 +15,11 @@ import {
   type Customer,
 } from '@/services';
 import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, TipoServico } from '@/types';
-import { getCuponsDescontoAtivos, loadConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import {
+  getCuponsDescontoServicosAtivos,
+  loadConfiguracoesSistema,
+} from '@/utils/configuracoesSistema';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import {
   formatCurrencyBRL,
   maskCep,
@@ -90,7 +94,7 @@ const tipoServicoOptions: Array<{ value: TipoServico; label: string; description
   {
     value: 'ligacao_nova',
     label: 'Ligacao Nova',
-    description: 'Endereco da obra, tensao, coordenadas, padrao e uploads.',
+    description: 'Endereço da obra, tensao, coordenadas, padrão e uploads.',
   },
   {
     value: 'aumento_carga',
@@ -105,7 +109,7 @@ const tipoServicoOptions: Array<{ value: TipoServico; label: string; description
   {
     value: 'alteracao_compartilhamento_credito',
     label: 'Alteracao Compartilhamento de Credito',
-    description: 'UC geradora, endereco e rateio das beneficiarias.',
+    description: 'UC geradora, endereço e rateio das beneficiarias.',
   },
 ];
 
@@ -173,23 +177,23 @@ const personDocuments: Record<PersonType, DocumentoCategoria[]> = {
 const documentCategoriesByType: Record<TipoServico, DocumentoCategoria[]> = {
   ligacao_nova: [
     { key: 'matricula_imovel', label: 'Matricula do Imovel' },
-    { key: 'foto_padrao_instalado', label: 'Foto do padrao instalado', maxFiles: 3 },
+    { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
   aumento_carga: [
     { key: 'conta_energia_atual', label: 'Conta de Energia atual' },
-    { key: 'foto_padrao_entrada_atual', label: 'Foto do Padrao de Entrada atual' },
+    { key: 'foto_padrao_entrada_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
   troca_titularidade: [
     { key: 'conta_energia', label: 'Conta de Energia' },
-    { key: 'foto_padrao_atual', label: 'Foto do Padrao de Entrada atual' },
+    { key: 'foto_padrao_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
   alteracao_compartilhamento_credito: [
     { key: 'conta_geradora', label: 'Conta de Energia da Geradora' },
     { key: 'contas_beneficiarias', label: 'Conta de Energia da(s) Beneficiarias', maxFiles: 5 },
-    { key: 'foto_padrao_atual', label: 'Foto do Padrao de Entrada atual' },
+    { key: 'foto_padrao_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
 };
@@ -250,6 +254,7 @@ const buildSelectedDocumentFiles = (
 
 export const NovoServicoPage: React.FC = () => {
   const navigate = useNavigate();
+  const currentUser = useCurrentUser();
   const [clientes, setClientes] = useState<Customer[]>([]);
   const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
   const [loading, setLoading] = useState(true);
@@ -258,7 +263,13 @@ export const NovoServicoPage: React.FC = () => {
   const [form, setForm] = useState<ServicoForm>(createEmptyForm());
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
-  const [cupons] = useState(() => getCuponsDescontoAtivos(loadConfiguracoesSistema()));
+  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const cupons = useMemo(() => {
+    if (!currentUser?.id) return [];
+    return getCuponsDescontoServicosAtivos(configuracoesSistema).filter((cupom) =>
+      (cupom.usuariosAutorizados ?? []).includes(currentUser.id),
+    );
+  }, [configuracoesSistema, currentUser?.id]);
 
   useEffect(() => {
     const load = async () => {
@@ -271,8 +282,8 @@ export const NovoServicoPage: React.FC = () => {
         setClientes(clientesData);
         setConcessionarias(concessionariasData);
       } catch (loadError) {
-        console.error('Erro ao carregar dados do novo servico:', loadError);
-        setError('Nao foi possivel carregar os dados para criar o servico.');
+        console.error('Erro ao carregar dados do novo serviço:', loadError);
+        setError('Nao foi possivel carregar os dados para criar o serviço.');
       } finally {
         setLoading(false);
       }
@@ -294,6 +305,15 @@ export const NovoServicoPage: React.FC = () => {
     () => Math.max(valor - valor * (Number(form.cupomDescontoPct) / 100), 0),
     [form.cupomDescontoPct, valor],
   );
+
+  useEffect(() => {
+    if (
+      form.cupomDescontoPct !== '0' &&
+      !cupons.some((cupom) => String(cupom.percentual) === form.cupomDescontoPct)
+    ) {
+      setForm((prev) => ({ ...prev, cupomDescontoPct: '0' }));
+    }
+  }, [cupons, form.cupomDescontoPct]);
 
   useEffect(() => {
     setUploadedFiles((current) =>
@@ -381,7 +401,7 @@ export const NovoServicoPage: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validateForm()) {
-      setError('Preencha os campos obrigatorios do servico antes de criar.');
+      setError('Preencha os campos obrigatorios do serviço antes de criar.');
       return;
     }
 
@@ -465,8 +485,8 @@ export const NovoServicoPage: React.FC = () => {
 
       navigate('/servicos');
     } catch (saveError) {
-      console.error('Erro ao criar servico:', saveError);
-      setError('Nao foi possivel criar o servico.');
+      console.error('Erro ao criar serviço:', saveError);
+      setError('Nao foi possivel criar o serviço.');
     } finally {
       setSaving(false);
     }
@@ -487,9 +507,9 @@ export const NovoServicoPage: React.FC = () => {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">Novo Servico</h1>
+            <h1 className="text-3xl font-bold text-gray-100">Novo Serviço</h1>
             <p className="mt-1 text-gray-400">
-              Fluxo dedicado de criacao, separado da listagem, no mesmo padrao de projetos.
+              Fluxo dedicado de criacao, separado da listagem, no mesmo padrão de projetos.
             </p>
           </div>
         </div>
@@ -507,7 +527,7 @@ export const NovoServicoPage: React.FC = () => {
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Tipo de Servico</label>
+            <label className="mb-2 block text-sm text-slate-300">Tipo de Serviço</label>
             <select
               value={form.tipo}
               onChange={(event) =>
@@ -571,7 +591,7 @@ export const NovoServicoPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Custo do Servico</label>
+            <label className="mb-2 block text-sm text-slate-300">Custo do Serviço</label>
             <input
               value={form.valor}
               onChange={(event) =>
@@ -615,7 +635,7 @@ export const NovoServicoPage: React.FC = () => {
             {isTechnicalType(form.tipo) && (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-100">Endereco da Obra</h3>
+                  <h3 className="text-lg font-semibold text-slate-100">Endereço da Obra</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -627,7 +647,7 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                   >
-                    Usar endereco do cliente
+                    Usar endereço do cliente
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -770,8 +790,8 @@ export const NovoServicoPage: React.FC = () => {
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
                   >
-                    <option value="nao">Padrao ate 30m</option>
-                    <option value="sim">Padrao acima de 30m</option>
+                    <option value="nao">Padrão ate 30m</option>
+                    <option value="sim">Padrão acima de 30m</option>
                   </select>
                   <input
                     value={form.pontoReferencia}
@@ -810,7 +830,7 @@ export const NovoServicoPage: React.FC = () => {
                             Tipo
                           </th>
                           <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-slate-400">
-                            Classificacao
+                            Classificação
                           </th>
                           <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-slate-400">
                             Quantidade
@@ -934,7 +954,7 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                   >
-                    Usar endereco do cliente
+                    Usar endereço do cliente
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -1105,11 +1125,11 @@ export const NovoServicoPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Etapa 3 • Observacoes e Uploads</CardTitle>
+          <CardTitle>Etapa 3 • Observações e Uploads</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Observacoes / Comentarios</label>
+            <label className="mb-2 block text-sm text-slate-300">Observações / Comentários</label>
             <textarea
               value={form.observacoes}
               rows={4}
@@ -1197,7 +1217,7 @@ export const NovoServicoPage: React.FC = () => {
               onClick={(event) => void handleSubmit(event as unknown as React.FormEvent)}
             >
               <FloppyDisk className="mr-2 h-4 w-4" />
-              Criar servico
+              Criar serviço
             </Button>
           </div>
         </CardContent>

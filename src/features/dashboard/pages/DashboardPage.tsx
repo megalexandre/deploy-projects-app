@@ -4,11 +4,9 @@ import { PlusCircleIcon } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { projectsService } from '@/services';
-import {
-  approvalsService,
-  type ApprovalRequest,
-} from '@/features/aprovacoes/services/approvalsService';
-import type { DashboardStats, Projeto } from '@/types';
+import type { ApprovalRequest } from '@/features/aprovacoes/services/approvalsService';
+import { servicosService } from '@/features/servicos/services/servicosService';
+import type { DashboardStats, Projeto, Servico } from '@/types';
 import { DashboardStatsGrid } from '../components/DashboardStatsGrid';
 import { RecentApprovalsCard } from '../components/RecentApprovalsCard';
 import { RecentProjectsCard } from '../components/RecentProjectsCard';
@@ -26,10 +24,46 @@ export const DashboardPage: React.FC = () => {
           projectsService.getDashboardStats(),
           projectsService.getProjetos(),
         ]);
+        const servicesData = await servicosService.list().catch(() => []);
+        const pendingProjectApprovals: ApprovalRequest[] = projectsData
+          .filter((projeto) => projeto.status === 'aguardando_aprovacao')
+          .map((projeto) => ({
+            id: `projeto-${projeto.id}`,
+            entityType: 'projeto',
+            entityId: projeto.id,
+            entityLabel: projeto.protocolo,
+            clientName: projeto.cliente.nome,
+            createdAt: projeto.dataCriacao,
+            createdByUserId: 'backend',
+            createdByName: 'API',
+            createdByRole: 'backend',
+            status: 'pendente',
+          }));
+        const pendingServiceApprovals: ApprovalRequest[] = (servicesData as Servico[])
+          .filter((servico) => servico.status === 'aguardando_aprovacao')
+          .map((servico) => ({
+            id: `servico-${servico.id}`,
+            entityType: 'servico',
+            entityId: servico.id,
+            entityLabel: servico.protocolo,
+            clientName: servico.cliente,
+            createdAt: servico.dataCriacao,
+            createdByUserId: 'backend',
+            createdByName: 'API',
+            createdByRole: 'backend',
+            status: 'pendente',
+          }));
 
         setStats(statsData);
         setRecentProjects(projectsData.slice(0, 5));
-        setRecentApprovals(approvalsService.listPending().slice(0, 5));
+        setRecentApprovals(
+          [...pendingProjectApprovals, ...pendingServiceApprovals]
+            .sort(
+              (left, right) =>
+                new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+            )
+            .slice(0, 5),
+        );
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
       } finally {

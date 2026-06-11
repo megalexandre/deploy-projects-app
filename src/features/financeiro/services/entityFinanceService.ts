@@ -68,7 +68,7 @@ const getScopeParams = (scope: Pick<EntityFinanceScope, 'entityType' | 'entityId
   scope.entityType === 'projeto' ? { project_id: scope.entityId } : { service_id: scope.entityId };
 
 const getPaymentDescription = (scope: EntityFinanceScope) =>
-  `${scope.entityType === 'projeto' ? 'Recebimento do projeto' : 'Recebimento do servico'} ${scope.entityLabel}`;
+  `${scope.entityType === 'projeto' ? 'Recebimento do projeto' : 'Recebimento do serviço'} ${scope.entityLabel}`;
 
 const sortByDateDesc = <T extends { data: string }>(items: T[]) =>
   [...items].sort((left, right) => right.data.localeCompare(left.data));
