@@ -46,7 +46,11 @@ import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const integradoresPadrao = ['OPJ Engenharia', 'Parceiro Externo'];
+export interface IntegradorOption {
+  id: string;
+  name: string;
+}
+
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
   { value: 'padrao_entrada' as const, label: 'Padrão de entrada' },
@@ -285,7 +289,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
   const [clientesLoading, setClientesLoading] = useState(false);
   const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
   const [concessionariasLoading, setConcessionariasLoading] = useState(false);
-  const [integradores, setIntegradores] = useState<string[]>(integradoresPadrao);
+  const [integradores, setIntegradores] = useState<IntegradorOption[]>([]);
   const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
   const [clienteSelecionadoDetalhe, setClienteSelecionadoDetalhe] = useState<Customer | null>(null);
   const [buscaCliente, setBuscaCliente] = useState('');
@@ -613,19 +617,20 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
       try {
         const users = await usersService.getAll();
         setUsuariosIntegradores(users);
-        const names = Array.from(
-          new Set(users.map((user: User) => user.name.trim()).filter((name) => name.length > 0)),
-        ).sort((left, right) => left.localeCompare(right, 'pt-BR'));
+        const options = users
+          .map((user: User) => ({ id: user.id, name: user.name.trim() }))
+          .filter((option) => option.id.length > 0 && option.name.length > 0)
+          .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
 
-        if (names.length > 0) {
-          setIntegradores(names);
+        if (options.length > 0) {
+          setIntegradores(options);
           setDadosBasicos((prev) => {
             if (prev.integrador.trim() !== '') {
               return prev;
             }
 
-            if (!currentUser?.isAdmin && names.length === 1) {
-              return { ...prev, integrador: names[0] };
+            if (!currentUser?.isAdmin && options.length === 1) {
+              return { ...prev, integrador: options[0].id };
             }
 
             return prev;

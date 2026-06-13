@@ -10,7 +10,8 @@ const makeProjectResponse = (overrides: Partial<ProjectResponse> = {}): ProjectR
   utility_company: 'Coelba',
   utility_protocol: 'PROJ-P1',
   customer_class: 'Residencial',
-  integrator: 'Integrador X',
+  integrator: 'b6f8a0e2-4f6e-4b0a-9c1d-2e3f4a5b6c7d',
+  integrator_name: 'Integrador X',
   modality: 'Geração Distribuída',
   framework: 'Microgeração',
   status: 'aguardando_assinatura_cliente',
@@ -64,6 +65,21 @@ describe('toProjeto', () => {
     expect(result.projetoFastTrack).toBe('nao');
     expect(result.dataCriacao).toBe('2026-01-01T00:00:00.000Z');
     expect(result.dataAtualizacao).toBe('2026-01-02T00:00:00.000Z');
+  });
+
+  it('usa integrator_name como integrador para exibição', () => {
+    const result = toProjeto(makeProjectResponse());
+    expect(result.dadosProjeto.integrador).toBe('Integrador X');
+  });
+
+  it('usa o uuid do integrator quando integrator_name está ausente', () => {
+    const result = toProjeto(makeProjectResponse({ integrator_name: null }));
+    expect(result.dadosProjeto.integrador).toBe('b6f8a0e2-4f6e-4b0a-9c1d-2e3f4a5b6c7d');
+  });
+
+  it('integrador fica vazio quando projeto não tem integrator', () => {
+    const result = toProjeto(makeProjectResponse({ integrator: null, integrator_name: null }));
+    expect(result.dadosProjeto.integrador).toBe('');
   });
 
   it('normaliza o status', () => {

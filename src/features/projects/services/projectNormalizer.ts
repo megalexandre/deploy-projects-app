@@ -415,7 +415,10 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
         asString(project.classe) ||
         asString(project.customer_class) ||
         asString(project.customerClass),
-      integrador: asString(dadosProjeto.integrador) || asString(project.integrator),
+      integrador:
+        asString(project.integrator_name) ||
+        asString(dadosProjeto.integrador) ||
+        asString(project.integrator),
       modalidade: normalizeModalidade(
         dadosProjeto.modalidade ?? project.modalidade ?? project.modality,
       ),
