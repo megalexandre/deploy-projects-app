@@ -42,7 +42,7 @@ Cria um projeto.
   "utility_company": "CEMIG",
   "utility_protocol": "P-001",
   "customer_class": "Residencial",
-  "integrator": "Integrador X",
+  "integrator": "33333333-3333-3333-3333-333333333333",
   "modality": "AUTOCONSUMO LOCAL",
   "framework": "Microgeracao",
   "status": "em_analise_documentacao",
@@ -56,10 +56,7 @@ Cria um projeto.
   "coordinates": "POINT(-43.900000 -19.900000)",
   "sequence": 123,
   "subsequence": "A",
-  "services_names": [
-    "Projeto Fotovoltaico",
-    "Solicitacao de Acesso"
-  ]
+  "services_names": ["Projeto Fotovoltaico", "Solicitacao de Acesso"]
 }
 ```
 
@@ -71,7 +68,7 @@ Campos obrigatorios no banco:
   "utility_company": "string",
   "utility_protocol": "string",
   "customer_class": "string",
-  "integrator": "string",
+  "integrator": "UUID de usuario",
   "modality": "string",
   "framework": "string",
   "unit_control": "string",
@@ -107,7 +104,7 @@ O metodo `createRaw()` envia campos aceitos e varios aliases no mesmo JSON:
   "customerClass": "Residencial",
   "classe": "Residencial",
 
-  "integrator": "Integrador X",
+  "integrator": "33333333-3333-3333-3333-333333333333",
 
   "modality": "AUTOCONSUMO LOCAL",
   "modalidade": "AUTOCONSUMO LOCAL",
@@ -130,15 +127,9 @@ O metodo `createRaw()` envia campos aceitos e varios aliases no mesmo JSON:
 
   "coordinates": "POINT(-43.9 -19.9)",
 
-  "services_names": [
-    "Projeto Fotovoltaico"
-  ],
-  "servicesNames": [
-    "Projeto Fotovoltaico"
-  ],
-  "servicos": [
-    "Projeto Fotovoltaico"
-  ],
+  "services_names": ["Projeto Fotovoltaico"],
+  "servicesNames": ["Projeto Fotovoltaico"],
+  "servicos": ["Projeto Fotovoltaico"],
 
   "project_type": "fotovoltaico",
   "projectType": "fotovoltaico",
@@ -162,33 +153,33 @@ Observacao: no codigo real, a ultima chave acima e enviada com o nome Unicode `d
 ### Campos enviados na criacao e ignorados pela API
 
 | Campo enviado pelo frontend | Campo aceito equivalente |
-| --- | --- |
-| `clientId` | `client_id` |
-| `clienteId` | `client_id` |
-| `addressId` | `address_id` |
-| `enderecoId` | `address_id` |
-| `utilityCompany` | `utility_company` |
-| `concessionaria` | `utility_company` |
-| `utilityProtocol` | `utility_protocol` |
-| `protocoloConcessionaria` | `utility_protocol` |
-| `customerClass` | `customer_class` |
-| `classe` | `customer_class` |
-| `modalidade` | `modality` |
-| `enquadramento` | `framework` |
-| `dcProtection` | `dc_protection` |
-| `protecaoCC` | `dc_protection` |
-| `systemPower` | `system_power` |
-| `potenciaSistema` | `system_power` |
-| `valor` | `amount` |
-| `servicesNames` | `services_names` |
-| `servicos` | `services_names` |
-| `projectType` | `project_type` |
-| `tipo_projeto` | `project_type` |
-| `fastTrack` | `fast_track` |
-| `projeto_fast_track` | `fast_track` |
-| `unitControl` | `unit_control` |
-| `unidade_controladora` | `unit_control` |
-| `descricao` com acentos | `description` |
+| --------------------------- | ------------------------ |
+| `clientId`                  | `client_id`              |
+| `clienteId`                 | `client_id`              |
+| `addressId`                 | `address_id`             |
+| `enderecoId`                | `address_id`             |
+| `utilityCompany`            | `utility_company`        |
+| `concessionaria`            | `utility_company`        |
+| `utilityProtocol`           | `utility_protocol`       |
+| `protocoloConcessionaria`   | `utility_protocol`       |
+| `customerClass`             | `customer_class`         |
+| `classe`                    | `customer_class`         |
+| `modalidade`                | `modality`               |
+| `enquadramento`             | `framework`              |
+| `dcProtection`              | `dc_protection`          |
+| `protecaoCC`                | `dc_protection`          |
+| `systemPower`               | `system_power`           |
+| `potenciaSistema`           | `system_power`           |
+| `valor`                     | `amount`                 |
+| `servicesNames`             | `services_names`         |
+| `servicos`                  | `services_names`         |
+| `projectType`               | `project_type`           |
+| `tipo_projeto`              | `project_type`           |
+| `fastTrack`                 | `fast_track`             |
+| `projeto_fast_track`        | `fast_track`             |
+| `unitControl`               | `unit_control`           |
+| `unidade_controladora`      | `unit_control`           |
+| `descricao` com acentos     | `description`            |
 
 ### Formato de coordinates
 
@@ -222,7 +213,7 @@ com perfil administrativo `main`.
   "utility_company": "CEMIG",
   "utility_protocol": "P-001-ALTERADO",
   "customer_class": "Comercial",
-  "integrator": "Integrador Atualizado",
+  "integrator": "44444444-4444-4444-4444-444444444444",
   "modality": "GERACAO COMPARTILHADA",
   "framework": "Minigeracao",
   "amount": 18000,
@@ -235,10 +226,7 @@ com perfil administrativo `main`.
   "coordinates": "POINT(-43.910000 -19.910000)",
   "sequence": 123,
   "subsequence": "B",
-  "services_names": [
-    "Projeto Fotovoltaico",
-    "Vistoria"
-  ]
+  "services_names": ["Projeto Fotovoltaico", "Vistoria"]
 }
 ```
 
@@ -269,12 +257,8 @@ O frontend envia o objeto original de atualizacao, adiciona `id` e tambem envia 
   "potenciaSistema": 10.5,
   "valor": "15000.5",
   "coordinates": "POINT(-43.9 -19.9)",
-  "servicesNames": [
-    "Projeto Fotovoltaico"
-  ],
-  "servicos": [
-    "Projeto Fotovoltaico"
-  ],
+  "servicesNames": ["Projeto Fotovoltaico"],
+  "servicos": ["Projeto Fotovoltaico"],
   "projectType": "fotovoltaico",
   "tipo_projeto": "fotovoltaico",
   "fastTrack": true,
@@ -320,22 +304,22 @@ Os campos abaixo fazem parte do objeto `CreateProjectData`, mas `createRaw()` na
 
 Destino atual desses dados:
 
-| Campo | Comportamento atual |
-| --- | --- |
-| `id` | Ignorado na criacao; a API gera o UUID |
-| `nomeCliente` | O projeto salva somente `client_id` |
-| `enderecoCompleto` | O projeto salva somente `address_id` |
-| `dataAbertura` | Salvo apenas no `localStorage` do frontend |
-| `latitude` | Salvo apenas no `localStorage`; deveria compor `coordinates` |
-| `longitude` | Salvo apenas no `localStorage`; deveria compor `coordinates` |
-| `tensaoFornecimento` | Salvo apenas no `localStorage` |
-| `padraoEntradaItens` | Salvo apenas no `localStorage` |
-| `modulos` | Salvo apenas no `localStorage` |
-| `inversores` | Salvo apenas no `localStorage` |
-| `documentos` | Nao enviado no projeto; arquivos usam `/uploads` |
-| `projetoNovo` | Salvo apenas no `localStorage` |
-| `zeroGridControleExportacao` | Salvo apenas no `localStorage` |
-| `divisaoCreditos` | Salvo apenas no `localStorage` |
+| Campo                        | Comportamento atual                                                        |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| `id`                         | Ignorado na criacao; a API gera o UUID                                     |
+| `nomeCliente`                | O projeto salva somente `client_id`                                        |
+| `enderecoCompleto`           | O projeto salva somente `address_id`                                       |
+| `dataAbertura`               | Enviado como `opening_date` para `/projects/:project_id/technical_details` |
+| `latitude`                   | Compõe `coordinates` no formato WKT enviado para `/projects`               |
+| `longitude`                  | Compõe `coordinates` no formato WKT enviado para `/projects`               |
+| `tensaoFornecimento`         | Enviado como `supply_voltage` para `/technical_details`                    |
+| `padraoEntradaItens`         | Serializado no array `entry_standard_items` de `/technical_details`        |
+| `modulos`                    | Serializado no array `modules` de `/technical_details`                     |
+| `inversores`                 | Serializado no array `inverters` de `/technical_details`                   |
+| `documentos`                 | Nao enviado no projeto; arquivos usam `/uploads`                           |
+| `projetoNovo`                | Enviado como `new_project` para `/technical_details`                       |
+| `zeroGridControleExportacao` | Enviado como `zero_grid_control` para `/technical_details`                 |
+| `divisaoCreditos`            | Serializado no array `credit_divisions` de `/technical_details`            |
 
 A chave usada para esses complementos locais e:
 
@@ -343,7 +327,33 @@ A chave usada para esses complementos locais e:
 opj_frontend_project_enhancements
 ```
 
-Esses dados nao ficam centralizados na API e podem variar entre navegadores ou computadores.
+O armazenamento local ainda existe para compatibilidade com dados antigos, mas os detalhes tecnicos
+novos e editados sao persistidos oficialmente pela API.
+
+## POST/PATCH /projects/:project_id/technical_details
+
+O frontend cria um detalhe tecnico apos criar o projeto. Ao editar, atualiza o detalhe tecnico mais
+recente; se nenhum existir, cria um novo.
+
+Como o backend aceita arrays de strings, cada objeto estruturado da interface e serializado como uma
+string JSON:
+
+```json
+{
+  "opening_date": "2026-06-09",
+  "supply_voltage": "127/220V",
+  "new_project": true,
+  "zero_grid_control": false,
+  "modules": [
+    "{\"id\":\"mod-1\",\"fabricante\":\"Canadian\",\"modelo\":\"CS6W\",\"potencia\":550,\"quantidade\":12,\"potenciaPico\":6.6}"
+  ],
+  "inverters": [],
+  "entry_standard_items": [],
+  "credit_divisions": []
+}
+```
+
+Na leitura, o frontend desserializa essas strings JSON para os objetos usados pela interface.
 
 ## POST /projects/:project_id/statuses
 
@@ -411,20 +421,21 @@ subsequence
 services_names
 ```
 
-### Mantidos somente no frontend/localStorage
+### Persistidos pela API de detalhes tecnicos
 
 ```text
-dataAbertura
-latitude
-longitude
-tensaoFornecimento
-padraoEntradaItens
-modulos
-inversores
-projetoNovo
-zeroGridControleExportacao
-divisaoCreditos
+opening_date
+supply_voltage
+new_project
+zero_grid_control
+modules
+inverters
+entry_standard_items
+credit_divisions
 ```
+
+Os aliases equivalentes da interface ainda podem existir no `localStorage` para compatibilidade com
+registros antigos, mas nao sao mais a fonte oficial desses dados.
 
 ### Ignorados por serem aliases ou campos nao permitidos
 

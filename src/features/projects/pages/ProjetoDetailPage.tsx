@@ -17,7 +17,13 @@ import {
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
-import { customersService, filesService, projectsService, type Customer } from '@/services';
+import {
+  customersService,
+  filesService,
+  projectsService,
+  usersService,
+  type Customer,
+} from '@/services';
 import type { Documento, Projeto } from '@/types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
 import { EntityFinanceTab } from '@/features/financeiro/components/EntityFinanceTab';
@@ -339,12 +345,28 @@ export const ProjetoDetailPage: React.FC = () => {
   const [timelineDialogMode, setTimelineDialogMode] = useState<'view' | 'add'>('view');
   const [timelineComment, setTimelineComment] = useState('');
   const [savingTimelineComment, setSavingTimelineComment] = useState(false);
+  const [integradores, setIntegradores] = useState<EditableFieldOption[]>([]);
 
   useEffect(() => {
     if (id) {
       void loadProjeto(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!currentUser?.isAdmin) return;
+
+    void usersService
+      .getAll()
+      .then((users) =>
+        setIntegradores(
+          users
+            .map((user) => ({ value: user.id, label: user.name }))
+            .sort((left, right) => left.label.localeCompare(right.label, 'pt-BR')),
+        ),
+      )
+      .catch((error) => console.error('Erro ao carregar integradores:', error));
+  }, [currentUser?.isAdmin]);
 
   const loadProjeto = async (projetoId: string) => {
     try {
@@ -813,9 +835,12 @@ export const ProjetoDetailPage: React.FC = () => {
                 />
                 <EditableProjectField
                   label="Integrador"
-                  value={projeto.dadosProjeto.integrador}
+                  value={projeto.dadosProjeto.integradorId ?? ''}
+                  displayValue={projeto.dadosProjeto.integrador}
                   canEdit={Boolean(currentUser?.isAdmin)}
-                  onSave={(value) => handleUpdateField({ integrator: value.trim() })}
+                  type="select"
+                  options={integradores}
+                  onSave={(value) => handleUpdateField({ integrator: value })}
                 />
                 <EditableProjectField
                   label="Modalidade"

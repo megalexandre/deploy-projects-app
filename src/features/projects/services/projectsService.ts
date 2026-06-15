@@ -10,6 +10,7 @@ import {
 } from './projectEnhancements';
 import { extractDataFromList, normalizeProjeto } from './projectNormalizer';
 import type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
+import { technicalDetailsService } from './technicalDetailsService';
 
 export { projectStatusFlow } from './projectNormalizer';
 export type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
@@ -33,21 +34,13 @@ const toCoordinatesWkt = (coordinates: unknown) => {
 };
 
 const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
-  modulos: projectData.modulos ?? [],
-  inversores: projectData.inversores ?? [],
-  divisaoCreditos: projectData.divisaoCreditos ?? [],
   coordenadas: projectData.coordinates,
   latitude: asString(projectData.latitude) || undefined,
   longitude: asString(projectData.longitude) || undefined,
-  tensaoFornecimento: asString(projectData.tensaoFornecimento) || undefined,
-  padraoEntradaItens: projectData.padraoEntradaItens ?? [],
   tipoProjeto: projectData.projectType,
   servicos: projectData.servicesNames,
   numeroUc: projectData.unitControl,
-  dataAbertura: projectData.dataAbertura,
   projetoFastTrack: projectData.fastTrack,
-  projetoNovo: projectData.projetoNovo,
-  zeroGridControleExportacao: projectData.zeroGridControleExportacao,
   observacoes: projectData.description,
 });
 
@@ -221,8 +214,8 @@ export const projectsService = {
     const response = await createRaw(projectData);
     const normalized = normalizeProjeto(response);
     saveProjectEnhancement(normalized.id, buildFrontendEnhancement(projectData));
-    const mergedProject = mergeProjectEnhancement(normalized);
-    return mergedProject;
+    const technicalDetail = await technicalDetailsService.save(normalized.id, projectData);
+    return technicalDetailsService.apply(mergeProjectEnhancement(normalized), technicalDetail);
   },
 
   async approvePending(
@@ -278,7 +271,8 @@ export const projectsService = {
           }
         : enrichedProject;
 
-    return attachBackendDocuments(enriched);
+    const withTechnicalDetails = await technicalDetailsService.attach(enriched);
+    return attachBackendDocuments(withTechnicalDetails);
   },
 
   async getByIdRaw(id: string): Promise<Record<string, unknown>> {
@@ -340,31 +334,25 @@ export const projectsService = {
     const response = await apiClient.put<unknown>(`${PROJECTS_ENDPOINT}/${id}`, payloadWithId);
     if (isRecord(projectData)) {
       saveProjectEnhancement(id, {
-        modulos: Array.isArray(projectData.modulos) ? projectData.modulos : undefined,
-        inversores: Array.isArray(projectData.inversores) ? projectData.inversores : undefined,
-        divisaoCreditos: Array.isArray(projectData.divisaoCreditos)
-          ? projectData.divisaoCreditos
-          : undefined,
         coordenadas: isRecord(projectData.coordinates)
           ? (projectData.coordinates as Projeto['coordenadas'])
           : undefined,
         latitude: asString(projectData.latitude) || undefined,
         longitude: asString(projectData.longitude) || undefined,
-        tensaoFornecimento: asString(projectData.tensaoFornecimento) || undefined,
-        padraoEntradaItens: Array.isArray(projectData.padraoEntradaItens)
-          ? projectData.padraoEntradaItens
-          : undefined,
         tipoProjeto: asString(projectData.projectType) || undefined,
         servicos: Array.isArray(projectData.servicesNames) ? projectData.servicesNames : undefined,
         numeroUc: asString(projectData.unitControl) || undefined,
-        dataAbertura: asString(projectData.dataAbertura) || undefined,
         projetoFastTrack: asString(projectData.fastTrack) || undefined,
-        projetoNovo: asString(projectData.projetoNovo) || undefined,
-        zeroGridControleExportacao: asString(projectData.zeroGridControleExportacao) || undefined,
         observacoes: asString(projectData.description) || undefined,
       });
     }
-    return mergeProjectEnhancement(normalizeProjeto(response));
+    const normalized = mergeProjectEnhancement(normalizeProjeto(response));
+    if (!technicalDetailsService.hasData(projectData)) {
+      return normalized;
+    }
+
+    const technicalDetail = await technicalDetailsService.save(id, projectData);
+    return technicalDetailsService.apply(normalized, technicalDetail);
   },
 
   async updateStatus(id: string, name: string, comment?: string): Promise<Project> {

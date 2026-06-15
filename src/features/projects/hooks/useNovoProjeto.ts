@@ -51,6 +51,11 @@ export interface IntegradorOption {
   name: string;
 }
 
+export const getInitialProjectStatus = (isEditing: boolean, isAdmin: boolean) => {
+  if (isEditing) return undefined;
+  return isAdmin ? StatusProjeto.EM_ANALISE_DOCUMENTACAO : StatusProjeto.AGUARDANDO_APROVACAO;
+};
+
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
   { value: 'padrao_entrada' as const, label: 'Padrão de entrada' },
@@ -367,7 +372,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
           concessionaria: project.dadosProjeto.concessionaria || '',
           numeroUc: project.numeroUc || '',
           tipoProjeto: projectType,
-          integrador: project.dadosProjeto.integrador || '',
+          integrador: project.dadosProjeto.integradorId || '',
         });
         setServicosSelecionados(project.servicos ?? []);
         setDetalhesProjeto({
@@ -502,10 +507,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
   const valorProjetoNumerico = useMemo(() => parseCurrencyInput(valorProjeto), [valorProjeto]);
 
   const usuarioIntegradorSelecionado = useMemo(
-    () =>
-      usuariosIntegradores.find(
-        (usuario) => usuario.name.trim() === dadosBasicos.integrador.trim(),
-      ) ?? null,
+    () => usuariosIntegradores.find((usuario) => usuario.id === dadosBasicos.integrador) ?? null,
     [dadosBasicos.integrador, usuariosIntegradores],
   );
 
@@ -961,7 +963,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         systemPower: projetoFotovoltaico
           ? potenciaSistemaKw || editingProject?.dadosProjeto.potenciaSistema || 0
           : 0,
-        status: isEditing ? undefined : StatusProjeto.EM_ANALISE_DOCUMENTACAO,
+        status: getInitialProjectStatus(isEditing, currentUser?.isAdmin === true),
         amount: valorProjetoFinalNumerico,
         projectType: dadosBasicos.tipoProjeto,
         servicesNames: servicosSelecionados,
