@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnvelopeSimple, TrashSimple } from '@phosphor-icons/react';
+import { ArrowsClockwise, EnvelopeSimple, TrashSimple } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import type { User as SystemUser } from '@/services';
@@ -8,9 +8,10 @@ import { formatRoleLabel, formatUserDate } from '../hooks/useUsers';
 type Props = {
   users: SystemUser[];
   onDelete: (user: SystemUser) => void;
+  onResetPassword: (user: SystemUser) => void;
 };
 
-export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
+export const UserListCard: React.FC<Props> = ({ users, onDelete, onResetPassword }) => (
   <Card>
     <CardHeader>
       <CardTitle>Lista de Usuários</CardTitle>
@@ -25,6 +26,7 @@ export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
               <th className="px-4 py-3 text-left font-medium text-gray-300">Perfil</th>
               <th className="px-4 py-3 text-left font-medium text-gray-300">Criado em</th>
               <th className="px-4 py-3 text-left font-medium text-gray-300">Atualizado em</th>
+              <th className="px-4 py-3 text-center font-medium text-gray-300">Senha</th>
               <th className="px-4 py-3 text-right font-medium text-gray-300">Ações</th>
             </tr>
           </thead>
@@ -53,6 +55,17 @@ export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
                 <td className="px-4 py-3 text-gray-100">{formatRoleLabel(usuario.role)}</td>
                 <td className="px-4 py-3 text-gray-100">{formatUserDate(usuario.createdAt)}</td>
                 <td className="px-4 py-3 text-gray-100">{formatUserDate(usuario.updatedAt)}</td>
+                <td className="px-4 py-3 text-center">
+                  <button
+                    type="button"
+                    title="Resetar senha"
+                    aria-label={`Resetar senha de ${usuario.name}`}
+                    onClick={() => onResetPassword(usuario)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-slate-900/50 text-cyan-300 transition-colors hover:border-cyan-300/45 hover:bg-slate-800/80"
+                  >
+                    <ArrowsClockwise className="h-4 w-4" />
+                  </button>
+                </td>
                 <td className="px-4 py-3 text-right">
                   <Button
                     type="button"
@@ -69,7 +82,7 @@ export const UserListCard: React.FC<Props> = ({ users, onDelete }) => (
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">
                   Nenhum usuário encontrado para os filtros atuais.
                 </td>
               </tr>

@@ -77,6 +77,15 @@ export const usersService = {
     return apiClient.put<User>(`/users/${id}`, userData);
   },
 
+  async resetPassword(id: string, password: string): Promise<User> {
+    const response = await apiClient.patch<unknown>(`/users/${id}/reset_password`, {
+      password,
+      password_confirmation: password,
+    });
+
+    return normalizeUser(response);
+  },
+
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/users/${id}`);
   },

@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/Button';
 import { ErrorAlert } from '@/shared/components/ErrorAlert';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
+import { ResetPasswordDialog } from '../components/ResetPasswordDialog';
 import { UserFiltersCard } from '../components/UserFiltersCard';
 import { UserFormModal } from '../components/UserFormModal';
 import { UserListCard } from '../components/UserListCard';
@@ -33,11 +34,15 @@ export const UsuariosPage: React.FC = () => {
     setShowPassword,
     setShowPasswordConfirmation,
     userToDelete,
+    userToReset,
     handleOpenCreateForm,
     handleCloseForm,
     handleDeleteUser,
     handleConfirmDelete,
     handleCancelDelete,
+    handleOpenResetPassword,
+    handleCloseResetPassword,
+    handleResetPassword,
     handleSaveUser,
   } = useUsers();
 
@@ -75,13 +80,25 @@ export const UsuariosPage: React.FC = () => {
 
       {error && <ErrorAlert message={error} />}
 
-      <UserListCard users={filteredUsuarios} onDelete={handleDeleteUser} />
+      <UserListCard
+        users={filteredUsuarios}
+        onDelete={handleDeleteUser}
+        onResetPassword={handleOpenResetPassword}
+      />
 
       {userToDelete && (
         <ConfirmDeleteModal
           user={userToDelete}
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
+        />
+      )}
+
+      {userToReset && (
+        <ResetPasswordDialog
+          user={userToReset}
+          onConfirm={handleResetPassword}
+          onClose={handleCloseResetPassword}
         />
       )}
 

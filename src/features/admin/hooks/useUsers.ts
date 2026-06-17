@@ -48,6 +48,7 @@ export const useUsers = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const [userToDelete, setUserToDelete] = useState<SystemUser | null>(null);
+  const [userToReset, setUserToReset] = useState<SystemUser | null>(null);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -149,6 +150,23 @@ export const useUsers = () => {
     setUserToDelete(null);
   };
 
+  const handleOpenResetPassword = (user: SystemUser) => {
+    setUserToReset(user);
+  };
+
+  const handleCloseResetPassword = () => {
+    setUserToReset(null);
+  };
+
+  const handleResetPassword = async (password: string) => {
+    if (!userToReset) return;
+
+    const updatedUser = await usersService.resetPassword(userToReset.id, password);
+    setUsuarios((current) =>
+      current.map((user) => (user.id === userToReset.id ? { ...user, ...updatedUser } : user)),
+    );
+  };
+
   const handleSaveUser = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -239,11 +257,15 @@ export const useUsers = () => {
     setShowPassword,
     setShowPasswordConfirmation,
     userToDelete,
+    userToReset,
     handleOpenCreateForm,
     handleCloseForm,
     handleDeleteUser,
     handleConfirmDelete,
     handleCancelDelete,
+    handleOpenResetPassword,
+    handleCloseResetPassword,
+    handleResetPassword,
     handleSaveUser,
   };
 };
