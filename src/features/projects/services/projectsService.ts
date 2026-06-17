@@ -38,11 +38,16 @@ const buildFrontendEnhancement = (projectData: CreateProjectData) => ({
   latitude: asString(projectData.latitude) || undefined,
   longitude: asString(projectData.longitude) || undefined,
   tipoProjeto: projectData.projectType,
-  servicos: projectData.servicesNames,
+  servicos: normalizeServicesNames(projectData.servicesNames),
   numeroUc: projectData.unitControl,
   projetoFastTrack: projectData.fastTrack,
   observacoes: projectData.description,
 });
+
+const normalizeServicesNames = (servicesNames: unknown): string[] =>
+  Array.isArray(servicesNames)
+    ? servicesNames.map((service) => asString(service).trim()).filter(Boolean)
+    : [];
 
 const buildBackendDocument = (
   uploadedFile: UploadedFileResponse,
@@ -75,6 +80,7 @@ const attachBackendDocuments = async (project: Project): Promise<Project> => {
 };
 
 const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
+  const servicesNames = normalizeServicesNames(projectData.servicesNames);
   const payload: Record<string, unknown> = {
     client_id: projectData.clientId,
     clientId: projectData.clientId,
@@ -106,9 +112,9 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
     amount: projectData.amount !== undefined ? String(projectData.amount) : undefined,
     valor: projectData.amount !== undefined ? String(projectData.amount) : undefined,
     coordinates: toCoordinatesWkt(projectData.coordinates),
-    services_names: projectData.servicesNames,
-    servicesNames: projectData.servicesNames,
-    servicos: projectData.servicesNames,
+    services_names: servicesNames,
+    servicesNames: servicesNames,
+    servicos: servicesNames,
     project_type: projectData.projectType,
     projectType: projectData.projectType,
     tipo_projeto: projectData.projectType,
@@ -290,6 +296,11 @@ export const projectsService = {
         : isRecord(projectData)
           ? projectData.fastTrack
           : undefined;
+    const shouldUpdateServices =
+      isRecord(projectData) && Object.prototype.hasOwnProperty.call(projectData, 'servicesNames');
+    const servicesNames = shouldUpdateServices
+      ? normalizeServicesNames(projectData.servicesNames)
+      : undefined;
     const payloadWithId = isRecord(projectData)
       ? {
           id,
@@ -315,8 +326,8 @@ export const projectsService = {
               ? String(projectData.amount)
               : projectData.amount,
           coordinates: toCoordinatesWkt(projectData.coordinates),
-          services_names: projectData.servicesNames,
-          servicos: projectData.servicesNames,
+          services_names: servicesNames,
+          servicos: servicesNames,
           project_type: projectData.projectType,
           tipo_projeto: projectData.projectType,
           fast_track: normalizedFastTrack,
@@ -340,7 +351,7 @@ export const projectsService = {
         latitude: asString(projectData.latitude) || undefined,
         longitude: asString(projectData.longitude) || undefined,
         tipoProjeto: asString(projectData.projectType) || undefined,
-        servicos: Array.isArray(projectData.servicesNames) ? projectData.servicesNames : undefined,
+        servicos: shouldUpdateServices ? servicesNames : undefined,
         numeroUc: asString(projectData.unitControl) || undefined,
         projetoFastTrack: asString(projectData.fastTrack) || undefined,
         observacoes: asString(projectData.description) || undefined,

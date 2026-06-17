@@ -85,4 +85,31 @@ describe('projectsService coordinates payload', () => {
       expect.objectContaining({ coordinates: undefined }),
     );
   });
+
+  it('envia lista vazia quando o projeto e criado sem servicos marcados', async () => {
+    await projectsService.create({
+      ...createProjectData,
+      servicesNames: [],
+    });
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/projects',
+      expect.objectContaining({
+        services_names: [],
+      }),
+    );
+  });
+
+  it('nao limpa servicos ao atualizar outro campo do projeto', async () => {
+    await projectsService.update('project-1', {
+      framework: 'Minigeracao',
+    });
+
+    expect(vi.mocked(apiClient.put).mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        framework: 'Minigeracao',
+        services_names: undefined,
+      }),
+    );
+  });
 });
