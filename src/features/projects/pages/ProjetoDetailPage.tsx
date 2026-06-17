@@ -4,21 +4,31 @@ import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   ChatCircleText,
+  Check,
   CheckCircle,
   Clock,
   Eye,
   FileText,
+  PencilSimple,
   PlusCircle,
   UploadSimple,
+  X,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
-import { customersService, filesService, projectsService, type Customer } from '@/services';
+import {
+  customersService,
+  filesService,
+  projectsService,
+  usersService,
+  type Customer,
+} from '@/services';
 import type { Documento, Projeto } from '@/types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
 import { EntityFinanceTab } from '@/features/financeiro/components/EntityFinanceTab';
 import { TimelineCommentsDialog } from '../components/TimelineCommentsDialog';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
   const merged = new Map<string, Documento>();
@@ -31,6 +41,130 @@ const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
 };
 
 const publicAssetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
+type EditableFieldOption = {
+  label: string;
+  value: string;
+};
+
+const EditableProjectField: React.FC<{
+  label: string;
+  value: string;
+  displayValue?: React.ReactNode;
+  canEdit: boolean;
+  type?: 'text' | 'number' | 'date' | 'textarea' | 'select';
+  options?: EditableFieldOption[];
+  onSave: (value: string) => Promise<void>;
+}> = ({ label, value, displayValue, canEdit, type = 'text', options = [], onSave }) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!editing) {
+      setDraft(value);
+    }
+  }, [editing, value]);
+
+  const cancel = () => {
+    setDraft(value);
+    setError('');
+    setEditing(false);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    setError('');
+
+    try {
+      await onSave(draft);
+      setEditing(false);
+    } catch (saveError) {
+      console.error(`Erro ao atualizar ${label}:`, saveError);
+      setError('Nao foi possivel salvar.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium text-gray-400">{label}</label>
+        {canEdit && !editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="rounded-md p-1 text-gray-500 transition hover:bg-white/10 hover:text-cyan-300"
+            aria-label={`Editar ${label}`}
+            title={`Editar ${label}`}
+          >
+            <PencilSimple className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {editing ? (
+        <div className="mt-1 flex items-start gap-2">
+          {type === 'textarea' ? (
+            <textarea
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              rows={3}
+              autoFocus
+              className="min-w-0 flex-1 rounded-xl border border-cyan-300/50 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-300/30"
+            />
+          ) : type === 'select' ? (
+            <select
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              autoFocus
+              className="min-w-0 flex-1 rounded-xl border border-cyan-300/50 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-300/30"
+            >
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={type}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              autoFocus
+              className="min-w-0 flex-1 rounded-xl border border-cyan-300/50 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-300/30"
+            />
+          )}
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={saving}
+            className="rounded-lg border border-cyan-300/40 p-2 text-cyan-300 transition hover:bg-cyan-300/10 disabled:opacity-50"
+            aria-label={`Salvar ${label}`}
+            title="Salvar"
+          >
+            <Check className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={cancel}
+            disabled={saving}
+            className="rounded-lg border border-white/15 p-2 text-gray-400 transition hover:bg-white/10 hover:text-gray-200 disabled:opacity-50"
+            aria-label={`Cancelar edicao de ${label}`}
+            title="Cancelar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        <p className="text-gray-100">{displayValue ?? (value || '-')}</p>
+      )}
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+    </div>
+  );
+};
 
 const procuracaoTemplates: Record<
   string,
@@ -198,6 +332,7 @@ const buildProcuracaoHtml = (
 
 export const ProjetoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const currentUser = useCurrentUser();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [clienteDetalhe, setClienteDetalhe] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,12 +345,28 @@ export const ProjetoDetailPage: React.FC = () => {
   const [timelineDialogMode, setTimelineDialogMode] = useState<'view' | 'add'>('view');
   const [timelineComment, setTimelineComment] = useState('');
   const [savingTimelineComment, setSavingTimelineComment] = useState(false);
+  const [integradores, setIntegradores] = useState<EditableFieldOption[]>([]);
 
   useEffect(() => {
     if (id) {
       void loadProjeto(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!currentUser?.isAdmin) return;
+
+    void usersService
+      .getAll()
+      .then((users) =>
+        setIntegradores(
+          users
+            .map((user) => ({ value: user.id, label: user.name }))
+            .sort((left, right) => left.label.localeCompare(right.label, 'pt-BR')),
+        ),
+      )
+      .catch((error) => console.error('Erro ao carregar integradores:', error));
+  }, [currentUser?.isAdmin]);
 
   const loadProjeto = async (projetoId: string) => {
     try {
@@ -524,6 +675,21 @@ export const ProjetoDetailPage: React.FC = () => {
     }
   };
 
+  const handleUpdateField = async (projectData: Record<string, unknown>) => {
+    if (!projeto) return;
+
+    await projectsService.update(projeto.id, projectData);
+    setProjeto(await projectsService.getById(projeto.id));
+  };
+
+  const parseNumber = (value: string) => {
+    const parsed = Number(value.replace(',', '.'));
+    if (!Number.isFinite(parsed)) {
+      throw new Error('Valor numerico invalido.');
+    }
+    return parsed;
+  };
+
   return (
     <div className="space-y-6 page-enter">
       <div className="flex items-center justify-between">
@@ -539,11 +705,13 @@ export const ProjetoDetailPage: React.FC = () => {
             <p className="text-gray-400 mt-1">{projeto.cliente.nome}</p>
           </div>
         </div>
-        <span
-          className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(projeto.status)}`}
-        >
-          {getStatusText(projeto.status)}
-        </span>
+        <div className="flex items-center gap-3">
+          <span
+            className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(projeto.status)}`}
+          >
+            {getStatusText(projeto.status)}
+          </span>
+        </div>
       </div>
 
       <div className="border-b border-gray-700">
@@ -647,50 +815,98 @@ export const ProjetoDetailPage: React.FC = () => {
                 <CardTitle>Dados do Projeto</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Concessionaria</label>
-                  <p className="text-gray-100">{projeto.dadosProjeto.concessionaria || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Classe</label>
-                  <p className="text-gray-100">{projeto.dadosProjeto.classe || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Integrador</label>
-                  <p className="text-gray-100">{projeto.dadosProjeto.integrador || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Modalidade</label>
-                  <p className="text-gray-100">
-                    {formatModalidade(projeto.dadosProjeto.modalidade)}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Potência do Sistema</label>
-                  <p className="text-gray-100">{projeto.dadosProjeto.potenciaSistema} kWp</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Numero da UC</label>
-                  <p className="text-gray-100">{projeto.numeroUc || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Tipo de Projeto</label>
-                  <p className="text-gray-100">{formatTipoProjeto(projeto.tipoProjeto)}</p>
-                </div>
-                {projeto.tensaoFornecimento && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-400">
-                      Tensao de Fornecimento
-                    </label>
-                    <p className="text-gray-100">{projeto.tensaoFornecimento}</p>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Serviços</label>
-                  <p className="text-gray-100">
-                    {projeto.servicos?.length ? projeto.servicos.join(', ') : '-'}
-                  </p>
-                </div>
+                <EditableProjectField
+                  label="Protocolo da Concessionaria"
+                  value={projeto.protocolo}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ utilityProtocol: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Concessionaria"
+                  value={projeto.dadosProjeto.concessionaria}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ utilityCompany: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Classe"
+                  value={projeto.dadosProjeto.classe}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ customerClass: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Integrador"
+                  value={projeto.dadosProjeto.integradorId ?? ''}
+                  displayValue={projeto.dadosProjeto.integrador}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={integradores}
+                  onSave={(value) => handleUpdateField({ integrator: value })}
+                />
+                <EditableProjectField
+                  label="Modalidade"
+                  value={projeto.dadosProjeto.modalidade}
+                  displayValue={formatModalidade(projeto.dadosProjeto.modalidade)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={[
+                    { value: 'autoconsumo_local', label: 'Autoconsumo Local' },
+                    { value: 'autoconsumo_remoto', label: 'Autoconsumo Remoto' },
+                    { value: 'geracao_compartilhada', label: 'Geracao Compartilhada' },
+                  ]}
+                  onSave={(value) => handleUpdateField({ modality: value })}
+                />
+                <EditableProjectField
+                  label="Potencia do Sistema"
+                  value={String(projeto.dadosProjeto.potenciaSistema)}
+                  displayValue={`${projeto.dadosProjeto.potenciaSistema} kWp`}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="number"
+                  onSave={(value) => handleUpdateField({ systemPower: parseNumber(value) })}
+                />
+                <EditableProjectField
+                  label="Numero da UC"
+                  value={projeto.numeroUc ?? ''}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ unitControl: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Tipo de Projeto"
+                  value={tipoProjetoNormalizado}
+                  displayValue={formatTipoProjeto(projeto.tipoProjeto)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={[
+                    { value: 'fotovoltaico', label: 'Projeto Solar' },
+                    { value: 'padrao_entrada', label: 'Projeto EMUC' },
+                    { value: 'orcamento_conexao', label: 'Orcamento de Conexao' },
+                  ]}
+                  onSave={(value) => handleUpdateField({ projectType: value })}
+                />
+                <EditableProjectField
+                  label="Tensao de Fornecimento"
+                  value={projeto.tensaoFornecimento ?? ''}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={[
+                    { value: '', label: 'Nao informado' },
+                    { value: '127/220V', label: '127/220V' },
+                    { value: '380/220V', label: '380/220V' },
+                  ]}
+                  onSave={(value) => handleUpdateField({ tensaoFornecimento: value })}
+                />
+                <EditableProjectField
+                  label="Servicos"
+                  value={projeto.servicos?.join(', ') ?? ''}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) =>
+                    handleUpdateField({
+                      servicesNames: value
+                        .split(',')
+                        .map((service) => service.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                />
               </CardContent>
             </Card>
 
@@ -699,38 +915,70 @@ export const ProjetoDetailPage: React.FC = () => {
                 <CardTitle>Informações Adicionais</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Enquadramento</label>
-                  <p className="text-gray-100">{projeto.dadosProjeto.enquadramento || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Protecao CC</label>
-                  <p className="text-gray-100">{projeto.dadosProjeto.protecaoCC || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Valor</label>
-                  <p className="text-gray-100">{formatCurrency(projeto.valor)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Data de Abertura</label>
-                  <p className="text-gray-100">{formatDate(projeto.dataAbertura)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Projeto Fast Track</label>
-                  <p className="text-gray-100">{formatBinaryChoice(projeto.projetoFastTrack)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Projeto Novo</label>
-                  <p className="text-gray-100">{formatBinaryChoice(projeto.projetoNovo)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-400">
-                    Zero Grid / Controle de Exportacao
-                  </label>
-                  <p className="text-gray-100">
-                    {formatBinaryChoice(projeto.zeroGridControleExportacao)}
-                  </p>
-                </div>
+                <EditableProjectField
+                  label="Enquadramento"
+                  value={projeto.dadosProjeto.enquadramento}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ framework: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Protecao CC"
+                  value={projeto.dadosProjeto.protecaoCC}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ dcProtection: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Valor"
+                  value={String(projeto.valor)}
+                  displayValue={formatCurrency(projeto.valor)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="number"
+                  onSave={(value) => handleUpdateField({ amount: parseNumber(value) })}
+                />
+                <EditableProjectField
+                  label="Data de Abertura"
+                  value={projeto.dataAbertura ?? ''}
+                  displayValue={formatDate(projeto.dataAbertura)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="date"
+                  onSave={(value) => handleUpdateField({ dataAbertura: value })}
+                />
+                <EditableProjectField
+                  label="Projeto Fast Track"
+                  value={projeto.projetoFastTrack ?? 'nao'}
+                  displayValue={formatBinaryChoice(projeto.projetoFastTrack)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={[
+                    { value: 'sim', label: 'Sim' },
+                    { value: 'nao', label: 'Nao' },
+                  ]}
+                  onSave={(value) => handleUpdateField({ fastTrack: value })}
+                />
+                <EditableProjectField
+                  label="Projeto Novo"
+                  value={projeto.projetoNovo ?? 'sim'}
+                  displayValue={formatBinaryChoice(projeto.projetoNovo)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={[
+                    { value: 'sim', label: 'Sim' },
+                    { value: 'nao_ampliacao', label: 'Nao, Ampliacao' },
+                  ]}
+                  onSave={(value) => handleUpdateField({ projetoNovo: value })}
+                />
+                <EditableProjectField
+                  label="Zero Grid / Controle de Exportacao"
+                  value={projeto.zeroGridControleExportacao ?? 'nao'}
+                  displayValue={formatBinaryChoice(projeto.zeroGridControleExportacao)}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="select"
+                  options={[
+                    { value: 'sim', label: 'Sim' },
+                    { value: 'nao', label: 'Nao' },
+                  ]}
+                  onSave={(value) => handleUpdateField({ zeroGridControleExportacao: value })}
+                />
                 {tipoProjetoNormalizado === 'fotovoltaico' && (
                   <>
                     <div>
@@ -753,10 +1001,13 @@ export const ProjetoDetailPage: React.FC = () => {
                     </div>
                   </>
                 )}
-                <div>
-                  <label className="text-sm font-medium text-gray-400">Observações</label>
-                  <p className="text-gray-100 whitespace-pre-wrap">{projeto.observacoes || '-'}</p>
-                </div>
+                <EditableProjectField
+                  label="Observacoes"
+                  value={projeto.observacoes ?? ''}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  type="textarea"
+                  onSave={(value) => handleUpdateField({ description: value.trim() })}
+                />
                 <div>
                   <label className="text-sm font-medium text-gray-400">Data de Criação</label>
                   <p className="text-gray-100">{formatDate(projeto.dataCriacao)}</p>

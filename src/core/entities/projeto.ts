@@ -12,6 +12,7 @@ export interface DadosProjeto {
   concessionaria: string;
   classe: string;
   integrador: string;
+  integradorId?: string;
   modalidade: 'autoconsumo_local' | 'autoconsumo_remoto' | 'geracao_compartilhada';
   enquadramento: string;
   potenciaSistema: number;

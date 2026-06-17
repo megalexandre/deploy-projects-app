@@ -58,4 +58,15 @@ export interface UpdateProjectData {
   fastTrack?: string;
   unitControl?: string;
   description?: string;
+  dataAbertura?: string;
+  latitude?: string;
+  longitude?: string;
+  tensaoFornecimento?: string;
+  padraoEntradaItens?: PadraoEntradaItem[];
+  modulos?: Projeto['modulos'];
+  inversores?: Projeto['inversores'];
+  documentos?: Documento[];
+  projetoNovo?: string;
+  zeroGridControleExportacao?: string;
+  divisaoCreditos?: Projeto['divisaoCreditos'];
 }

@@ -60,6 +60,7 @@ interface Passo3DetalhesProps {
   handlePadraoEntradaChange: (id: string, field: 'quantidade' | 'disjuntor', value: string) => void;
   handleDocumentosChange: (key: string, files: FileList | null) => void;
   handleCriarProjeto: () => void;
+  isEditing: boolean;
   salvando: boolean;
   validarPasso3: () => boolean;
   setPassoAtual: (p: Passo) => void;
@@ -103,6 +104,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
   handlePadraoEntradaChange,
   handleDocumentosChange,
   handleCriarProjeto,
+  isEditing,
   salvando,
   setPassoAtual,
 }) => {
@@ -557,7 +559,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
           Voltar
         </Button>
         <Button onClick={handleCriarProjeto} loading={salvando} disabled={salvando}>
-          Criar Projeto
+          {isEditing ? 'Salvar Alteracoes' : 'Criar Projeto'}
         </Button>
       </div>
     </div>

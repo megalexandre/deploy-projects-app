@@ -43,7 +43,11 @@ export const updateProjectEnhancement = (
 export const saveProjectEnhancement = (
   projectId: string,
   enhancement: FrontendProjectEnhancement,
-) => updateProjectEnhancement(projectId, (current) => ({ ...current, ...enhancement }));
+) =>
+  updateProjectEnhancement(projectId, (current) => ({
+    ...current,
+    ...Object.fromEntries(Object.entries(enhancement).filter(([, value]) => value !== undefined)),
+  }));
 
 export const hasAddressData = (endereco?: Projeto['endereco']): boolean => {
   if (!endereco) return false;

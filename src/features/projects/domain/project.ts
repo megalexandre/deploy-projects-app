@@ -93,6 +93,7 @@ export const toProjeto = (
     concessionaria: r.utility_company,
     classe: r.customer_class,
     integrador: r.integrator_name ?? r.integrator ?? '',
+    integradorId: r.integrator ?? undefined,
     modalidade: 'autoconsumo_local',
     enquadramento: r.framework,
     potenciaSistema: r.system_power,

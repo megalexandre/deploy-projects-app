@@ -70,6 +70,7 @@ describe('toProjeto', () => {
   it('usa integrator_name como integrador para exibição', () => {
     const result = toProjeto(makeProjectResponse());
     expect(result.dadosProjeto.integrador).toBe('Integrador X');
+    expect(result.dadosProjeto.integradorId).toBe('b6f8a0e2-4f6e-4b0a-9c1d-2e3f4a5b6c7d');
   });
 
   it('usa o uuid do integrator quando integrator_name está ausente', () => {

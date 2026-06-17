@@ -36,6 +36,7 @@ import {
   type Customer,
   type User,
 } from '@/services';
+import type { Projeto } from '@/types';
 import {
   buildTabelaPrecoPadraoEntradaMap,
   getCuponsDescontoProjetosAtivos,
@@ -49,6 +50,11 @@ export interface IntegradorOption {
   id: string;
   name: string;
 }
+
+export const getInitialProjectStatus = (isEditing: boolean, isAdmin: boolean) => {
+  if (isEditing) return undefined;
+  return isAdmin ? StatusProjeto.EM_ANALISE_DOCUMENTACAO : StatusProjeto.AGUARDANDO_APROVACAO;
+};
 
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
@@ -247,10 +253,41 @@ const normalizeEnderecoForm = (endereco?: Customer['endereco']): EnderecoForm =>
       }
     : buildEnderecoVazio();
 
-export const useNovoProjeto = () => {
+type UseNovoProjetoOptions = {
+  projectId?: string;
+  initialStep?: Passo;
+};
+
+const normalizeProjectType = (value?: string): DadosBasicosForm['tipoProjeto'] => {
+  const normalized = (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+  if (normalized.includes('fotovolta') || normalized.includes('solar')) return 'fotovoltaico';
+  if (normalized.includes('padrao') || normalized.includes('emuc')) return 'padrao_entrada';
+  return '';
+};
+
+const normalizeGenerationModality = (value?: string): DadosDetalhesForm['modalidadeGeracao'] => {
+  const normalized = (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+  if (normalized.includes('remoto')) return 'autoconsumo_remoto';
+  if (normalized.includes('compartilh')) return 'geracao_compartilhada';
+  return 'autoconsumo_local';
+};
+
+export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
-  const [passoAtual, setPassoAtual] = useState<Passo>(1);
+  const isEditing = Boolean(options.projectId);
+  const [editingProject, setEditingProject] = useState<Projeto | null>(null);
+  const [carregandoProjeto, setCarregandoProjeto] = useState(isEditing);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [passoAtual, setPassoAtual] = useState<Passo>(options.initialStep ?? 1);
   const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('cpf');
   const [modoCliente, setModoCliente] = useState<ModoCliente | null>(null);
   const [clientes, setClientes] = useState<Customer[]>([]);
@@ -306,6 +343,96 @@ export const useNovoProjeto = () => {
   const [valorProjetoEditado, setValorProjetoEditado] = useState(false);
   const [usuariosIntegradores, setUsuariosIntegradores] = useState<User[]>([]);
   const [cupomProjetoId, setCupomProjetoId] = useState('');
+
+  useEffect(() => {
+    if (!options.projectId) return;
+    const projectId = options.projectId;
+
+    const loadProjectForEditing = async () => {
+      setCarregandoProjeto(true);
+      setErro(null);
+      try {
+        const [project, rawProject] = await Promise.all([
+          projectsService.getById(projectId),
+          projectsService.getByIdRaw(projectId),
+        ]);
+        const projectType = normalizeProjectType(project.tipoProjeto);
+        const projectAddress = normalizeEnderecoForm(project.endereco);
+
+        setEditingProject(project);
+        setEditingAddressId(
+          typeof rawProject.address_id === 'string' ? rawProject.address_id : null,
+        );
+        setModoCliente('existente');
+        setClienteSelecionadoId(project.cliente.id);
+        setModoEnderecoProjeto('novo');
+        setEnderecoProjeto(projectAddress);
+        setDadosBasicos({
+          dataAbertura: project.dataAbertura?.slice(0, 10) || dataAtualIso,
+          concessionaria: project.dadosProjeto.concessionaria || '',
+          numeroUc: project.numeroUc || '',
+          tipoProjeto: projectType,
+          integrador: project.dadosProjeto.integradorId || '',
+        });
+        setServicosSelecionados(project.servicos ?? []);
+        setDetalhesProjeto({
+          modalidadeGeracao: normalizeGenerationModality(project.dadosProjeto.modalidade),
+          projetoFastTrack: project.projetoFastTrack === 'sim' ? 'sim' : 'nao',
+          projetoNovo: project.projetoNovo === 'nao_ampliacao' ? 'nao_ampliacao' : 'sim',
+          zeroGridControleExportacao: project.zeroGridControleExportacao === 'sim' ? 'sim' : 'nao',
+          linkMapa: project.endereco.link ?? '',
+          coordenadas: {
+            latitude: project.coordenadas?.latitude ?? project.latitude ?? '',
+            longitude: project.coordenadas?.longitude ?? project.longitude ?? '',
+          },
+          tensaoFornecimento:
+            project.tensaoFornecimento === '127/220V' || project.tensaoFornecimento === '380/220V'
+              ? project.tensaoFornecimento
+              : '',
+          observacoes: project.observacoes ?? '',
+        });
+        setModulos(
+          project.modulos.length > 0
+            ? project.modulos.map((item) => ({
+                id: item.id,
+                quantidade: String(item.quantidade),
+                potencia: String(item.potencia),
+                marca: item.fabricante,
+                modelo: item.modelo,
+              }))
+            : [buildItemVazio()],
+        );
+        setInversores(
+          project.inversores.length > 0
+            ? project.inversores.map((item) => ({
+                id: item.id,
+                quantidade: String(item.quantidade),
+                potencia: String(item.potencia),
+                marca: item.fabricante,
+                modelo: item.modelo,
+              }))
+            : [buildItemVazio()],
+        );
+        if (project.padraoEntradaItens?.length) {
+          setPadraoEntradaItens(
+            project.padraoEntradaItens.map((item) => ({
+              ...item,
+              quantidade: String(item.quantidade),
+            })),
+          );
+        }
+        setValorProjeto(formatCurrencyInput(project.valor));
+        setValorProjetoEditado(true);
+      } catch (loadError) {
+        console.error('Erro ao carregar projeto para edicao:', loadError);
+        setErro('Nao foi possivel carregar o projeto para edicao.');
+      } finally {
+        setCarregandoProjeto(false);
+      }
+    };
+
+    void loadProjectForEditing();
+  }, [options.projectId]);
 
   const tabelaPrecoPadraoEntradaMap = useMemo(
     () => buildTabelaPrecoPadraoEntradaMap(configuracoesSistema.tabelaPrecoPadraoEntrada),
@@ -380,10 +507,7 @@ export const useNovoProjeto = () => {
   const valorProjetoNumerico = useMemo(() => parseCurrencyInput(valorProjeto), [valorProjeto]);
 
   const usuarioIntegradorSelecionado = useMemo(
-    () =>
-      usuariosIntegradores.find(
-        (usuario) => usuario.name.trim() === dadosBasicos.integrador.trim(),
-      ) ?? null,
+    () => usuariosIntegradores.find((usuario) => usuario.id === dadosBasicos.integrador) ?? null,
     [dadosBasicos.integrador, usuariosIntegradores],
   );
 
@@ -673,12 +797,10 @@ export const useNovoProjeto = () => {
     const coordenadasValidas =
       isValidLatitude(detalhesProjeto.coordenadas.latitude) &&
       isValidLongitude(detalhesProjeto.coordenadas.longitude);
-    if (
-      !coordenadasValidas ||
-      dadosBasicos.integrador.trim() === '' ||
-      servicosSelecionados.length === 0
-    )
-      return false;
+    if (isEditing) {
+      return dadosBasicos.integrador.trim() !== '';
+    }
+    if (!coordenadasValidas || dadosBasicos.integrador.trim() === '') return false;
     if (dadosBasicos.tipoProjeto === 'fotovoltaico') {
       return potenciaTotalModulosW > 0 && potenciaTotalInversoresW > 0 && potenciaTotalSistemaW > 0;
     }
@@ -767,7 +889,7 @@ export const useNovoProjeto = () => {
       if (modoEnderecoProjeto === 'novo') {
         const latitudeMapa = maskLatitude(detalhesProjeto.coordenadas.latitude);
         const longitudeMapa = maskLongitude(detalhesProjeto.coordenadas.longitude);
-        const enderecoProjetoCriado = await addressService.create({
+        const addressPayload = {
           cep: onlyDigits(enderecoProjetoAtual.cep),
           place: enderecoProjetoAtual.logradouro.trim(),
           number: enderecoProjetoAtual.numero.trim(),
@@ -778,9 +900,15 @@ export const useNovoProjeto = () => {
           state: enderecoProjetoAtual.estado.trim().toLowerCase(),
           link:
             detalhesProjeto.linkMapa.trim() ||
-            `https://maps.google.com/?q=${encodeURIComponent(`${latitudeMapa},${longitudeMapa}`)}`,
-        });
-        enderecoProjetoId = enderecoProjetoCriado.id;
+            (latitudeMapa && longitudeMapa
+              ? `https://maps.google.com/?q=${encodeURIComponent(`${latitudeMapa},${longitudeMapa}`)}`
+              : ''),
+        };
+        const enderecoProjetoSalvo =
+          isEditing && editingAddressId
+            ? await addressService.update({ id: editingAddressId, ...addressPayload })
+            : await addressService.create(addressPayload);
+        enderecoProjetoId = enderecoProjetoSalvo.id;
       }
 
       if (modoEnderecoProjeto === 'cliente' && !enderecoProjetoId) {
@@ -820,20 +948,22 @@ export const useNovoProjeto = () => {
       }
 
       const projectData: CreateProjectData = {
-        id: crypto.randomUUID(),
+        id: editingProject?.id ?? crypto.randomUUID(),
         clientId: clienteId,
         addressId: enderecoProjetoId ?? undefined,
         nomeCliente:
           modoCliente === 'novo' ? clienteForm.nome.trim() : (clienteSelecionado?.nome ?? ''),
         utilityCompany: dadosBasicos.concessionaria,
-        utilityProtocol: gerarProtocolo(),
+        utilityProtocol: editingProject?.protocolo ?? gerarProtocolo(),
         customerClass: classe,
         integrator: dadosBasicos.integrador,
         modality: modalidade,
         framework: enquadramento,
         dcProtection: projetoFotovoltaico ? 'Disjuntor CC 20A' : undefined,
-        systemPower: projetoFotovoltaico ? potenciaSistemaKw : 0,
-        status: StatusProjeto.EM_ANALISE_DOCUMENTACAO,
+        systemPower: projetoFotovoltaico
+          ? potenciaSistemaKw || editingProject?.dadosProjeto.potenciaSistema || 0
+          : 0,
+        status: getInitialProjectStatus(isEditing, currentUser?.isAdmin === true),
         amount: valorProjetoFinalNumerico,
         projectType: dadosBasicos.tipoProjeto,
         servicesNames: servicosSelecionados,
@@ -886,9 +1016,12 @@ export const useNovoProjeto = () => {
       });
       console.log('Enviando dados para API:', projectData);
 
-      const projetoCriado = await projectsService.create(projectData);
+      const projetoSalvo =
+        isEditing && editingProject
+          ? await projectsService.update(editingProject.id, projectData)
+          : await projectsService.create(projectData);
       const projetoOrcamentoConexao =
-        dadosBasicos.tipoProjeto === 'padrao_entrada'
+        !isEditing && dadosBasicos.tipoProjeto === 'padrao_entrada'
           ? await projectsService.create({
               ...projectData,
               id: crypto.randomUUID(),
@@ -911,10 +1044,10 @@ export const useNovoProjeto = () => {
       if (documentosSelecionados.length > 0) {
         // O upload depende do id do projeto ja existir, por isso acontece depois da criacao.
         const uploadedFiles = await filesService.uploadFiles(
-          projetoCriado.id,
+          projetoSalvo.id,
           documentosSelecionados.map((item) => item.file),
         );
-        projectsService.saveDocuments(projetoCriado.id, [
+        projectsService.saveDocuments(projetoSalvo.id, [
           ...reusedCustomerDocuments,
           ...uploadedFiles.map((uploadedFile, index) => ({
             id: uploadedFile.id,
@@ -945,30 +1078,33 @@ export const useNovoProjeto = () => {
           ]);
         }
       } else if (reusedCustomerDocuments.length > 0) {
-        projectsService.saveDocuments(projetoCriado.id, reusedCustomerDocuments);
+        projectsService.saveDocuments(projetoSalvo.id, reusedCustomerDocuments);
         if (projetoOrcamentoConexao) {
           projectsService.saveDocuments(projetoOrcamentoConexao.id, reusedCustomerDocuments);
         }
       }
 
-      navigate('/projetos');
+      navigate(isEditing ? `/projetos/${projetoSalvo.id}` : '/projetos');
     } catch (creationError) {
-      console.error('Erro ao criar projeto:', creationError);
+      console.error(`Erro ao ${isEditing ? 'editar' : 'criar'} projeto:`, creationError);
       if (creationError instanceof ApiError) {
         console.error('Detalhes do erro:', creationError.payload);
         if (creationError.status === 401 || creationError.status === 403) {
           setErro(
-            'Sua sessao nao esta autorizada para criar projetos. Faca login novamente e tente de novo.',
+            `Sua sessao nao esta autorizada para ${isEditing ? 'editar' : 'criar'} projetos. Faca login novamente e tente de novo.`,
           );
         } else if (typeof creationError.payload === 'string' && creationError.payload.trim()) {
           setErro(creationError.payload);
         } else {
           setErro(
-            creationError.message || 'Nao foi possivel criar o projeto agora. Tente novamente.',
+            creationError.message ||
+              `Nao foi possivel ${isEditing ? 'editar' : 'criar'} o projeto agora. Tente novamente.`,
           );
         }
       } else {
-        setErro('Nao foi possivel criar o projeto agora. Tente novamente.');
+        setErro(
+          `Nao foi possivel ${isEditing ? 'editar' : 'criar'} o projeto agora. Tente novamente.`,
+        );
       }
     } finally {
       setSalvando(false);
@@ -978,6 +1114,9 @@ export const useNovoProjeto = () => {
   return {
     navigate,
     currentUser,
+    isEditing,
+    editingProject,
+    carregandoProjeto,
     integradores,
     enderecoClienteProjeto,
     tabelaPrecoPadraoEntradaMap,
