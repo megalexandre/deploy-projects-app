@@ -326,6 +326,8 @@ export const projectsService = {
               ? String(projectData.amount)
               : projectData.amount,
           coordinates: toCoordinatesWkt(projectData.coordinates),
+          sequence: projectData.sequence,
+          subsequence: projectData.subsequente ?? projectData.subsequence,
           services_names: servicesNames,
           servicos: servicesNames,
           project_type: projectData.projectType,
