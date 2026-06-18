@@ -29,6 +29,7 @@ import {
   customersService,
   filesService,
   projectsService,
+  servicosService,
   usersService,
   viaCepService,
   type Concessionaire,
@@ -36,7 +37,7 @@ import {
   type Customer,
   type User,
 } from '@/services';
-import type { Projeto } from '@/types';
+import type { Endereco, PadraoEntradaItem, Projeto, TipoServico } from '@/types';
 import {
   buildTabelaPrecoPadraoEntradaMap,
   getCuponsDescontoProjetosAtivos,
@@ -67,6 +68,23 @@ export const servicosDisponiveis = [
   'Alteração no Compartilhamento de Creditos',
   'Projeto Eletrico',
 ];
+
+export const mapProjectServiceToServiceType = (serviceName: string): TipoServico | null => {
+  const normalized = serviceName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (normalized.includes('liga') && normalized.includes('nova')) return 'ligacao_nova';
+  if (normalized.includes('aumento') && normalized.includes('carga')) return 'aumento_carga';
+  if (normalized.includes('titularidade')) return 'troca_titularidade';
+  if (normalized.includes('compartilhamento') || normalized.includes('credito')) {
+    return 'alteracao_compartilhamento_credito';
+  }
+
+  return null;
+};
 
 export const documentosFotovoltaico: DocumentoCategoria[] = [
   { key: 'fatura_energia', label: 'Fatura de Energia' },
@@ -178,6 +196,16 @@ const buildEnderecoCompleto = (endereco: EnderecoForm): string =>
   ]
     .filter(Boolean)
     .join(', ');
+
+const buildEnderecoPayload = (endereco: EnderecoForm): Endereco => ({
+  cep: maskCep(endereco.cep),
+  logradouro: endereco.logradouro.trim(),
+  numero: endereco.numero.trim(),
+  complemento: endereco.complemento.trim(),
+  bairro: endereco.bairro.trim(),
+  cidade: endereco.cidade.trim(),
+  estado: endereco.estado.trim().toUpperCase(),
+});
 
 const getTipoDocumentoPorValor = (value?: string): TipoDocumento =>
   onlyDigits(value ?? '').length > 11 ? 'cnpj' : 'cpf';
@@ -816,6 +844,74 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     return `PROT-${ano}-${sufixo}`;
   };
 
+  const buildPadraoEntradaServicoPayload = (): PadraoEntradaItem[] =>
+    padraoEntradaItens
+      .filter((item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== '')
+      .map((item) => ({
+        id: item.id,
+        tipoLigacao: item.tipoLigacao,
+        classificacao: item.classificacao,
+        quantidade: Number(item.quantidade) || 0,
+        disjuntor: item.disjuntor.trim(),
+      }));
+
+  const criarServicosSelecionadosDoProjeto = async (
+    projetoSalvo: Projeto,
+    projectData: CreateProjectData,
+  ) => {
+    if (isEditing || servicosSelecionados.length === 0) return;
+
+    const servicosParaCriar = servicosSelecionados
+      .map((serviceName) => ({
+        nome: serviceName,
+        tipo: mapProjectServiceToServiceType(serviceName),
+      }))
+      .filter((item): item is { nome: string; tipo: TipoServico } => item.tipo !== null);
+
+    if (servicosParaCriar.length === 0) return;
+
+    const enderecoServico = buildEnderecoPayload(enderecoProjetoAtual);
+    const coordenadasServico = projectData.coordinates;
+    const tensaoServico =
+      projectData.tensaoFornecimento === '127/220V' || projectData.tensaoFornecimento === '380/220V'
+        ? projectData.tensaoFornecimento
+        : undefined;
+    const valorServico = projectData.amount ?? 0;
+    const observacoesBase = [
+      `Criado automaticamente a partir do projeto ${projetoSalvo.protocolo}.`,
+      detalhesProjeto.observacoes.trim(),
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
+    await Promise.all(
+      servicosParaCriar.map(({ nome, tipo }) => {
+        const isRateio = tipo === 'alteracao_compartilhamento_credito';
+        const isTecnico = !isRateio;
+
+        return servicosService.create({
+          tipo,
+          clienteId: projectData.clientId,
+          cliente: projectData.nomeCliente ?? '',
+          concessionaria: projectData.utilityCompany,
+          dataAbertura: projectData.dataAbertura ?? dataAtualIso,
+          valor: valorServico,
+          observacoes: [observacoesBase, `Servico marcado no projeto: ${nome}.`]
+            .filter(Boolean)
+            .join('\n\n'),
+          tensaoFornecimento: isTecnico ? tensaoServico : undefined,
+          coordenadas: isTecnico ? coordenadasServico : undefined,
+          enderecoObra: isTecnico ? enderecoServico : undefined,
+          ucGeradora: isRateio ? projectData.unitControl : undefined,
+          enderecoGeradora: isRateio ? enderecoServico : undefined,
+          padraoEntradaItens: isTecnico ? buildPadraoEntradaServicoPayload() : [],
+          rateios: [],
+          documentos: [],
+        });
+      }),
+    );
+  };
+
   const handleCriarProjeto = async () => {
     if (!validarPasso1()) {
       setErro('Preencha todos os campos obrigatorios do Passo 1 antes de criar o projeto.');
@@ -1082,6 +1178,21 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         if (projetoOrcamentoConexao) {
           projectsService.saveDocuments(projetoOrcamentoConexao.id, reusedCustomerDocuments);
         }
+      }
+
+      try {
+        await criarServicosSelecionadosDoProjeto(projetoSalvo, projectData);
+      } catch (serviceCreationError) {
+        console.error('Projeto criado, mas houve erro ao criar servicos vinculados:', {
+          serviceCreationError,
+          projectId: projetoSalvo.id,
+          servicosSelecionados,
+        });
+        setErro(
+          'Projeto criado, mas nao foi possivel criar automaticamente os servicos marcados. Verifique o cadastro de servicos.',
+        );
+        navigate(`/projetos/${projetoSalvo.id}`);
+        return;
       }
 
       navigate(isEditing ? `/projetos/${projetoSalvo.id}` : '/projetos');

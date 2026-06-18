@@ -25,7 +25,10 @@ export const Input: React.FC<InputProps> = ({
       .replace(/(^-|-$)/g, '');
 
   const baseClasses =
-    'block w-full rounded-xl border border-white/20 bg-slate-900/50 text-slate-100 placeholder-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/35 focus:outline-none transition-colors duration-200';
+    'block w-full rounded-xl border bg-slate-900/50 text-slate-100 placeholder-slate-400 focus:outline-none transition-colors duration-200';
+  const stateClasses = error
+    ? 'border-red-400/80 focus:border-red-300 focus:ring-2 focus:ring-red-300/35'
+    : 'border-white/20 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/35';
   const classes = `${baseClasses} ${icon ? 'pl-10' : 'pl-3'} pr-3 py-2.5 ${className}`;
 
   return (
@@ -33,6 +36,7 @@ export const Input: React.FC<InputProps> = ({
       {label && (
         <label htmlFor={inputId} className="mb-1 block text-sm font-medium text-slate-200">
           {label}
+          {props.required && <span className="ml-1 text-red-300">*</span>}
         </label>
       )}
       <div className="relative">
@@ -41,7 +45,13 @@ export const Input: React.FC<InputProps> = ({
             <div className="h-5 w-5 text-slate-400">{icon}</div>
           </div>
         )}
-        <input id={inputId} ref={inputRef} className={classes} {...props} />
+        <input
+          id={inputId}
+          ref={inputRef}
+          className={`${classes} ${stateClasses}`}
+          aria-invalid={Boolean(error) || undefined}
+          {...props}
+        />
       </div>
       {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
     </div>

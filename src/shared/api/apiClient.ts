@@ -131,6 +131,28 @@ export const resolveErrorMessage = (payload: unknown, fallback: string) => {
     }
   }
 
+  if (payload && typeof payload === 'object') {
+    const source =
+      'errors' in payload && payload.errors && typeof payload.errors === 'object'
+        ? (payload.errors as Record<string, unknown>)
+        : (payload as Record<string, unknown>);
+    const fieldErrors = Object.entries(source).flatMap(([field, value]) => {
+      if (field === 'message' || field === 'error') return [];
+      if (Array.isArray(value)) {
+        const messages = value.map(String).filter(Boolean);
+        return messages.length ? [`${field}: ${messages.join(', ')}`] : [];
+      }
+      if (typeof value === 'string' && value.trim()) {
+        return [`${field}: ${value}`];
+      }
+      return [];
+    });
+
+    if (fieldErrors.length > 0) {
+      return fieldErrors.join(' | ');
+    }
+  }
+
   return fallback;
 };
 

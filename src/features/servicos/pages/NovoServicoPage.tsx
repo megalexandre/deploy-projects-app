@@ -261,6 +261,7 @@ export const NovoServicoPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<ServicoForm>(createEmptyForm());
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
@@ -305,6 +306,14 @@ export const NovoServicoPage: React.FC = () => {
     () => Math.max(valor - valor * (Number(form.cupomDescontoPct) / 100), 0),
     [form.cupomDescontoPct, valor],
   );
+  const inputClass = (invalid = false, extra = '') =>
+    [
+      'w-full rounded border bg-gray-800 px-3 py-3 text-gray-100',
+      invalid ? 'border-red-400 ring-1 ring-red-400/50' : 'border-gray-600',
+      extra,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
   useEffect(() => {
     if (
@@ -380,6 +389,35 @@ export const NovoServicoPage: React.FC = () => {
     );
   };
 
+  const getMissingFields = () => {
+    const missing: string[] = [];
+    const clienteValido = form.clienteId !== '' || form.clienteNomeManual.trim().length >= 2;
+
+    if (!clienteValido) missing.push('cliente');
+    if (!form.concessionaria.trim()) missing.push('concessionaria');
+    if (!form.dataAbertura.trim()) missing.push('data de abertura');
+    if (valor <= 0) missing.push('valor do servico');
+
+    if (isTechnicalType(form.tipo)) {
+      if (!isAddressValid(form.enderecoObra)) missing.push('endereco da obra completo');
+      if (parseCoordinate(form.latitude) === null) missing.push('latitude valida');
+      if (parseCoordinate(form.longitude) === null) missing.push('longitude valida');
+    }
+
+    if (canUseRateioType(form.tipo)) {
+      if (!isAddressValid(form.enderecoGeradora)) missing.push('endereco da geradora completo');
+      if (
+        !form.rateios.some(
+          (item) => item.uc.trim() && item.endereco.trim() && Number(item.percentual) > 0,
+        )
+      ) {
+        missing.push('ao menos um rateio valido');
+      }
+    }
+
+    return missing;
+  };
+
   const handleFilesChange = (key: string, files: FileList | null) => {
     const category = documentCategories.find((item) => item.key === key);
     if (!category) return;
@@ -400,8 +438,10 @@ export const NovoServicoPage: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!validateForm()) {
-      setError('Preencha os campos obrigatorios do serviço antes de criar.');
+    setSubmitAttempted(true);
+    const missingFields = getMissingFields();
+    if (missingFields.length > 0 || !validateForm()) {
+      setError(`Preencha os campos obrigatorios: ${missingFields.join(', ')}.`);
       return;
     }
 
@@ -568,7 +608,11 @@ export const NovoServicoPage: React.FC = () => {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, clienteNomeManual: event.target.value }))
               }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 disabled:opacity-60"
+              className={`${inputClass(
+                submitAttempted &&
+                  form.clienteId === '' &&
+                  form.clienteNomeManual.trim().length < 2,
+              )} disabled:opacity-60`}
             />
           </div>
           <div>
@@ -587,7 +631,7 @@ export const NovoServicoPage: React.FC = () => {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, dataAbertura: event.target.value }))
               }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+              className={inputClass(submitAttempted && !form.dataAbertura.trim())}
             />
           </div>
           <div>
@@ -597,7 +641,7 @@ export const NovoServicoPage: React.FC = () => {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, valor: event.target.value.replace(/[^0-9.,]/g, '') }))
               }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+              className={inputClass(submitAttempted && valor <= 0)}
             />
           </div>
           <div>
@@ -676,7 +720,11 @@ export const NovoServicoPage: React.FC = () => {
                       )
                     }
                     placeholder="CEP"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        onlyDigits(form.enderecoObra.cep).length !== 8,
+                    )}
                   />
                   <input
                     value={form.enderecoObra.numero}
@@ -687,7 +735,11 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="Numero"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        !form.enderecoObra.numero.trim(),
+                    )}
                   />
                   <input
                     value={form.enderecoObra.logradouro}
@@ -698,7 +750,12 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="Logradouro"
-                    className="md:col-span-2 w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        form.enderecoObra.logradouro.trim().length < 3,
+                      'md:col-span-2',
+                    )}
                   />
                   <input
                     value={form.enderecoObra.complemento}
@@ -720,7 +777,11 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="Bairro"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        form.enderecoObra.bairro.trim().length < 2,
+                    )}
                   />
                   <input
                     value={form.enderecoObra.cidade}
@@ -731,7 +792,11 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="Cidade"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        form.enderecoObra.cidade.trim().length < 2,
+                    )}
                   />
                   <input
                     maxLength={2}
@@ -746,7 +811,11 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="UF"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        form.enderecoObra.estado.trim().length !== 2,
+                    )}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -770,7 +839,11 @@ export const NovoServicoPage: React.FC = () => {
                       setForm((prev) => ({ ...prev, latitude: maskLatitude(event.target.value) }))
                     }
                     placeholder="Latitude"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        parseCoordinate(form.latitude) === null,
+                    )}
                   />
                   <input
                     value={form.longitude}
@@ -778,7 +851,11 @@ export const NovoServicoPage: React.FC = () => {
                       setForm((prev) => ({ ...prev, longitude: maskLongitude(event.target.value) }))
                     }
                     placeholder="Longitude"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        isTechnicalType(form.tipo) &&
+                        parseCoordinate(form.longitude) === null,
+                    )}
                   />
                   <select
                     value={form.padraoMaisDe30m}
@@ -986,7 +1063,11 @@ export const NovoServicoPage: React.FC = () => {
                       )
                     }
                     placeholder="CEP da geradora"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        canUseRateioType(form.tipo) &&
+                        onlyDigits(form.enderecoGeradora.cep).length !== 8,
+                    )}
                   />
                   <input
                     value={form.enderecoGeradora.logradouro}
@@ -1000,7 +1081,11 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="Endereco da geradora"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted &&
+                        canUseRateioType(form.tipo) &&
+                        form.enderecoGeradora.logradouro.trim().length < 3,
+                    )}
                   />
                 </div>
                 <div className="space-y-3">
@@ -1054,7 +1139,10 @@ export const NovoServicoPage: React.FC = () => {
                                     ),
                                   }))
                                 }
-                                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100"
+                                className={inputClass(
+                                  submitAttempted && canUseRateioType(form.tipo) && !item.uc.trim(),
+                                  'py-2',
+                                )}
                               />
                             </td>
                             <td className="px-4 py-3">
@@ -1070,7 +1158,12 @@ export const NovoServicoPage: React.FC = () => {
                                     ),
                                   }))
                                 }
-                                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100"
+                                className={inputClass(
+                                  submitAttempted &&
+                                    canUseRateioType(form.tipo) &&
+                                    !item.endereco.trim(),
+                                  'py-2',
+                                )}
                               />
                             </td>
                             <td className="px-4 py-3">
@@ -1108,7 +1201,12 @@ export const NovoServicoPage: React.FC = () => {
                                     ),
                                   }))
                                 }
-                                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100"
+                                className={inputClass(
+                                  submitAttempted &&
+                                    canUseRateioType(form.tipo) &&
+                                    Number(item.percentual) <= 0,
+                                  'py-2',
+                                )}
                               />
                             </td>
                           </tr>
