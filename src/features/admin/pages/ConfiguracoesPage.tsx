@@ -6,7 +6,6 @@ import {
   FloppyDisk,
   Gear,
   Percent,
-  Shield,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent } from '@/shared/components/Card';
@@ -17,7 +16,6 @@ import { CuponsSettingsSection } from '@/features/admin/components/settings/Cupo
 import { GeralSettingsSection } from '@/features/admin/components/settings/GeralSettingsSection';
 import { NotificationsSettingsSection } from '@/features/admin/components/settings/NotificationsSettingsSection';
 import { PrecosSettingsSection } from '@/features/admin/components/settings/PrecosSettingsSection';
-import { SegurancaSettingsSection } from '@/features/admin/components/settings/SegurancaSettingsSection';
 import { SistemaSettingsSection } from '@/features/admin/components/settings/SistemaSettingsSection';
 import { UserProfileReadonlySection } from '@/features/admin/components/settings/UserProfileReadonlySection';
 
@@ -27,8 +25,7 @@ type AbaConfiguracoes =
   | 'cupons'
   | 'concessionarias'
   | 'notificacoes'
-  | 'sistema'
-  | 'segurança';
+  | 'sistema';
 
 const tabs: Array<{
   id: AbaConfiguracoes;
@@ -41,7 +38,6 @@ const tabs: Array<{
   { id: 'concessionarias', label: 'Concessionarias', icon: Buildings },
   { id: 'notificacoes', label: 'Notificações', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
-  { id: 'segurança', label: 'Segurança', icon: Shield },
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
@@ -59,6 +55,7 @@ export const ConfiguracoesPage: React.FC = () => {
       return (
         <GeralSettingsSection
           formData={configuracoes.formData}
+          currentUser={currentUser}
           onInputChange={configuracoes.handleInputChange}
         />
       );
@@ -111,7 +108,7 @@ export const ConfiguracoesPage: React.FC = () => {
       );
     }
 
-    return <SegurancaSettingsSection />;
+    return null;
   };
 
   return (

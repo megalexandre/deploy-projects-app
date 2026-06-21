@@ -20,7 +20,12 @@ export type {
   LoginResponse,
 } from '@/features/auth/services/authService';
 
-export type { User, CreateUserData, UpdateUserData } from '@/features/admin/services/usersService';
+export type {
+  User,
+  CreateUserData,
+  UpdateUserData,
+  ResetPasswordData,
+} from '@/features/admin/services/usersService';
 
 export type {
   Project,
