@@ -26,6 +26,11 @@ export interface UpdateUserData {
   role?: string;
 }
 
+export interface ResetPasswordData {
+  password: string;
+  passwordConfirmation: string;
+}
+
 const normalizeRole = (value?: string) => {
   const normalized = value?.trim().toLowerCase() || 'user';
   return normalized === 'admin' ? 'main' : normalized;
@@ -88,5 +93,14 @@ export const usersService = {
 
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/users/${id}`);
+  },
+
+  async resetPassword(id: string, passwordData: ResetPasswordData): Promise<User> {
+    const response = await apiClient.patch<unknown>(`/users/${id}/reset_password`, {
+      password: passwordData.password,
+      password_confirmation: passwordData.passwordConfirmation,
+    });
+
+    return normalizeUser(response);
   },
 };

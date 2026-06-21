@@ -87,7 +87,7 @@ export const LoginFormPanel: React.FC<LoginFormPanelProps> = ({
 
           {error && <ErrorAlert message={error} />}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <label className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
@@ -95,12 +95,6 @@ export const LoginFormPanel: React.FC<LoginFormPanelProps> = ({
               />
               <span className="text-xs text-[#c1c6d5]">Lembrar meu acesso</span>
             </label>
-            <button
-              type="button"
-              className="text-xs text-[#a9c7ff] transition hover:text-[#43dde6]"
-            >
-              Esqueceu sua senha?
-            </button>
           </div>
 
           <button

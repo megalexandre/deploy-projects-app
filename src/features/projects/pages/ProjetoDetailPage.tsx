@@ -706,6 +706,14 @@ export const ProjetoDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {currentUser?.isAdmin && (
+            <Link to={`/projetos/${projeto.id}/editar`}>
+              <Button size="sm">
+                <PencilSimple className="h-4 w-4 mr-2" />
+                Editar projeto
+              </Button>
+            </Link>
+          )}
           <span
             className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(projeto.status)}`}
           >
@@ -818,26 +826,26 @@ export const ProjetoDetailPage: React.FC = () => {
                 <EditableProjectField
                   label="Protocolo da Concessionaria"
                   value={projeto.protocolo}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) => handleUpdateField({ utilityProtocol: value.trim() })}
                 />
                 <EditableProjectField
                   label="Concessionaria"
                   value={projeto.dadosProjeto.concessionaria}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) => handleUpdateField({ utilityCompany: value.trim() })}
                 />
                 <EditableProjectField
                   label="Classe"
                   value={projeto.dadosProjeto.classe}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) => handleUpdateField({ customerClass: value.trim() })}
                 />
                 <EditableProjectField
                   label="Integrador"
                   value={projeto.dadosProjeto.integradorId ?? ''}
                   displayValue={projeto.dadosProjeto.integrador}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={integradores}
                   onSave={(value) => handleUpdateField({ integrator: value })}
@@ -846,7 +854,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   label="Modalidade"
                   value={projeto.dadosProjeto.modalidade}
                   displayValue={formatModalidade(projeto.dadosProjeto.modalidade)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={[
                     { value: 'autoconsumo_local', label: 'Autoconsumo Local' },
@@ -859,21 +867,21 @@ export const ProjetoDetailPage: React.FC = () => {
                   label="Potencia do Sistema"
                   value={String(projeto.dadosProjeto.potenciaSistema)}
                   displayValue={`${projeto.dadosProjeto.potenciaSistema} kWp`}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="number"
                   onSave={(value) => handleUpdateField({ systemPower: parseNumber(value) })}
                 />
                 <EditableProjectField
                   label="Numero da UC"
                   value={projeto.numeroUc ?? ''}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) => handleUpdateField({ unitControl: value.trim() })}
                 />
                 <EditableProjectField
                   label="Tipo de Projeto"
                   value={tipoProjetoNormalizado}
                   displayValue={formatTipoProjeto(projeto.tipoProjeto)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={[
                     { value: 'fotovoltaico', label: 'Projeto Solar' },
@@ -885,7 +893,7 @@ export const ProjetoDetailPage: React.FC = () => {
                 <EditableProjectField
                   label="Tensao de Fornecimento"
                   value={projeto.tensaoFornecimento ?? ''}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={[
                     { value: '', label: 'Nao informado' },
@@ -897,7 +905,7 @@ export const ProjetoDetailPage: React.FC = () => {
                 <EditableProjectField
                   label="Servicos"
                   value={projeto.servicos?.join(', ') ?? ''}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) =>
                     handleUpdateField({
                       servicesNames: value
@@ -918,20 +926,20 @@ export const ProjetoDetailPage: React.FC = () => {
                 <EditableProjectField
                   label="Enquadramento"
                   value={projeto.dadosProjeto.enquadramento}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) => handleUpdateField({ framework: value.trim() })}
                 />
                 <EditableProjectField
                   label="Protecao CC"
                   value={projeto.dadosProjeto.protecaoCC}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   onSave={(value) => handleUpdateField({ dcProtection: value.trim() })}
                 />
                 <EditableProjectField
                   label="Valor"
                   value={String(projeto.valor)}
                   displayValue={formatCurrency(projeto.valor)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="number"
                   onSave={(value) => handleUpdateField({ amount: parseNumber(value) })}
                 />
@@ -939,7 +947,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   label="Data de Abertura"
                   value={projeto.dataAbertura ?? ''}
                   displayValue={formatDate(projeto.dataAbertura)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="date"
                   onSave={(value) => handleUpdateField({ dataAbertura: value })}
                 />
@@ -947,7 +955,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   label="Projeto Fast Track"
                   value={projeto.projetoFastTrack ?? 'nao'}
                   displayValue={formatBinaryChoice(projeto.projetoFastTrack)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={[
                     { value: 'sim', label: 'Sim' },
@@ -959,7 +967,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   label="Projeto Novo"
                   value={projeto.projetoNovo ?? 'sim'}
                   displayValue={formatBinaryChoice(projeto.projetoNovo)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={[
                     { value: 'sim', label: 'Sim' },
@@ -971,7 +979,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   label="Zero Grid / Controle de Exportacao"
                   value={projeto.zeroGridControleExportacao ?? 'nao'}
                   displayValue={formatBinaryChoice(projeto.zeroGridControleExportacao)}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="select"
                   options={[
                     { value: 'sim', label: 'Sim' },
@@ -1004,7 +1012,7 @@ export const ProjetoDetailPage: React.FC = () => {
                 <EditableProjectField
                   label="Observacoes"
                   value={projeto.observacoes ?? ''}
-                  canEdit={Boolean(currentUser?.isAdmin)}
+                  canEdit={false}
                   type="textarea"
                   onSave={(value) => handleUpdateField({ description: value.trim() })}
                 />

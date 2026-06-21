@@ -87,7 +87,7 @@ const ledgerToReceipt = (ledger: Ledger): EntityReceipt => ({
   id: ledger.id,
   descricao: ledger.description?.trim() || 'Recebimento',
   valor: Math.abs(ledgerAmountToNumber(ledger)),
-  data: normalizeDate(ledger.created_at),
+  data: normalizeDate(ledger.paid_at ?? ledger.created_at),
   status: 'pago',
 });
 
@@ -96,7 +96,7 @@ const ledgerToExpense = (ledger: Ledger): EntityExpense => ({
   descricao: ledger.description?.trim() || 'Despesa do projeto',
   categoria: 'Despesas',
   valor: ledgerAmountToNumber(ledger),
-  data: normalizeDate(ledger.created_at),
+  data: normalizeDate(ledger.paid_at ?? ledger.created_at),
   status: 'pago',
 });
 
@@ -148,6 +148,7 @@ export const entityFinanceService = {
         amount: remainingAmount,
         reason: 'receita',
         description: getPaymentDescription(scope),
+        paid_at: new Date().toISOString().slice(0, 10),
       });
     }
 
@@ -160,12 +161,16 @@ export const entityFinanceService = {
     return entityFinanceService.getSnapshot(scope);
   },
 
-  async saveReceipt(scope: EntityFinanceScope, receipt: { descricao: string; valor: number }) {
+  async saveReceipt(
+    scope: EntityFinanceScope,
+    receipt: { descricao: string; valor: number; data: string },
+  ) {
     await financeiroService.createLedger({
       ...getScopeParams(scope),
       amount: receipt.valor,
       reason: 'receita',
       description: receipt.descricao.trim() || getPaymentDescription(scope),
+      paid_at: receipt.data,
     });
 
     return entityFinanceService.getSnapshot(scope);
@@ -180,6 +185,7 @@ export const entityFinanceService = {
       amount: expense.valor,
       reason: 'despesa' as const,
       description: expense.descricao.trim(),
+      paid_at: expense.data,
     };
 
     if (expense.id) {

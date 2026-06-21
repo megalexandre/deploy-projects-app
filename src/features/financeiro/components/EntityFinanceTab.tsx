@@ -32,6 +32,7 @@ type ExpenseFormState = {
 type ReceiptFormState = {
   descricao: string;
   valor: string;
+  data: string;
 };
 
 const createEmptyExpenseForm = (): ExpenseFormState => ({
@@ -45,6 +46,7 @@ const createEmptyExpenseForm = (): ExpenseFormState => ({
 const createEmptyReceiptForm = (): ReceiptFormState => ({
   descricao: '',
   valor: '',
+  data: new Date().toISOString().slice(0, 10),
 });
 
 const formatDate = (value?: string) => {
@@ -77,6 +79,8 @@ export const EntityFinanceTab: React.FC<Props> = ({
   const [receiptForm, setReceiptForm] = useState<ReceiptFormState>(createEmptyReceiptForm());
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [expenseSubmitAttempted, setExpenseSubmitAttempted] = useState(false);
+  const [receiptSubmitAttempted, setReceiptSubmitAttempted] = useState(false);
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true);
@@ -86,7 +90,11 @@ export const EntityFinanceTab: React.FC<Props> = ({
       setSnapshot(await entityFinanceService.getSnapshot(scope));
     } catch (error) {
       console.error('Erro ao carregar financeiro vinculado:', error);
-      setErrorMessage('Nao foi possivel carregar o financeiro deste item.');
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel carregar o financeiro deste item.',
+      );
     } finally {
       setLoading(false);
     }
@@ -99,6 +107,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
   const resetForm = () => {
     setEditingExpense(null);
     setForm(createEmptyExpenseForm());
+    setExpenseSubmitAttempted(false);
   };
 
   const openCreateForm = () => {
@@ -112,7 +121,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
       valor: snapshot?.payment.valorPendente
         ? formatCurrencyBRL(snapshot.payment.valorPendente)
         : '',
+      data: new Date().toISOString().slice(0, 10),
     });
+    setReceiptSubmitAttempted(false);
     setReceiptFormOpen(true);
   };
 
@@ -130,6 +141,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
 
   const handleSaveExpense = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setExpenseSubmitAttempted(true);
 
     const valor = parseCurrencyBRL(form.valor);
     if (
@@ -139,6 +151,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
       Number.isNaN(valor) ||
       valor <= 0
     ) {
+      setErrorMessage(
+        'Preencha os campos obrigatorios da despesa: descricao, categoria, data e valor.',
+      );
       return;
     }
 
@@ -160,7 +175,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
       resetForm();
     } catch (error) {
       console.error('Erro ao salvar despesa vinculada:', error);
-      setErrorMessage('Nao foi possivel salvar a despesa.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel salvar a despesa.',
+      );
     } finally {
       setLoading(false);
     }
@@ -168,9 +185,11 @@ export const EntityFinanceTab: React.FC<Props> = ({
 
   const handleSaveReceipt = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setReceiptSubmitAttempted(true);
 
     const valor = parseCurrencyBRL(receiptForm.valor);
-    if (Number.isNaN(valor) || valor <= 0) {
+    if (!receiptForm.data || Number.isNaN(valor) || valor <= 0) {
+      setErrorMessage('Preencha os campos obrigatorios do recebimento: data e valor.');
       return;
     }
 
@@ -182,13 +201,17 @@ export const EntityFinanceTab: React.FC<Props> = ({
         await entityFinanceService.saveReceipt(scope, {
           descricao: receiptForm.descricao,
           valor,
+          data: receiptForm.data,
         }),
       );
       setReceiptForm(createEmptyReceiptForm());
+      setReceiptSubmitAttempted(false);
       setReceiptFormOpen(false);
     } catch (error) {
       console.error('Erro ao salvar recebimento vinculado:', error);
-      setErrorMessage('Nao foi possivel salvar o recebimento.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel salvar o recebimento.',
+      );
     } finally {
       setLoading(false);
     }
@@ -209,7 +232,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
       );
     } catch (error) {
       console.error('Erro ao atualizar recebimento vinculado:', error);
-      setErrorMessage('Nao foi possivel atualizar o recebimento.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel atualizar o recebimento.',
+      );
     } finally {
       setLoading(false);
     }
@@ -388,6 +413,23 @@ export const EntityFinanceTab: React.FC<Props> = ({
                     valor: maskCurrencyBRL(event.target.value),
                   }))
                 }
+                error={
+                  receiptSubmitAttempted &&
+                  (Number.isNaN(parseCurrencyBRL(receiptForm.valor)) ||
+                    parseCurrencyBRL(receiptForm.valor) <= 0)
+                    ? 'Informe um valor maior que zero.'
+                    : undefined
+                }
+                required
+              />
+              <Input
+                label="Data"
+                type="date"
+                value={receiptForm.data}
+                onChange={(event) =>
+                  setReceiptForm((current) => ({ ...current, data: event.target.value }))
+                }
+                error={receiptSubmitAttempted && !receiptForm.data ? 'Informe a data.' : undefined}
                 required
               />
               <div className="flex justify-end gap-3 md:col-span-2">
@@ -397,6 +439,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                   onClick={() => {
                     setReceiptFormOpen(false);
                     setReceiptForm(createEmptyReceiptForm());
+                    setReceiptSubmitAttempted(false);
                   }}
                 >
                   Cancelar
@@ -475,6 +518,11 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 onChange={(event) =>
                   setForm((current) => ({ ...current, descricao: event.target.value }))
                 }
+                error={
+                  expenseSubmitAttempted && !form.descricao.trim()
+                    ? 'Informe a descricao.'
+                    : undefined
+                }
                 required
               />
               <Input
@@ -482,6 +530,11 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 value={form.categoria}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, categoria: event.target.value }))
+                }
+                error={
+                  expenseSubmitAttempted && !form.categoria.trim()
+                    ? 'Informe a categoria.'
+                    : undefined
                 }
                 required
               />
@@ -493,6 +546,12 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 onChange={(event) =>
                   setForm((current) => ({ ...current, valor: maskCurrencyBRL(event.target.value) }))
                 }
+                error={
+                  expenseSubmitAttempted &&
+                  (Number.isNaN(parseCurrencyBRL(form.valor)) || parseCurrencyBRL(form.valor) <= 0)
+                    ? 'Informe um valor maior que zero.'
+                    : undefined
+                }
                 required
               />
               <Input
@@ -502,6 +561,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 onChange={(event) =>
                   setForm((current) => ({ ...current, data: event.target.value }))
                 }
+                error={expenseSubmitAttempted && !form.data ? 'Informe a data.' : undefined}
                 required
               />
               <label className="block text-sm text-gray-300">

@@ -11,6 +11,7 @@ import { financeiroService, type TransacaoFinanceira } from '../services/finance
 const emptyForm = {
   descricao: '',
   valor: '',
+  data: new Date().toISOString().slice(0, 10),
 };
 
 export const PagamentosPage: React.FC = () => {
@@ -19,6 +20,7 @@ export const PagamentosPage: React.FC = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const loadPagamentos = async () => {
     setLoading(true);
@@ -29,7 +31,9 @@ export const PagamentosPage: React.FC = () => {
       setPagamentos(transacoes.filter((item) => item.tipo === 'despesa'));
     } catch (error) {
       console.error('Erro ao carregar pagamentos:', error);
-      setErrorMessage('Nao foi possivel carregar os pagamentos.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel carregar os pagamentos.',
+      );
     } finally {
       setLoading(false);
     }
@@ -45,9 +49,11 @@ export const PagamentosPage: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitAttempted(true);
 
     const valor = parseCurrencyBRL(form.valor);
-    if (!form.descricao.trim() || Number.isNaN(valor) || valor <= 0) {
+    if (!form.descricao.trim() || !form.data || Number.isNaN(valor) || valor <= 0) {
+      setErrorMessage('Preencha os campos obrigatorios do pagamento: descricao, data e valor.');
       return;
     }
 
@@ -59,13 +65,17 @@ export const PagamentosPage: React.FC = () => {
         amount: valor,
         reason: 'despesa',
         description: form.descricao.trim(),
+        paid_at: form.data,
       });
       setForm(emptyForm);
+      setSubmitAttempted(false);
       setFormOpen(false);
       await loadPagamentos();
     } catch (error) {
       console.error('Erro ao registrar pagamento:', error);
-      setErrorMessage('Nao foi possivel registrar o pagamento.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel registrar o pagamento.',
+      );
     } finally {
       setLoading(false);
     }
@@ -118,6 +128,19 @@ export const PagamentosPage: React.FC = () => {
                 onChange={(event) =>
                   setForm((current) => ({ ...current, descricao: event.target.value }))
                 }
+                error={
+                  submitAttempted && !form.descricao.trim() ? 'Informe a descricao.' : undefined
+                }
+                required
+              />
+              <Input
+                label="Data"
+                type="date"
+                value={form.data}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, data: event.target.value }))
+                }
+                error={submitAttempted && !form.data ? 'Informe a data.' : undefined}
                 required
               />
               <Input
@@ -127,6 +150,12 @@ export const PagamentosPage: React.FC = () => {
                 value={form.valor}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, valor: maskCurrencyBRL(event.target.value) }))
+                }
+                error={
+                  submitAttempted &&
+                  (Number.isNaN(parseCurrencyBRL(form.valor)) || parseCurrencyBRL(form.valor) <= 0)
+                    ? 'Informe um valor maior que zero.'
+                    : undefined
                 }
                 required
               />

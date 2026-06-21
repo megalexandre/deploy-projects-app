@@ -11,6 +11,7 @@ export interface Ledger {
   amount_cents: number;
   reason?: string | null;
   description?: string | null;
+  paid_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +44,7 @@ export interface LedgerPayload {
   amount: number;
   reason: LedgerKind;
   description: string;
+  paid_at?: string | null;
 }
 
 export interface TransacaoFinanceira {
@@ -98,7 +100,7 @@ export const ledgerToTransacao = (ledger: Ledger): TransacaoFinanceira => {
     descricao: ledger.description?.trim() || 'Lancamento financeiro',
     tipo,
     valor: Math.abs(rawValor),
-    data: (ledger.created_at || new Date().toISOString()).slice(0, 10),
+    data: (ledger.paid_at || ledger.created_at || new Date().toISOString()).slice(0, 10),
     categoria: tipo === 'receita' ? 'Receitas' : 'Despesas',
     status: 'pago',
     projectId: ledger.project_id,
