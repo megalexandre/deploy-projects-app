@@ -31,5 +31,4 @@ export const asNumber = (value: unknown, fallback = 0): number => {
   return fallback;
 };
 
-export const asArray = <T>(value: unknown): T[] =>
-  Array.isArray(value) ? (value as T[]) : [];
+export const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);

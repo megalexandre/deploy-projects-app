@@ -7,8 +7,8 @@ export interface AuditLog {
   entity: string;
   entityId: string;
   userId: string;
-  oldValues?: Record<string, any>;
-  newValues?: Record<string, any>;
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
   timestamp: string;
   user?: {
     id: string;
@@ -43,5 +43,5 @@ export const auditService = {
 
   async getByUser(userId: string, filters?: Omit<AuditFilters, 'userId'>): Promise<AuditLog[]> {
     return apiClient.get<AuditLog[]>(`/audit/user/${userId}`, { query: filters });
-  }
+  },
 };

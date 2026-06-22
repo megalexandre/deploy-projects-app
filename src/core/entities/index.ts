@@ -5,20 +5,15 @@ export type {
   PaginatedResponse,
   Endereco,
   Documento,
+  TimelineComment,
   TimelineItem,
   PadraoEntradaItem,
   Modulo,
   Inversor,
-  DivisaoCreditos
+  DivisaoCreditos,
 } from './comum';
 
-export type {
-  DadosProjeto,
-  DadosTecnicos,
-  Cliente,
-  Projeto,
-  DashboardStats
-} from './projeto';
+export type { DadosProjeto, DadosTecnicos, Cliente, Projeto, DashboardStats } from './projeto';
 export { StatusProjeto } from './projeto';
 
 export type { Servico } from './servico';
@@ -32,5 +27,5 @@ export type {
   FaixaPrecoFotovoltaico,
   PrecoPadraoEntrada,
   CupomDesconto,
-  ConfiguracoesSistema
+  ConfiguracoesSistema,
 } from './financeiro';

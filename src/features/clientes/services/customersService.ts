@@ -3,43 +3,8 @@ import type { Documento } from '@/types';
 import { asNumber, asString, isRecord } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
 import { apiClient } from '@/shared/api/apiClient';
-
-export interface Customer {
-  id: string;
-  addressId?: string;
-  nome: string;
-  cpfCnpj: string;
-  telefone: string;
-  email: string;
-  enderecoCompleto?: string;
-  endereco?: {
-    cep: string;
-    logradouro: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    link?: string;
-  };
-  documentos: Documento[];
-}
-
-export interface CreateCustomerData {
-  nome: string;
-  addressId?: string;
-  cpfCnpj: string;
-  telefone: string;
-  email: string;
-}
-
-export interface UpdateCustomerData {
-  nome?: string;
-  addressId?: string;
-  cpfCnpj?: string;
-  telefone?: string;
-  email?: string;
-}
+import type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
+export type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
 
 type CustomerEnhancement = {
   documentos?: Documento[];
@@ -47,7 +12,9 @@ type CustomerEnhancement = {
 
 const CUSTOMER_ENHANCEMENTS_STORAGE_KEY = 'opj_frontend_customer_enhancements';
 
-const customerEnhancementsStorage = createRecordStorage<CustomerEnhancement>(CUSTOMER_ENHANCEMENTS_STORAGE_KEY);
+const customerEnhancementsStorage = createRecordStorage<CustomerEnhancement>(
+  CUSTOMER_ENHANCEMENTS_STORAGE_KEY,
+);
 
 const normalizeDocumentos = (documentos?: unknown): Documento[] =>
   (Array.isArray(documentos) ? documentos : []).map((item) => {
@@ -57,16 +24,17 @@ const normalizeDocumentos = (documentos?: unknown): Documento[] =>
       id: asString(documento.id) || crypto.randomUUID(),
       nome: asString(documento.nome) || asString(documento.name) || 'Documento',
       tipo: asString(documento.tipo) || asString(documento.type) || 'Documento',
-      dataUpload: asString(documento.dataUpload) || asString(documento.createdAt) || new Date().toISOString(),
+      dataUpload:
+        asString(documento.dataUpload) || asString(documento.createdAt) || new Date().toISOString(),
       tamanho: asNumber(documento.tamanho ?? documento.size),
       fileId: asString(documento.fileId) || asString(documento.id) || undefined,
-      url: asString(documento.url) || asString(documento.urlS3) || undefined
+      url: asString(documento.url) || asString(documento.urlS3) || undefined,
     };
   });
 
 const updateCustomerEnhancement = (
   customerId: string,
-  updater: (current: CustomerEnhancement | undefined) => CustomerEnhancement
+  updater: (current: CustomerEnhancement | undefined) => CustomerEnhancement,
 ) => {
   const current = customerEnhancementsStorage.read();
   current[customerId] = updater(current[customerId]);
@@ -81,7 +49,7 @@ const mergeCustomerEnhancement = (customer: Customer): Customer => {
 
   return {
     ...customer,
-    documentos: enhancement.documentos?.length ? enhancement.documentos : customer.documentos
+    documentos: enhancement.documentos?.length ? enhancement.documentos : customer.documentos,
   };
 };
 
@@ -89,7 +57,8 @@ const normalizeEndereco = (raw: unknown): Customer['endereco'] => {
   const endereco = isRecord(raw) ? raw : {};
 
   const cep = asString(endereco.cep);
-  const logradouro = asString(endereco.logradouro) || asString(endereco.address) || asString(endereco.place);
+  const logradouro =
+    asString(endereco.logradouro) || asString(endereco.address) || asString(endereco.place);
   const numero = asString(endereco.numero) || asString(endereco.number);
   const complemento = asString(endereco.complemento) || asString(endereco.complement);
   const bairro = asString(endereco.bairro) || asString(endereco.neighborhood);
@@ -97,7 +66,9 @@ const normalizeEndereco = (raw: unknown): Customer['endereco'] => {
   const estado = asString(endereco.estado) || asString(endereco.state);
   const link = asString(endereco.link);
 
-  const anyFilled = [cep, logradouro, numero, complemento, bairro, cidade, estado, link].some((item) => item.trim() !== '');
+  const anyFilled = [cep, logradouro, numero, complemento, bairro, cidade, estado, link].some(
+    (item) => item.trim() !== '',
+  );
   if (!anyFilled) {
     return undefined;
   }
@@ -110,7 +81,7 @@ const normalizeEndereco = (raw: unknown): Customer['endereco'] => {
     bairro,
     cidade,
     estado,
-    link: link || undefined
+    link: link || undefined,
   };
 };
 
@@ -129,14 +100,15 @@ const normalizeCustomer = (raw: unknown): Customer => {
 
   return {
     id: asString(customer.id) || crypto.randomUUID(),
-    addressId: asString(customer.addressId) || nestedAddressId || undefined,
+    addressId:
+      asString(customer.address_id) || asString(customer.addressId) || nestedAddressId || undefined,
     nome: asString(customer.nome) || asString(customer.name),
-    cpfCnpj: asString(customer.cpfCnpj) || asString(customer.taxId),
+    cpfCnpj: asString(customer.cpfCnpj) || asString(customer.tax_id) || asString(customer.taxId),
     telefone: asString(customer.telefone) || asString(customer.phone),
     email: asString(customer.email),
     enderecoCompleto: enderecoCompleto || undefined,
     endereco: normalizeEndereco(enderecoRaw),
-    documentos: normalizeDocumentos(customer.documentos)
+    documentos: normalizeDocumentos(customer.documentos),
   };
 };
 
@@ -146,14 +118,17 @@ const buildCustomerPayload = (customerData: CreateCustomerData | UpdateCustomerD
   const payload: Record<string, unknown> = {};
 
   if (customerData.nome !== undefined) {
+    payload.name = customerData.nome;
     payload.nome = customerData.nome;
   }
 
   if (customerData.cpfCnpj !== undefined) {
+    payload.tax_id = customerData.cpfCnpj;
     payload.cpfCnpj = customerData.cpfCnpj;
   }
 
   if (customerData.telefone !== undefined) {
+    payload.phone = customerData.telefone;
     payload.telefone = customerData.telefone;
   }
 
@@ -162,6 +137,7 @@ const buildCustomerPayload = (customerData: CreateCustomerData | UpdateCustomerD
   }
 
   if (customerData.addressId !== undefined) {
+    payload.address_id = customerData.addressId;
     payload.addressId = customerData.addressId;
   }
 
@@ -172,7 +148,7 @@ export const customersService = {
   saveDocuments(customerId: string, documentos: Documento[]) {
     updateCustomerEnhancement(customerId, (current) => ({
       ...current,
-      documentos
+      documentos,
     }));
   },
 
@@ -199,7 +175,7 @@ export const customersService = {
 
   async update(id: string, customerData: UpdateCustomerData): Promise<Customer> {
     const payload = { id, ...buildCustomerPayload(customerData) };
-    const response = await apiClient.put<unknown>(CUSTOMERS_ENDPOINT, payload);
+    const response = await apiClient.put<unknown>(`${CUSTOMERS_ENDPOINT}/${id}`, payload);
     return mergeCustomerEnhancement(normalizeCustomer(response));
-  }
+  },
 };

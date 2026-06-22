@@ -1,42 +1,84 @@
-/** Pagina 'RecebimentosPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
-import React from 'react';
+/** Pagina 'RecebimentosPage': lista e cadastra receitas em /ledgers. */
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Bank, CurrencyCircleDollar, TrendUp } from '@phosphor-icons/react';
+import { ArrowLeft, Bank, CurrencyCircleDollar, TrendUp, X } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Button } from '@/shared/components/Button';
-import { formatCurrencyBRL } from '@/core/utils/masks';
+import { Input } from '@/shared/components/Input';
+import { formatCurrencyBRL, maskCurrencyBRL, parseCurrencyBRL } from '@/core/utils/masks';
+import { financeiroService, type TransacaoFinanceira } from '../services/financeiroService';
 
-interface Recebimento {
-  id: string;
-  cliente: string;
-  projeto: string;
-  previsao: string;
-  valor: number;
-  status: 'a_receber' | 'recebido' | 'vencido';
-}
-
-const recebimentosMock: Recebimento[] = [
-  { id: '1', cliente: 'Carlos Santos', projeto: 'UFV Residencial 12kWp', previsao: '2026-02-20', valor: 7800, status: 'a_receber' },
-  { id: '2', cliente: 'Condominio Vale Verde', projeto: 'Sistema compartilhado 75kWp', previsao: '2026-02-12', valor: 24500, status: 'vencido' },
-  { id: '3', cliente: 'Mercado Nova Era', projeto: 'Retrofit comercial 30kWp', previsao: '2026-02-04', valor: 11200, status: 'recebido' }
-];
+const emptyForm = {
+  descricao: '',
+  valor: '',
+  data: new Date().toISOString().slice(0, 10),
+};
 
 export const RecebimentosPage: React.FC = () => {
-  const totalPrevisto = recebimentosMock.filter((item) => item.status !== 'recebido').reduce((sum, item) => sum + item.valor, 0);
-  const totalRecebido = recebimentosMock.filter((item) => item.status === 'recebido').reduce((sum, item) => sum + item.valor, 0);
+  const [recebimentos, setRecebimentos] = useState<TransacaoFinanceira[]>([]);
+  const [form, setForm] = useState(emptyForm);
+  const [formOpen, setFormOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const loadRecebimentos = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const transacoes = await financeiroService.listTransacoes();
+      setRecebimentos(transacoes.filter((item) => item.tipo === 'receita'));
+    } catch (error) {
+      console.error('Erro ao carregar recebimentos:', error);
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel carregar os recebimentos.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadRecebimentos();
+  }, []);
+
+  const totalRecebido = recebimentos.reduce((sum, item) => sum + item.valor, 0);
 
   const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
-  const getStatusBadge = (status: Recebimento['status']) => {
-    if (status === 'recebido') return 'bg-green-900/50 text-green-300 border-green-700';
-    if (status === 'vencido') return 'bg-red-900/50 text-red-300 border-red-700';
-    return 'bg-blue-900/50 text-blue-300 border-blue-700';
-  };
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitAttempted(true);
 
-  const getStatusLabel = (status: Recebimento['status']) => {
-    if (status === 'recebido') return 'Recebido';
-    if (status === 'vencido') return 'Vencido';
-    return 'A receber';
+    const valor = parseCurrencyBRL(form.valor);
+    if (!form.descricao.trim() || !form.data || Number.isNaN(valor) || valor <= 0) {
+      setErrorMessage('Preencha os campos obrigatorios do recebimento: descricao, data e valor.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      await financeiroService.createLedger({
+        amount: valor,
+        reason: 'receita',
+        description: form.descricao.trim(),
+        paid_at: form.data,
+      });
+      setForm(emptyForm);
+      setSubmitAttempted(false);
+      setFormOpen(false);
+      await loadRecebimentos();
+    } catch (error) {
+      console.error('Erro ao registrar recebimento:', error);
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Nao foi possivel registrar o recebimento.',
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,7 +86,9 @@ export const RecebimentosPage: React.FC = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Recebimentos</h1>
-          <p className="text-gray-400 mt-1">Esboco inicial para contas a receber por cliente e projeto.</p>
+          <p className="text-gray-400 mt-1">Receitas registradas no financeiro.</p>
+          {loading && <p className="text-xs text-gray-500 mt-1">Sincronizando com a API...</p>}
+          {errorMessage && <p className="text-xs text-red-300 mt-1">{errorMessage}</p>}
         </div>
         <div className="flex gap-2">
           <Link to="/financeiro">
@@ -53,19 +97,84 @@ export const RecebimentosPage: React.FC = () => {
               Voltar ao financeiro
             </Button>
           </Link>
-          <Button>
+          <Button onClick={() => setFormOpen((current) => !current)}>
             <Bank className="h-4 w-4 mr-2" />
             Registrar recebimento
           </Button>
         </div>
       </div>
 
+      {formOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle>Novo recebimento</CardTitle>
+              <button
+                type="button"
+                onClick={() => setFormOpen(false)}
+                className="rounded-lg border border-white/10 p-2 text-slate-300 transition hover:bg-slate-800"
+                aria-label="Fechar formulario de recebimento"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Input
+                label="Descricao"
+                placeholder="Ex: Entrada projeto comercial"
+                value={form.descricao}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, descricao: event.target.value }))
+                }
+                error={
+                  submitAttempted && !form.descricao.trim() ? 'Informe a descricao.' : undefined
+                }
+                required
+              />
+              <Input
+                label="Data"
+                type="date"
+                value={form.data}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, data: event.target.value }))
+                }
+                error={submitAttempted && !form.data ? 'Informe a data.' : undefined}
+                required
+              />
+              <Input
+                label="Valor"
+                inputMode="numeric"
+                placeholder="R$ 0,00"
+                value={form.valor}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, valor: maskCurrencyBRL(event.target.value) }))
+                }
+                error={
+                  submitAttempted &&
+                  (Number.isNaN(parseCurrencyBRL(form.valor)) || parseCurrencyBRL(form.valor) <= 0)
+                    ? 'Informe um valor maior que zero.'
+                    : undefined
+                }
+                required
+              />
+              <div className="md:col-span-2 flex justify-end">
+                <Button type="submit" disabled={loading}>
+                  Salvar recebimento
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Total previsto</p>
-              <p className="text-2xl font-bold text-blue-400">{formatCurrencyBRL(totalPrevisto)}</p>
+              <p className="text-sm text-gray-400">Total recebido</p>
+              <p className="text-2xl font-bold text-blue-400">{formatCurrencyBRL(totalRecebido)}</p>
             </div>
             <CurrencyCircleDollar className="h-8 w-8 text-blue-400" />
           </CardContent>
@@ -73,16 +182,16 @@ export const RecebimentosPage: React.FC = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Recebido no periodo</p>
-              <p className="text-2xl font-bold text-green-400">{formatCurrencyBRL(totalRecebido)}</p>
+              <p className="text-sm text-gray-400">Lancamentos</p>
+              <p className="text-2xl font-bold text-green-400">{recebimentos.length}</p>
             </div>
             <TrendUp className="h-8 w-8 text-green-400" />
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-gray-400">Proximo passo</p>
-            <p className="text-gray-100 mt-2">Adicionar regras de cobranca, juros e comprovantes.</p>
+            <p className="text-sm text-gray-400">Origem</p>
+            <p className="text-gray-100 mt-2">Dados carregados de /ledgers com reason receita.</p>
           </CardContent>
         </Card>
       </div>
@@ -96,27 +205,34 @@ export const RecebimentosPage: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Cliente</th>
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Projeto</th>
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Previsao</th>
+                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Descricao</th>
+                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Data</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Valor</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {recebimentosMock.map((item) => (
+                {recebimentos.map((item) => (
                   <tr key={item.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                    <td className="py-3 px-4 text-gray-100">{item.cliente}</td>
-                    <td className="py-3 px-4 text-gray-100">{item.projeto}</td>
-                    <td className="py-3 px-4 text-gray-100">{formatDateBR(item.previsao)}</td>
-                    <td className="py-3 px-4 text-gray-100 font-medium">{formatCurrencyBRL(item.valor)}</td>
+                    <td className="py-3 px-4 text-gray-100">{item.descricao}</td>
+                    <td className="py-3 px-4 text-gray-100">{formatDateBR(item.data)}</td>
+                    <td className="py-3 px-4 text-gray-100 font-medium">
+                      {formatCurrencyBRL(item.valor)}
+                    </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}>
-                        {getStatusLabel(item.status)}
+                      <span className="px-2 py-1 rounded-full text-xs font-medium border bg-green-900/50 text-green-300 border-green-700">
+                        Recebido
                       </span>
                     </td>
                   </tr>
                 ))}
+                {recebimentos.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-6 px-4 text-center text-gray-400">
+                      Nenhum recebimento registrado.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -125,4 +241,3 @@ export const RecebimentosPage: React.FC = () => {
     </div>
   );
 };
-

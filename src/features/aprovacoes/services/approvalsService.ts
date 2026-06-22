@@ -24,7 +24,11 @@ const storage = createArrayStorage<ApprovalRequest>('opj_approval_requests');
 
 export const approvalsService = {
   list(): ApprovalRequest[] {
-    return storage.read().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+    return storage
+      .read()
+      .sort(
+        (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+      );
   },
 
   listPending(): ApprovalRequest[] {
@@ -38,13 +42,13 @@ export const approvalsService = {
     clientName: string;
   }) {
     const sessionUser = getSessionUser();
-    if (!sessionUser || sessionUser.role === 'admin') {
+    if (!sessionUser || sessionUser.isAdmin) {
       return;
     }
 
     const current = storage.read();
     const existingIndex = current.findIndex(
-      (item) => item.entityType === input.entityType && item.entityId === input.entityId
+      (item) => item.entityType === input.entityType && item.entityId === input.entityId,
     );
 
     const request: ApprovalRequest = {
@@ -57,7 +61,7 @@ export const approvalsService = {
       createdByUserId: sessionUser.id,
       createdByName: sessionUser.name,
       createdByRole: sessionUser.role,
-      status: 'pendente'
+      status: 'pendente',
     };
 
     if (existingIndex >= 0) {
@@ -67,6 +71,43 @@ export const approvalsService = {
     }
 
     storage.write(current);
+  },
+
+  ensurePendingRequest(input: {
+    entityType: ApprovalEntityType;
+    entityId: string;
+    entityLabel: string;
+    clientName: string;
+    createdAt?: string;
+    createdByUserId?: string;
+    createdByName?: string;
+    createdByRole?: string;
+  }) {
+    const current = storage.read();
+    const existingIndex = current.findIndex(
+      (item) => item.entityType === input.entityType && item.entityId === input.entityId,
+    );
+
+    if (existingIndex >= 0) {
+      return current[existingIndex];
+    }
+
+    const request: ApprovalRequest = {
+      id: crypto.randomUUID(),
+      entityType: input.entityType,
+      entityId: input.entityId,
+      entityLabel: input.entityLabel,
+      clientName: input.clientName,
+      createdAt: input.createdAt || new Date().toISOString(),
+      createdByUserId: input.createdByUserId || 'desconhecido',
+      createdByName: input.createdByName || 'Usuario do sistema',
+      createdByRole: input.createdByRole || 'user',
+      status: 'pendente',
+    };
+
+    current.unshift(request);
+    storage.write(current);
+    return request;
   },
 
   decide(id: string, status: Extract<ApprovalStatus, 'aprovado' | 'rejeitado'>) {
@@ -82,9 +123,9 @@ export const approvalsService = {
       status,
       decidedAt: new Date().toISOString(),
       decidedByUserId: sessionUser?.id,
-      decidedByName: sessionUser?.name
+      decidedByName: sessionUser?.name,
     };
 
     storage.write(current);
-  }
+  },
 };

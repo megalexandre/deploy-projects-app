@@ -31,14 +31,10 @@ export const maskCpfOrCnpj = (value: string) => {
 export const maskPhoneBR = (value: string) => {
   const digits = onlyDigits(value).slice(0, 11);
   if (digits.length <= 10) {
-    return digits
-      .replace(/^(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{4})(\d)/, '$1-$2');
+    return digits.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
   }
 
-  return digits
-    .replace(/^(\d{2})(\d)/, '($1) $2')
-    .replace(/(\d{5})(\d)/, '$1-$2');
+  return digits.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
 };
 
 export const maskCep = (value: string) => {
@@ -54,10 +50,20 @@ export const maskCurrencyBRL = (value: string) => {
   return formatCurrencyBRL(numericValue);
 };
 
+export const parseCurrencyBRL = (value: string) => {
+  const normalized = value
+    .replace(/[^\d,.-]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export const formatCurrencyBRL = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
-    currency: 'BRL'
+    currency: 'BRL',
   }).format(value);
 };
 
@@ -66,8 +72,17 @@ export const maskCoordinate = (value: string, _maxIntegerDigits = 3, maxDecimalD
   const signal = trimmed.startsWith('-') ? '-' : '';
   const unsigned = trimmed.replace(/-/g, '');
   const [integerPart = '', ...decimalParts] = unsigned.split('.');
-  const integerDigits = integerPart.replace(/\D/g, '');
+  const integerDigits = integerPart.replace(/\D/g, '').slice(0, _maxIntegerDigits);
   const decimalDigits = decimalParts.join('').replace(/\D/g, '').slice(0, maxDecimalDigits);
+  const endsWithDecimalSeparator = /[.,]$/.test(trimmed);
+
+  if (trimmed === '-') {
+    return '-';
+  }
+
+  if ((trimmed === '.' || trimmed === '-.') && !integerDigits && !decimalDigits) {
+    return `${signal}0.`;
+  }
 
   if (!integerDigits && !decimalDigits) {
     return '';
@@ -77,12 +92,22 @@ export const maskCoordinate = (value: string, _maxIntegerDigits = 3, maxDecimalD
     return `${signal}0.${decimalDigits}`;
   }
 
-  return decimalDigits ? `${signal}${integerDigits}.${decimalDigits}` : `${signal}${integerDigits}`;
+  if (decimalDigits) {
+    return `${signal}${integerDigits}.${decimalDigits}`;
+  }
+
+  if (endsWithDecimalSeparator) {
+    return `${signal}${integerDigits}.`;
+  }
+
+  return `${signal}${integerDigits}`;
 };
 
-export const maskLatitude = (value: string, maxDecimalDigits = 8) => maskCoordinate(value, 2, maxDecimalDigits);
+export const maskLatitude = (value: string, maxDecimalDigits = 8) =>
+  maskCoordinate(value, 2, maxDecimalDigits);
 
-export const maskLongitude = (value: string, maxDecimalDigits = 8) => maskCoordinate(value, 3, maxDecimalDigits);
+export const maskLongitude = (value: string, maxDecimalDigits = 8) =>
+  maskCoordinate(value, 3, maxDecimalDigits);
 
 export const parseCoordinate = (value: string): number | null => {
   const normalized = maskCoordinate(value);

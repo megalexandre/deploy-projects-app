@@ -1,15 +1,22 @@
-import type { Documento, DivisaoCreditos, Endereco, PadraoEntradaItem, TimelineItem } from './comum';
+import type {
+  Documento,
+  DivisaoCreditos,
+  Endereco,
+  PadraoEntradaItem,
+  TimelineItem,
+} from './comum';
 
 export const TipoServico = {
   LIGACAO_NOVA: 'ligacao_nova',
   AUMENTO_CARGA: 'aumento_carga',
   TROCA_TITULARIDADE: 'troca_titularidade',
-  ALTERACAO_COMPARTILHAMENTO_CREDITO: 'alteracao_compartilhamento_credito'
+  ALTERACAO_COMPARTILHAMENTO_CREDITO: 'alteracao_compartilhamento_credito',
 } as const;
 
 export type TipoServico = (typeof TipoServico)[keyof typeof TipoServico];
 
 export const StatusServico = {
+  AGUARDANDO_APROVACAO: 'aguardando_aprovacao',
   ABERTURA_SERVICO: 'abertura_servico',
   ELABORACAO_DOCUMENTACAO: 'elaboracao_documentacao',
   AGUARDANDO_ASSINATURA_CLIENTE: 'aguardando_assinatura_cliente',
@@ -20,7 +27,7 @@ export const StatusServico = {
   SERVICO_APROVADO: 'servico_aprovado',
   VISTORIA_SOLICITADA: 'vistoria_solicitada',
   VISTORIA_REPROVADA: 'vistoria_reprovada',
-  SERVICO_ENCERRADO: 'servico_encerrado'
+  SERVICO_ENCERRADO: 'servico_encerrado',
 } as const;
 
 export type StatusServico = (typeof StatusServico)[keyof typeof StatusServico];
@@ -31,6 +38,7 @@ export interface Servico {
   tipo: TipoServico;
   nome: string;
   clienteId?: string;
+  concessionariaId?: string;
   cliente: string;
   concessionaria: string;
   status: StatusServico;
@@ -51,6 +59,7 @@ export interface Servico {
   enderecoGeradora?: Endereco;
   padraoEntradaItens?: PadraoEntradaItem[];
   rateios?: DivisaoCreditos[];
+  precisaAprovacao?: boolean;
   documentos: Documento[];
   timeline: TimelineItem[];
   dataCriacao: string;

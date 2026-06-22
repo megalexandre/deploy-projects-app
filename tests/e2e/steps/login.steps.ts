@@ -1,16 +1,16 @@
 /** Arquivo de suporte 'login.steps' do projeto. */
 import { Given, When, Then } from '@cucumber/cucumber';
 import type { CustomWorld } from '../support/world';
+import { setupAuthMocks } from '../support/mocks';
 
 Given('que estou na pagina de login', async function (this: CustomWorld) {
-  
   const page = this.page;
   if (!page) {
     throw new Error('Playwright page not initialized');
   }
-  
-  await page.goto(`${this.baseUrl}/login`);
 
+  await setupAuthMocks(page);
+  await page.goto(`${this.baseUrl}/login`);
 });
 
 When('eu preencho o email {string}', async function (this: CustomWorld, email: string) {
@@ -42,5 +42,6 @@ Then('devo ver a pagina de Dashboard', async function (this: CustomWorld) {
   if (!page) {
     throw new Error('Playwright page not initialized');
   }
+  await page.waitForURL(`${this.baseUrl}/dashboard`);
   await page.getByRole('heading', { name: 'Dashboard' }).waitFor({ state: 'visible' });
 });

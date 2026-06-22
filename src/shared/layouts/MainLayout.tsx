@@ -1,4 +1,4 @@
-/** Layout 'MainLayout': define a estrutura base compartilhada entre paginas. */
+/** Layout 'MainLayout': define a estrutura base compartilhada entre páginas. */
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
@@ -10,39 +10,49 @@ import {
   CurrencyDollar,
   Calendar,
   Users,
-  Buildings,
   CheckSquare,
   Sun,
   Moon,
   List,
-  X
+  X,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { authService } from '@/services';
 
 export const MainLayout: React.FC = () => {
   const navigate = useNavigate();
+  const currentUser = useCurrentUser();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAdmin = currentUser?.isAdmin === true;
 
   const handleLogout = async () => {
     await authService.logout();
     navigate('/login');
   };
 
-  const menuItems = [
-    { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
-    { icon: Users, label: 'Clientes', path: '/clientes' },
-    { icon: Folder, label: 'Projetos', path: '/projetos' },
-    { icon: Buildings, label: 'Concessionárias', path: '/concessionarias' },
-    { icon: Wrench, label: 'Serviços', path: '/servicos' },
-    { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
-    { icon: Calendar, label: 'Calendário', path: '/calendario' },
-    { icon: Users, label: 'Usuários', path: '/usuarios' },
-    { icon: CheckSquare, label: 'Aprovações', path: '/aprovacoes' },
-    { icon: Gear, label: 'Configurações', path: '/configuracoes' }
-  ];
+  const menuItems = isAdmin
+    ? [
+        { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
+        { icon: CheckSquare, label: 'Aprovações', path: '/aprovacoes' },
+        { icon: Folder, label: 'Projetos', path: '/projetos' },
+        { icon: Wrench, label: 'Serviços', path: '/servicos' },
+        { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
+        { icon: Calendar, label: 'Calendário', path: '/calendario' },
+        { icon: Users, label: 'Clientes', path: '/clientes' },
+        { icon: Users, label: 'Usuários', path: '/usuarios' },
+        { icon: Gear, label: 'Configurações', path: '/configuracoes' },
+      ]
+    : [
+        { icon: SquaresFour, label: 'Dashboard', path: '/dashboard' },
+        { icon: Folder, label: 'Projetos', path: '/projetos' },
+        { icon: Wrench, label: 'Serviços', path: '/servicos' },
+        { icon: CurrencyDollar, label: 'Financeiro', path: '/financeiro' },
+        { icon: Calendar, label: 'Calendário', path: '/calendario' },
+        { icon: Gear, label: 'Configurações', path: '/configuracoes' },
+      ];
 
   return (
     <div className="relative h-[100dvh] overflow-hidden bg-slate-950 text-slate-100">
@@ -64,11 +74,12 @@ export const MainLayout: React.FC = () => {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Sidebar unica da aplicacao: qualquer nova secao autenticada deve entrar aqui e em App.tsx. */}
           <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
             <div className="flex items-center gap-3">
               <img src="/opj-padrao.png" alt="OPJ Engenharia" className="h-8 w-auto" />
-              <span className="text-base font-semibold tracking-wide text-slate-100">OPJ Engenharia</span>
+              <span className="text-base font-semibold tracking-wide text-slate-100">
+                OPJ Engenharia
+              </span>
             </div>
             <button
               type="button"
@@ -100,6 +111,23 @@ export const MainLayout: React.FC = () => {
           </nav>
 
           <div className="space-y-2 border-t border-white/10 p-4">
+            {!isAdmin && (
+              <NavLink
+                to="/configuracoes"
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                    isActive
+                      ? 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-100 border border-cyan-300/30'
+                      : 'text-slate-300 hover:border-white/10 hover:bg-slate-800/70 hover:text-white border border-transparent'
+                  }`
+                }
+              >
+                <Gear className="h-5 w-5" />
+                <span>Meu Perfil</span>
+              </NavLink>
+            )}
+
             <Button variant="outline" onClick={toggleTheme} className="w-full justify-start">
               {theme === 'dark' ? (
                 <>
@@ -133,7 +161,7 @@ export const MainLayout: React.FC = () => {
               </button>
               <div className="hidden lg:block" />
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/90 sm:text-sm">
-                Sistema de Gestao Fotovoltaica
+                Sistema de Gestão Fotovoltaica
               </div>
             </div>
           </header>

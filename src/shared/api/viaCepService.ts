@@ -48,7 +48,7 @@ export const viaCepService = {
       complemento: data.complemento ?? '',
       bairro: data.bairro ?? '',
       cidade: data.localidade ?? '',
-      estado: data.uf ?? ''
+      estado: data.uf ?? '',
     };
-  }
+  },
 };

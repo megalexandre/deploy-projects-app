@@ -21,6 +21,14 @@ npm run lint
 npm run test:e2e
 ```
 
+## Docker
+
+```bash
+npm run build &&
+docker build -t alexandreqrz/opjapp:latest . &&
+docker push alexandreqrz/opjapp:latest
+```
+
 ## Variaveis de ambiente
 
 Configure o arquivo `.env`:

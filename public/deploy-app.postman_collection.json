@@ -1,0 +1,1396 @@
+{
+  "info": {
+    "_postman_id": "f6ab3ccb-ca5f-4a88-bf2a-23a40c51aa5e",
+    "name": "deploy-app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "764046",
+    "_collection_link": "https://go.postman.co/collection/764046-f6ab3ccb-ca5f-4a88-bf2a-23a40c51aa5e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.environment.set(\"token\", res.token);",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"alexandre@mail.com\",\n    \"password\": \"senha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/auth/login",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/auth/me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/auth/me",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/auth/register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"alexandre\",\n    \"email\": \"alexandre@mail.com\",\n    \"profile\": \"main\",\n    \"password\": \"senha123\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/auth/register",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "customers",
+      "item": [
+        {
+          "name": "POST /customers",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/customers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /customers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOiIwMTlkZTMzZS00MjM0LTc1ZWItYjliYS0xZDI5N2I5YTkzMTEiLCJzdWIiOiJhbGV4YW5kcmVAbWFpbC5jb20iLCJpYXQiOjE3Nzc2NjQxMjcsImV4cCI6MTc3Nzc1MDUyN30.RO2N1ijgW5Jr57XHRxELBzEPk0vtdo_np2x4PvMwFPhf1CIShSVh0Z1wydR9uD-T"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"alexandre\",\n  \"addressId\": \"019de51a-9fbc-70fc-a705-9562ab42e80e\",\n  \"cpfCnpj\": \"03396885561\",\n  \"telefone\": \"74988872749\",\n  \"email\": \"email@mail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/customers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            },
+            "description": "Generated from cURL: curl -X 'POST' \\\n  'http://localhost:8080/customers' \\\n  -H 'accept: */*' \\\n  -H 'Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOiIwMTlkZTMzZS00MjM0LTc1ZWItYjliYS0xZDI5N2I5YTkzMTEiLCJzdWIiOiJhbGV4YW5kcmVAbWFpbC5jb20iLCJpYXQiOjE3Nzc2NjQxMjcsImV4cCI6MTc3Nzc1MDUyN30.RO2N1ijgW5Jr57XHRxELBzEPk0vtdo_np2x4PvMwFPhf1CIShSVh0Z1wydR9uD-T' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n  \"nome\": \"alexandre\",\n  \"addressId\": \"019de51a-9fbc-70fc-a705-9562ab42e80e\",\n  \"cpfCnpj\": \"03396885562\",\n  \"telefone\": \"74988872749\",\n  \"email\": \"mail@mail.com\"\n}'"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "projects",
+      "item": [
+        {
+          "name": "POST /projects",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": " {\n        \"clienteId\": \"019de512-dc48-77df-a5ad-7580d05d8bce\",\n        \"concessionaria\": \"CEMIG\",\n        \"protocoloConcessionaria\": \"PROT-2024-001\",\n        \"classe\": \"Residencial\",\n        \"integrator\": \"Solar Tech Solutions\",\n        \"modalidade\": \"Geração Distribuída\",\n        \"enquadramento\": \"Microgeração\",\n        \"status\": \"Em Análise\",\n        \"valor\": 15000.00,\n        \"unidade_controladora\": \"UC-001\",\n        \"tipo_projeto\": \"Solar\",\n        \"projeto_fast_track\": false\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/projects",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /projects/batch",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "5dee85ea-7ce8-4231-a697-70112dacde4d",
+                  "src": "/home/alex/Documentos/projeto.csv"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{env}}/projects/batch",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "projects",
+                "batch"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /projects",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/projects",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /projects",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": " {\n        \"id\": \"019d1d5d-9efe-7e75-b141-68c28e346e3e\",\n        \"clienteId\": \"da30fcdc-b9ed-402b-a359-de324226bee7\",\n        \"concessionaria\": \"CEMIG\",\n        \"protocoloConcessionaria\": \"PROT-2024-001\",\n        \"classe\": \"Residencial\",\n        \"integrator\": \"Solar Tech Solutions\",\n        \"modalidade\": \"Geração Distribuída\",\n        \"enquadramento\": \"Microgeração\",\n        \"protecaoCC\": null,\n        \"potenciaSistema\": null,\n        \"valor\": 15000.00,\n        \"status\": \"Em Análise\",\n        \"unidade_controladora\": \"UC-001\",\n        \"descrição\": \"descricao\",\n        \"servicos\": [\"A\", \"BV\"],\n        \"tipo_projeto\": \"Solar\",\n        \"projeto_fast_track\": false\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/projects",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /projects/{id}",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearrer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/projects/019d1d5d-9efe-7e75-b141-68c28e346e3e",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "projects",
+                "019d1d5d-9efe-7e75-b141-68c28e346e3e"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "audit",
+      "item": [
+        {
+          "name": "byid",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOiIwMTljNzEyNS1hYjQ2LTcwYjgtYjY0My1iZTcxNTJhNDNmZTciLCJzdWIiOiJhbGV4YW5kcmVAbWFpbC5jb20iLCJpYXQiOjE3NzE0MjQ4MjMsImV4cCI6MTc3MTUxMTIyM30.ZkcdJm2oTF4WbvTd5QOp_0gNe5ex0r19va9HeKxRB0XBu-ssWIgYN5QMad6vAA6Z",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{env}}/api/projects/019c7126-4b1e-74e5-a837-40b5de54f320/audit",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "019c7126-4b1e-74e5-a837-40b5de54f320",
+                "audit"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "customer",
+      "item": [
+        {
+          "name": "POST /customer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "  {\n        \"nome\": \"João da Silva\",\n        \"addressId\": \"019de512-99ca-7417-90d7-5af3e159074a\",\n        \"cpfCnpj\": \"12345678901\",\n        \"telefone\": \"11987654321\",\n        \"email\": \"joao.silva@example.com\"\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/customers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /customers",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": " {\n    \"id\": \"019c872b-4039-757f-91ea-763652b5fffe\",\n    \"nome\": \"João da Silva 2\",\n    \"cpfCnpj\": \"12345678901\",\n    \"telefone\": \"11987654321\",\n    \"email\": \"joao.silva@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/customers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /customers",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{env}}/customers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /customers/{id}",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{env}}/customers/019c872b-4039-757f-91ea-763652b5fffe",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "customers",
+                "019c872b-4039-757f-91ea-763652b5fffe"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "address",
+      "item": [
+        {
+          "name": "POST /address",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "  {\n       \"cep\": \"41234567\",\n       \"place\": \"any name\",\n       \"number\": \"12\",\n       \"address\": \"any name\",\n       \"complement\": \"description\",\n       \"neighborhood\": \"jacobina III\",\n       \"city\": \"jacobina\",\n       \"state\": \"ba\",\n       \"link\": \"https://maps.google.com/?q=-11.123456,-40.123456\"\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/address",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "address"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "  {\n       \"cep\": \"41234567\",\n       \"place\": \"any name\",\n       \"number\": \"12\",\n       \"address\": \"any name\",\n       \"complement\": \"description\",\n       \"neighborhood\": \"jacobina III\",\n       \"city\": \"jacobina\",\n       \"state\": \"ba\",\n       \"link\": \"https://maps.google.com/?q=-11.123456,-40.123456\"\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/address",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "address"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "company",
+      "item": [
+        {
+          "name": "GET",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"link\": \"12345678901\",\n    \"place\": \"11987654321\",\n    \"number\": \"a\",\n    \"address\": \"address\",\n    \"neighborhood\": \"neighborhood\",\n    \"city\": \"city\",\n    \"state\": \"ba\",\n    \"cep\": \"41250-000\"\n\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/company",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "company"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /company/{{id}}",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"link\": \"12345678901\",\n    \"place\": \"11987654321\",\n    \"number\": \"a\",\n    \"address\": \"address\",\n    \"neighborhood\": \"neighborhood\",\n    \"city\": \"city\",\n    \"state\": \"ba\",\n    \"cep\": \"41250-000\"\n\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/company/019d100a-1bca-7733-809c-5b47d26e1ff5",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "company",
+                "019d100a-1bca-7733-809c-5b47d26e1ff5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"coelba\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/company",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "company"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"019d100a-1bca-7733-809c-5b47d26e1ff5\",\n    \"name\": \"coelba 2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/company",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "company"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"coelba\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/company/019d100a-e7fb-7b7f-8a19-86fc8450640c",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "company",
+                "019d100a-e7fb-7b7f-8a19-86fc8450640c"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "files",
+      "item": [
+        {
+          "name": "/api/v1/file/{id} Copy",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearrer {{token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "019d417f-89d8-79c4-bf3d-9783f6305ebf",
+                  "type": "text",
+                  "uuid": "c49c35a9-6752-419e-b5fe-ec77bc0d0b77"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "0dd287fc-4b10-449c-925e-a117b1ed84db",
+                  "src": [
+                    "/home/alex/Imagens/DJI_0461.JPG",
+                    "/home/alex/Imagens/essa.jpeg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{env}}/v1/files/019de311-4eed-75b1-a53b-77fa9bf70617",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "v1",
+                "files",
+                "019de311-4eed-75b1-a53b-77fa9bf70617"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/api/v1/file/download/{id}",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearrer {{token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "019d417f-89d8-79c4-bf3d-9783f6305ebf",
+                  "type": "text",
+                  "uuid": "c49c35a9-6752-419e-b5fe-ec77bc0d0b77"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "0dd287fc-4b10-449c-925e-a117b1ed84db",
+                  "src": [
+                    "/home/alex/Imagens/DJI_0461.JPG",
+                    "/home/alex/Imagens/essa.jpeg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{env}}/api/v1/file/019d417f-89d8-79c4-bf3d-9783f6305ebf",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "file",
+                "019d417f-89d8-79c4-bf3d-9783f6305ebf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/api/v1/file/upload",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{vault:authorization-secret}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "c49c35a9-6752-419e-b5fe-ec77bc0d0b77"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "0dd287fc-4b10-449c-925e-a117b1ed84db",
+                  "src": "/home/alex/Library/Application Support/Claude/claude_desktop_config.json"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{env}}/api/v1/file/upload",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "file",
+                "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/api/v1/file/upload Copy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "c49c35a9-6752-419e-b5fe-ec77bc0d0b77"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "0dd287fc-4b10-449c-925e-a117b1ed84db",
+                  "src": "/home/alex/Library/Application Support/Claude/claude_desktop_config.json"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{env}}/api/v1/file/delete/019d469b-617b-7815-a8e5-b601559eb8bf",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "file",
+                "delete",
+                "019d469b-617b-7815-a8e5-b601559eb8bf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "https://deploy-board-uploads.s3.amazonaws.com/items/019d417f-89d8-79c4-bf3d-9783f6305ebf/019d45cb-d3cc-79f6-ad3b-e15361a",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://deploy-board-uploads.s3.amazonaws.com/items/019d417f-89d8-79c4-bf3d-9783f6305ebf/019d45cb-d3cc-79f6-ad3b-e15361a3613e_DJI_0461.JPG",
+              "protocol": "https",
+              "host": [
+                "deploy-board-uploads",
+                "s3",
+                "amazonaws",
+                "com"
+              ],
+              "path": [
+                "items",
+                "019d417f-89d8-79c4-bf3d-9783f6305ebf",
+                "019d45cb-d3cc-79f6-ad3b-e15361a3613e_DJI_0461.JPG"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "services",
+      "item": [
+        {
+          "name": "/services",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearrer {{token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "019d417f-89d8-79c4-bf3d-9783f6305ebf",
+                  "type": "text",
+                  "uuid": "c49c35a9-6752-419e-b5fe-ec77bc0d0b77"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "0dd287fc-4b10-449c-925e-a117b1ed84db",
+                  "src": [
+                    "/home/alex/Imagens/DJI_0461.JPG",
+                    "/home/alex/Imagens/essa.jpeg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{env}}/services",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/services Copy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearrer {{token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n      \"type\": \"new_connection\",\n      \"customerId\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"concessionaireId\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"openingDate\": \"2026-03-23\",\n      \"amount\": 1800,\n      \"discountCouponPercentage\": 10,\n      \"observations\": \"Complete service with all fields filled.\",\n      \"supplyVoltage\": \"127/220V\",\n      \"coordinates\": {\n        \"latitude\": \"-23.550520\",\n        \"longitude\": \"-46.633308\"\n      },\n      \"generatingConsumerUnit\": \"1234567890\",\n      \"poleDistanceOver30m\": false,\n      \"constructionAddress\": {\n        \"zipCode\": \"01310100\",\n        \"street\": \"Avenida Paulista\",\n        \"number\": \"1000\",\n        \"complement\": \"Room 12\",\n        \"neighborhood\": \"Bela Vista\",\n        \"city\": \"Sao Paulo\",\n        \"state\": \"SP\",\n        \"link\": \"https://maps.google.com/?q=Avenida+Paulista,+1000\"\n      },\n      \"generatingAddress\": {\n        \"zipCode\": \"01311000\",\n        \"street\": \"Rua da Geradora\",\n        \"number\": \"200\",\n        \"neighborhood\": \"Centro\",\n        \"city\": \"Sao Paulo\",\n        \"state\": \"SP\"\n      },\n      \"serviceEntryItems\": [\n        {\n          \"connectionType\": \"Single-phase\",\n          \"classification\": \"Residential\",\n          \"quantity\": 1,\n          \"circuitBreaker\": \"63A\"\n        }\n      ],\n      \"apportionments\": [\n        {\n          \"consumerUnit\": \"99887766\",\n          \"address\": \"Rua Beneficiaria 1, 100\",\n          \"class\": \"Residential\",\n          \"percentage\": 100\n        }\n      ]\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{env}}/services",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "services"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ledger",
+      "item": [
+        {
+          "name": "ledgers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/ledgers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "ledgers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ledgers/paginate",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/ledgers/paginate?page=1&limit=10",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "ledgers",
+                "paginate"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ledgers/paginate exemples",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/ledgers/paginate?page=1&limit=10",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "ledgers",
+                "paginate"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ledgers/:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/ledgers/1",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "ledgers",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ledgers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_cents\": 150000\n}"
+            },
+            "url": {
+              "raw": "{{env}}/ledgers",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "ledgers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_cents\": 200000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ledgers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ledgers",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{env}}/ledgers/1",
+              "host": [
+                "{{env}}"
+              ],
+              "path": [
+                "ledgers",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
