@@ -82,10 +82,14 @@ export const usersService = {
     return apiClient.put<User>(`/users/${id}`, userData);
   },
 
-  async resetPassword(id: string, password: string): Promise<User> {
+  async resetPassword(id: string, passwordData: string | ResetPasswordData): Promise<User> {
+    const password = typeof passwordData === 'string' ? passwordData : passwordData.password;
+    const passwordConfirmation =
+      typeof passwordData === 'string' ? passwordData : passwordData.passwordConfirmation;
+
     const response = await apiClient.patch<unknown>(`/users/${id}/reset_password`, {
       password,
-      password_confirmation: password,
+      password_confirmation: passwordConfirmation,
     });
 
     return normalizeUser(response);
@@ -93,14 +97,5 @@ export const usersService = {
 
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/users/${id}`);
-  },
-
-  async resetPassword(id: string, passwordData: ResetPasswordData): Promise<User> {
-    const response = await apiClient.patch<unknown>(`/users/${id}/reset_password`, {
-      password: passwordData.password,
-      password_confirmation: passwordData.passwordConfirmation,
-    });
-
-    return normalizeUser(response);
   },
 };
