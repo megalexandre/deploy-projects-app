@@ -116,6 +116,7 @@ export interface Projeto {
   protocolo: string;
   sequence: number;
   subsequente: string;
+  addressId?: string;
   cliente: Cliente;
   endereco: Endereco;
   dadosProjeto: DadosProjeto;

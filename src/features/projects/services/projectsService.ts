@@ -1,5 +1,6 @@
 import { asString, isRecord } from '@/core/utils/normalize';
 import { customersService } from '@/features/clientes/services/customersService';
+import { addressService, type Address } from '@/shared/api/addressService';
 import { apiClient } from '@/shared/api/apiClient';
 import { filesService, type UploadedFileResponse } from '@/shared/api/filesService';
 import type { DashboardStats, Documento, Projeto, StatusProjeto } from '@/types';
@@ -48,6 +49,17 @@ const normalizeServicesNames = (servicesNames: unknown): string[] =>
   Array.isArray(servicesNames)
     ? servicesNames.map((service) => asString(service).trim()).filter(Boolean)
     : [];
+
+const addressToEndereco = (address: Address): Projeto['endereco'] => ({
+  cep: address.cep || '',
+  logradouro: address.address || address.place || '',
+  numero: address.number || '',
+  complemento: address.complement || '',
+  bairro: address.neighborhood || '',
+  cidade: address.city || '',
+  estado: address.state || '',
+  link: address.link,
+});
 
 const buildBackendDocument = (
   uploadedFile: UploadedFileResponse,
@@ -185,6 +197,38 @@ const enrichProjectsWithCustomers = async (projects: Projeto[]): Promise<Projeto
   }
 };
 
+const enrichProjectsWithProjectAddresses = async (projects: Projeto[]): Promise<Projeto[]> => {
+  const addressIds = Array.from(
+    new Set(projects.map((project) => project.addressId).filter(Boolean)),
+  ) as string[];
+
+  if (addressIds.length === 0) return projects;
+
+  const addresses = await Promise.all(
+    addressIds.map(async (addressId) => {
+      try {
+        const address = await addressService.getById(addressId);
+        return [addressId, addressToEndereco(address)] as const;
+      } catch (error) {
+        console.error('Erro ao carregar endereco do projeto:', error);
+        return [addressId, null] as const;
+      }
+    }),
+  );
+
+  const addressesById = new Map(addresses);
+
+  return projects.map((project) => {
+    const projectAddress = project.addressId ? addressesById.get(project.addressId) : null;
+    if (!projectAddress || !hasAddressData(projectAddress)) return project;
+
+    return {
+      ...project,
+      endereco: projectAddress,
+    };
+  });
+};
+
 export const projectsService = {
   saveDocuments(projectId: string, documentos: Documento[]) {
     void projectId;
@@ -240,17 +284,19 @@ export const projectsService = {
     const projects = extractDataFromList(response)
       .map(normalizeProjeto)
       .map(mergeProjectEnhancement);
-    return enrichProjectsWithCustomers(projects);
+    const projectsWithAddresses = await enrichProjectsWithProjectAddresses(projects);
+    return enrichProjectsWithCustomers(projectsWithAddresses);
   },
 
   async getById(id: string): Promise<Project> {
     const response = await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`);
     const normalized = mergeProjectEnhancement(normalizeProjeto(response));
+    const [projectWithAddress] = await enrichProjectsWithProjectAddresses([normalized]);
     const customerDetails =
-      normalized.cliente.id && normalized.cliente.id !== 'sem-cliente'
-        ? await customersService.getById(normalized.cliente.id).catch(() => null)
+      projectWithAddress.cliente.id && projectWithAddress.cliente.id !== 'sem-cliente'
+        ? await customersService.getById(projectWithAddress.cliente.id).catch(() => null)
         : null;
-    const [enrichedProject] = await enrichProjectsWithCustomers([normalized]);
+    const [enrichedProject] = await enrichProjectsWithCustomers([projectWithAddress]);
     const enriched =
       customerDetails && !hasAddressData(enrichedProject.endereco)
         ? {

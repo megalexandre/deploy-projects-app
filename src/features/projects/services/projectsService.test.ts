@@ -113,3 +113,104 @@ describe('projectsService coordinates payload', () => {
     );
   });
 });
+
+describe('projectsService project address enrichment', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('usa o endereco do projeto antes do endereco do cliente na listagem', async () => {
+    vi.mocked(apiClient.get).mockImplementation(async (url) => {
+      if (url === '/projects') {
+        return [
+          {
+            ...projectResponse,
+            address_id: 'project-address-1',
+          },
+        ];
+      }
+
+      if (url === '/addresses/project-address-1') {
+        return {
+          id: 'project-address-1',
+          cep: '30140-071',
+          address: 'Rua do Projeto',
+          place: 'Rua do Projeto',
+          number: '200',
+          neighborhood: 'Funcionarios',
+          city: 'Belo Horizonte',
+          state: 'MG',
+        };
+      }
+
+      if (url === '/customers') {
+        return [
+          {
+            id: 'client-1',
+            name: 'Cliente Teste',
+            address: {
+              cep: '01310-100',
+              address: 'Av. do Cliente',
+              number: '1000',
+              neighborhood: 'Bela Vista',
+              city: 'Sao Paulo',
+              state: 'SP',
+            },
+          },
+        ];
+      }
+
+      throw new Error(`Unexpected URL: ${url}`);
+    });
+
+    const [project] = await projectsService.getAll();
+
+    expect(project.endereco.logradouro).toBe('Rua do Projeto');
+    expect(project.endereco.numero).toBe('200');
+    expect(apiClient.get).toHaveBeenCalledWith('/addresses/project-address-1');
+  });
+
+  it('usa o endereco do cliente quando o endereco do projeto nao pode ser carregado', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(apiClient.get).mockImplementation(async (url) => {
+      if (url === '/projects') {
+        return [
+          {
+            ...projectResponse,
+            address_id: 'project-address-1',
+          },
+        ];
+      }
+
+      if (url === '/addresses/project-address-1') {
+        throw new Error('Forbidden');
+      }
+
+      if (url === '/customers') {
+        return [
+          {
+            id: 'client-1',
+            name: 'Cliente Teste',
+            address: {
+              cep: '01310-100',
+              address: 'Av. do Cliente',
+              number: '1000',
+              neighborhood: 'Bela Vista',
+              city: 'Sao Paulo',
+              state: 'SP',
+            },
+          },
+        ];
+      }
+
+      throw new Error(`Unexpected URL: ${url}`);
+    });
+
+    const [project] = await projectsService.getAll();
+
+    expect(project.endereco.logradouro).toBe('Av. do Cliente');
+    expect(project.endereco.numero).toBe('1000');
+    consoleErrorSpy.mockRestore();
+  });
+});
