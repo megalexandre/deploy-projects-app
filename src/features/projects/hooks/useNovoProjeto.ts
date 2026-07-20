@@ -14,6 +14,7 @@ import type {
   DadosDetalhesForm,
   DocumentoCategoria,
   DocumentoSelecionado,
+  DivisaoCreditosForm,
   EnderecoForm,
   ItemEquipamentoForm,
   ModoCliente,
@@ -59,6 +60,7 @@ export const getInitialProjectStatus = (isEditing: boolean, isAdmin: boolean) =>
 
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
+  { value: 'orcamento_conexao' as const, label: 'Orcamento de conexao' },
   { value: 'padrao_entrada' as const, label: 'Padrão de entrada' },
 ];
 export const servicosDisponiveis = [
@@ -156,6 +158,14 @@ export const buildItemVazio = (): ItemEquipamentoForm => ({
   potencia: '',
   marca: '',
   modelo: '',
+});
+
+export const buildDivisaoCreditosVazia = (): DivisaoCreditosForm => ({
+  id: crypto.randomUUID(),
+  uc: '',
+  endereco: '',
+  classe: 'Residencial',
+  percentual: '',
 });
 
 const buildPadraoEntradaLinhas = (
@@ -293,6 +303,9 @@ const normalizeProjectType = (value?: string): DadosBasicosForm['tipoProjeto'] =
     .trim()
     .toLowerCase();
   if (normalized.includes('fotovolta') || normalized.includes('solar')) return 'fotovoltaico';
+  if (normalized.includes('orcamento') && normalized.includes('conexao')) {
+    return 'orcamento_conexao';
+  }
   if (normalized.includes('padrao') || normalized.includes('emuc')) return 'padrao_entrada';
   return '';
 };
@@ -361,6 +374,9 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
 
   const [modulos, setModulos] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
   const [inversores, setInversores] = useState<ItemEquipamentoForm[]>([buildItemVazio()]);
+  const [divisaoCreditos, setDivisaoCreditos] = useState<DivisaoCreditosForm[]>([
+    buildDivisaoCreditosVazia(),
+  ]);
   const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
   const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(() =>
     buildPadraoEntradaLinhas(configuracoesSistema.tabelaPrecoPadraoEntrada),
@@ -441,6 +457,17 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
               }))
             : [buildItemVazio()],
         );
+        setDivisaoCreditos(
+          project.divisaoCreditos.length > 0
+            ? project.divisaoCreditos.map((item) => ({
+                id: crypto.randomUUID(),
+                uc: item.uc,
+                endereco: item.endereco,
+                classe: item.classe,
+                percentual: String(item.percentual),
+              }))
+            : [buildDivisaoCreditosVazia()],
+        );
         if (project.padraoEntradaItens?.length) {
           setPadraoEntradaItens(
             project.padraoEntradaItens.map((item) => ({
@@ -512,6 +539,9 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
   const custoCalculadoProjeto = useMemo(() => {
     if (dadosBasicos.tipoProjeto === 'fotovoltaico') {
       return precoFotovoltaicoAtual;
+    }
+    if (dadosBasicos.tipoProjeto === 'orcamento_conexao') {
+      return 0;
     }
     return padraoEntradaItens.reduce((total, item) => {
       const quantidade = Number(item.quantidade) || 0;
@@ -744,6 +774,16 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     );
   };
 
+  const handleDivisaoCreditosChange = (
+    id: string,
+    field: keyof Omit<DivisaoCreditosForm, 'id'>,
+    value: string,
+  ) => {
+    setDivisaoCreditos((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+    );
+  };
+
   const handleDocumentosChange = (key: string, files: FileList | null) => {
     const categoria = documentosTemplate.find((item) => item.key === key);
     if (!categoria) return;
@@ -791,6 +831,22 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         };
       });
 
+  const buildDivisaoCreditosPayload = () =>
+    divisaoCreditos
+      .filter(
+        (item) =>
+          item.uc.trim() !== '' ||
+          item.endereco.trim() !== '' ||
+          item.classe.trim() !== '' ||
+          item.percentual.trim() !== '',
+      )
+      .map((item) => ({
+        uc: item.uc.trim(),
+        endereco: item.endereco.trim(),
+        classe: item.classe.trim(),
+        percentual: Number(item.percentual.replace(',', '.')) || 0,
+      }));
+
   const validarPasso1 = () => {
     if (!modoCliente) return false;
     if (modoCliente === 'existente') return Boolean(clienteSelecionadoId);
@@ -830,7 +886,35 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     }
     if (!coordenadasValidas || dadosBasicos.integrador.trim() === '') return false;
     if (dadosBasicos.tipoProjeto === 'fotovoltaico') {
-      return potenciaTotalModulosW > 0 && potenciaTotalInversoresW > 0 && potenciaTotalSistemaW > 0;
+      const exigeDivisaoCreditos =
+        detalhesProjeto.modalidadeGeracao === 'autoconsumo_remoto' ||
+        detalhesProjeto.modalidadeGeracao === 'geracao_compartilhada';
+      const divisaoCreditosPayload = buildDivisaoCreditosPayload();
+      const totalPercentual = divisaoCreditosPayload.reduce(
+        (total, item) => total + item.percentual,
+        0,
+      );
+      const divisaoCreditosValida =
+        !exigeDivisaoCreditos ||
+        (divisaoCreditosPayload.length > 0 &&
+          divisaoCreditosPayload.every(
+            (item) =>
+              item.uc.length > 0 &&
+              item.endereco.length > 0 &&
+              item.classe.length > 0 &&
+              item.percentual > 0,
+          ) &&
+          Math.abs(totalPercentual - 100) < 0.01);
+
+      return (
+        potenciaTotalModulosW > 0 &&
+        potenciaTotalInversoresW > 0 &&
+        potenciaTotalSistemaW > 0 &&
+        divisaoCreditosValida
+      );
+    }
+    if (dadosBasicos.tipoProjeto === 'orcamento_conexao') {
+      return true;
     }
     const temPadraoPreenchido = padraoEntradaItens.some(
       (item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== '',
@@ -905,7 +989,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
           ucGeradora: isRateio ? projectData.unitControl : undefined,
           enderecoGeradora: isRateio ? enderecoServico : undefined,
           padraoEntradaItens: isTecnico ? buildPadraoEntradaServicoPayload() : [],
-          rateios: [],
+          rateios: isRateio ? (projectData.divisaoCreditos ?? []) : [],
           documentos: [],
         });
       }),
@@ -932,12 +1016,20 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     }
 
     const projetoFotovoltaico = dadosBasicos.tipoProjeto === 'fotovoltaico';
+    const projetoPadraoEntrada = dadosBasicos.tipoProjeto === 'padrao_entrada';
+    const projetoOrcamentoConexao = dadosBasicos.tipoProjeto === 'orcamento_conexao';
     const potenciaSistemaKw = potenciaTotalSistemaKw;
+    const exigeDivisaoCreditos =
+      projetoFotovoltaico &&
+      (detalhesProjeto.modalidadeGeracao === 'autoconsumo_remoto' ||
+        detalhesProjeto.modalidadeGeracao === 'geracao_compartilhada');
 
     if (!validarPasso3()) {
       setErro(
         projetoFotovoltaico
-          ? 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, alem de modulos e inversores, para calcular corretamente a potência do sistema.'
+          ? exigeDivisaoCreditos
+            ? 'Preencha latitude, longitude, modulos, inversores e a divisao de creditos com soma de 100%.'
+            : 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, alem de modulos e inversores, para calcular corretamente a potência do sistema.'
           : 'Preencha tensao, latitude entre -90 e 90, longitude entre -180 e 180 e ao menos uma linha do quadro de padrão de entrada.',
       );
       setPassoAtual(3);
@@ -1055,7 +1147,6 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         integrator: dadosBasicos.integrador,
         modality: modalidade,
         framework: enquadramento,
-        dcProtection: projetoFotovoltaico ? 'Disjuntor CC 20A' : undefined,
         systemPower: projetoFotovoltaico
           ? potenciaSistemaKw || editingProject?.dadosProjeto.potenciaSistema || 0
           : 0,
@@ -1066,20 +1157,22 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         unitControl: dadosBasicos.numeroUc,
         latitude: latitudeFormatada,
         longitude: longitudeFormatada,
-        tensaoFornecimento: projetoFotovoltaico ? undefined : detalhesProjeto.tensaoFornecimento,
-        padraoEntradaItens: projetoFotovoltaico
-          ? []
-          : padraoEntradaItens
-              .filter((item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== '')
-              .map((item) => ({
-                id: item.id,
-                tipoLigacao: item.tipoLigacao,
-                classificacao: item.classificacao,
-                quantidade: Number(item.quantidade) || 0,
-                disjuntor: item.disjuntor.trim(),
-              })),
+        tensaoFornecimento: projetoPadraoEntrada ? detalhesProjeto.tensaoFornecimento : undefined,
+        padraoEntradaItens:
+          projetoFotovoltaico || projetoOrcamentoConexao
+            ? []
+            : padraoEntradaItens
+                .filter((item) => Number(item.quantidade) > 0 || item.disjuntor.trim() !== '')
+                .map((item) => ({
+                  id: item.id,
+                  tipoLigacao: item.tipoLigacao,
+                  classificacao: item.classificacao,
+                  quantidade: Number(item.quantidade) || 0,
+                  disjuntor: item.disjuntor.trim(),
+                })),
         modulos: projetoFotovoltaico ? buildModulosPayload() : [],
         inversores: projetoFotovoltaico ? buildInversoresPayload() : [],
+        divisaoCreditos: exigeDivisaoCreditos ? buildDivisaoCreditosPayload() : [],
         documentos: [],
         enderecoCompleto: buildEnderecoCompleto(enderecoProjetoAtual),
         dataAbertura: dadosBasicos.dataAbertura,
@@ -1116,7 +1209,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         isEditing && editingProject
           ? await projectsService.update(editingProject.id, projectData)
           : await projectsService.create(projectData);
-      const projetoOrcamentoConexao =
+      const projetoOrcamentoConexaoGerado =
         !isEditing && dadosBasicos.tipoProjeto === 'padrao_entrada'
           ? await projectsService.create({
               ...projectData,
@@ -1155,12 +1248,12 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
             url: uploadedFile.urlS3,
           })),
         ]);
-        if (projetoOrcamentoConexao) {
+        if (projetoOrcamentoConexaoGerado) {
           const uploadedOrcamentoFiles = await filesService.uploadFiles(
-            projetoOrcamentoConexao.id,
+            projetoOrcamentoConexaoGerado.id,
             documentosSelecionados.map((item) => item.file),
           );
-          projectsService.saveDocuments(projetoOrcamentoConexao.id, [
+          projectsService.saveDocuments(projetoOrcamentoConexaoGerado.id, [
             ...reusedCustomerDocuments,
             ...uploadedOrcamentoFiles.map((uploadedFile, index) => ({
               id: uploadedFile.id,
@@ -1175,8 +1268,8 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         }
       } else if (reusedCustomerDocuments.length > 0) {
         projectsService.saveDocuments(projetoSalvo.id, reusedCustomerDocuments);
-        if (projetoOrcamentoConexao) {
-          projectsService.saveDocuments(projetoOrcamentoConexao.id, reusedCustomerDocuments);
+        if (projetoOrcamentoConexaoGerado) {
+          projectsService.saveDocuments(projetoOrcamentoConexaoGerado.id, reusedCustomerDocuments);
         }
       }
 
@@ -1269,6 +1362,8 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     setModulos,
     inversores,
     setInversores,
+    divisaoCreditos,
+    setDivisaoCreditos,
     padraoEntradaItens,
     documentos,
     selectedCustomerDocumentIds,
@@ -1297,6 +1392,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     fillAddressFromCep,
     handleModuloChange,
     handleInversorChange,
+    handleDivisaoCreditosChange,
     handlePadraoEntradaChange,
     handleDocumentosChange,
     handleCriarProjeto,

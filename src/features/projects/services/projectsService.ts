@@ -442,12 +442,7 @@ export const projectsService = {
 
   async getDashboardStats(): Promise<DashboardStats> {
     const projetos = await projectsService.getProjetos();
-    const statusPendente = new Set<StatusProjeto>([
-      'em_analise_documentacao',
-      'elaboracao_documentacao_tecnica',
-      'aguardando_assinatura_cliente',
-      'aguardando_pagamento',
-    ]);
+    const statusPendente = new Set<StatusProjeto>(['em_analise_documentacao']);
     const statusFinalizado = new Set<StatusProjeto>(['projeto_encerrado']);
 
     return {

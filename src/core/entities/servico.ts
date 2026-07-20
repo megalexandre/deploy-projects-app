@@ -62,6 +62,8 @@ export interface Servico {
   precisaAprovacao?: boolean;
   documentos: Documento[];
   timeline: TimelineItem[];
+  createdBy?: string;
+  updatedBy?: string;
   dataCriacao: string;
   dataAtualizacao: string;
 }

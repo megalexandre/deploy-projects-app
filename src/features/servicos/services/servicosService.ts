@@ -418,6 +418,8 @@ const normalizeServiceFromApi = (
     documentos,
     timeline: normalizeTimeline(id, status, dataAbertura, dataAtualizacao, enhancement?.timeline),
     precisaAprovacao: enhancement?.precisaAprovacao ?? false,
+    createdBy: asString(service.created_by) || undefined,
+    updatedBy: asString(service.updated_by) || undefined,
     dataCriacao,
     dataAtualizacao,
   };

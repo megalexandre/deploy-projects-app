@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Ca
 import { formatCurrencyBRL, maskCurrencyBRL, parseCurrencyBRL } from '@/core/utils/masks';
 import { projectsService } from '@/features/projects/services/projectsService';
 import { servicosService } from '@/features/servicos/services/servicosService';
+import { usersService } from '@/features/admin/services/usersService';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import type { Projeto, Servico, User } from '@/types';
 import {
@@ -81,7 +82,34 @@ const monthLabels = [
 const ROWS_PER_PAGE = 8;
 const DAILY_CHART_LIMIT = 14;
 
-const formatDateBR = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
+const toDateOnly = (date?: string | null) => {
+  if (!date) return '';
+  const value = date.trim();
+  if (!value) return '';
+
+  const isoDate = value.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+  if (isoDate) return isoDate;
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toISOString().slice(0, 10);
+};
+
+const formatDateBR = (date: string) => {
+  const dateOnly = toDateOnly(date);
+  if (!dateOnly) return '-';
+
+  const parsed = new Date(`${dateOnly}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? '-' : parsed.toLocaleDateString('pt-BR');
+};
+const formatProjectIdentifier = (
+  projeto: Pick<Projeto, 'sequence' | 'subsequente' | 'protocolo'>,
+) => {
+  if (!projeto.sequence) return projeto.protocolo;
+  return projeto.subsequente
+    ? `${projeto.sequence}/${projeto.subsequente}`
+    : String(projeto.sequence);
+};
 const formatCompactCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -98,7 +126,10 @@ const normalizeSearchText = (value?: string | null) =>
     .toLowerCase();
 
 const parseDateOnly = (date: string) => {
-  const parsed = new Date(`${date}T00:00:00`);
+  const dateOnly = toDateOnly(date);
+  if (!dateOnly) return null;
+
+  const parsed = new Date(`${dateOnly}T00:00:00`);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
@@ -130,7 +161,10 @@ const getDayDifference = (from: Date, to: Date) =>
 const isInsidePeriod = (date: string, period: PeriodFilter, customFrom = '', customTo = '') => {
   if (period === 'todos') return true;
 
-  const parsed = new Date(`${date}T00:00:00`);
+  const dateOnly = toDateOnly(date);
+  if (!dateOnly) return false;
+
+  const parsed = new Date(`${dateOnly}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return false;
 
   const today = new Date();
@@ -291,7 +325,7 @@ const formatReportFileName = () => {
 };
 
 const getProjectDate = (projeto: Projeto) =>
-  (projeto.dataAbertura || projeto.dataCriacao || new Date().toISOString()).slice(0, 10);
+  toDateOnly(projeto.dataAbertura || projeto.dataCriacao) || toDateOnly(new Date().toISOString());
 
 const getVisibleProjectsForUser = (projetos: Projeto[], currentUser: User | null) => {
   if (!currentUser || currentUser.isAdmin) return projetos;
@@ -322,6 +356,26 @@ const getVisibleProjectsForUser = (projetos: Projeto[], currentUser: User | null
     );
   });
 };
+
+const getProjectUserKeys = (projeto: Projeto) =>
+  [projeto.dadosProjeto.integradorId, projeto.dadosProjeto.integrador]
+    .map(normalizeSearchText)
+    .filter(Boolean);
+
+const getServiceUserKeys = (servico: Servico) =>
+  [
+    servico.createdBy,
+    (servico as Servico & { userId?: string; usuarioId?: string; responsavelId?: string }).userId,
+    (servico as Servico & { userId?: string; usuarioId?: string; responsavelId?: string })
+      .usuarioId,
+    (servico as Servico & { userId?: string; usuarioId?: string; responsavelId?: string })
+      .responsavelId,
+  ]
+    .map(normalizeSearchText)
+    .filter(Boolean);
+
+const entityMatchesUser = (keys: string[], selectedUser: string) =>
+  selectedUser === 'todos' || keys.includes(normalizeSearchText(selectedUser));
 
 const buildProjectFinanceRows = (projetos: Projeto[], transacoes: TransacaoFinanceira[]) => {
   const receiptsByProjectId = new Map<string, TransacaoFinanceira[]>();
@@ -677,6 +731,7 @@ const AdminFinanceiroPage: React.FC = () => {
   const [transacoes, setTransacoes] = useState<TransacaoFinanceira[]>([]);
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
+  const [userOptions, setUserOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -685,6 +740,7 @@ const AdminFinanceiroPage: React.FC = () => {
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('todos');
+  const [userFilter, setUserFilter] = useState('todos');
   const [activeTab, setActiveTab] = useState<FinanceTab>('geral');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -699,15 +755,22 @@ const AdminFinanceiroPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const [nextTransacoes, nextProjetos, nextServicos] = await Promise.all([
+      const [nextTransacoes, nextProjetos, nextServicos, nextUsers] = await Promise.all([
         financeiroService.listTransacoes(),
         projectsService.getAll().catch(() => []),
         servicosService.list().catch(() => []),
+        usersService.getAll().catch(() => []),
       ]);
 
       setTransacoes(nextTransacoes);
       setProjetos(nextProjetos);
       setServicos(nextServicos);
+      setUserOptions(
+        nextUsers
+          .map((user) => ({ value: user.id, label: user.name.trim() || user.email }))
+          .filter((option) => option.value && option.label)
+          .sort((left, right) => left.label.localeCompare(right.label, 'pt-BR')),
+      );
     } catch (error) {
       console.error('Erro ao carregar dados financeiros:', error);
       setErrorMessage(
@@ -724,16 +787,48 @@ const AdminFinanceiroPage: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, customFrom, customTo, searchTerm, selectedPeriod, typeFilter]);
+  }, [activeTab, customFrom, customTo, searchTerm, selectedPeriod, typeFilter, userFilter]);
+
+  const filteredProjetosByUser = useMemo(
+    () =>
+      userFilter === 'todos'
+        ? projetos
+        : projetos.filter((projeto) => entityMatchesUser(getProjectUserKeys(projeto), userFilter)),
+    [projetos, userFilter],
+  );
+
+  const filteredServicosByUser = useMemo(
+    () =>
+      userFilter === 'todos'
+        ? servicos
+        : servicos.filter((servico) => entityMatchesUser(getServiceUserKeys(servico), userFilter)),
+    [servicos, userFilter],
+  );
+
+  const filteredProjectIds = useMemo(
+    () => new Set(filteredProjetosByUser.map((projeto) => projeto.id)),
+    [filteredProjetosByUser],
+  );
+
+  const filteredServiceIds = useMemo(
+    () => new Set(filteredServicosByUser.map((servico) => servico.id)),
+    [filteredServicosByUser],
+  );
 
   const scopedTransacoes = useMemo(
     () =>
       transacoes.filter((transacao) => {
+        const matchesUser =
+          userFilter === 'todos' ||
+          (transacao.projectId ? filteredProjectIds.has(transacao.projectId) : false) ||
+          (transacao.serviceId ? filteredServiceIds.has(transacao.serviceId) : false);
+        if (!matchesUser) return false;
+
         if (activeTab === 'projetos') return Boolean(transacao.projectId);
         if (activeTab === 'servicos') return Boolean(transacao.serviceId);
         return true;
       }),
-    [activeTab, transacoes],
+    [activeTab, filteredProjectIds, filteredServiceIds, transacoes, userFilter],
   );
 
   const forecastReceivables = useMemo<ForecastReceivable[]>(() => {
@@ -761,7 +856,7 @@ const AdminFinanceiroPage: React.FC = () => {
     const projectForecasts =
       activeTab === 'servicos'
         ? []
-        : projetos
+        : filteredProjetosByUser
             .map((projeto) => {
               const total = Number(projeto.valor) || 0;
               const paid = paidByProjectId.get(projeto.id) ?? 0;
@@ -771,16 +866,20 @@ const AdminFinanceiroPage: React.FC = () => {
             .map((projeto) => ({
               id: `projeto:${projeto.projeto.id}`,
               origem: 'projeto' as const,
-              descricao: `Previsao pendente do projeto ${projeto.projeto.protocolo}`,
+              descricao: `Previsao pendente do projeto ${formatProjectIdentifier(
+                projeto.projeto,
+              )} - ${projeto.projeto.cliente.nome}`,
               valor: projeto.remaining,
-              data: projeto.projeto.dataAbertura || projeto.projeto.dataCriacao.slice(0, 10),
+              data:
+                toDateOnly(projeto.projeto.dataAbertura || projeto.projeto.dataCriacao) ||
+                toDateOnly(new Date().toISOString()),
               status: 'previsto' as const,
             }));
 
     const serviceForecasts =
       activeTab === 'projetos'
         ? []
-        : servicos
+        : filteredServicosByUser
             .map((servico) => {
               const total = Number(servico.valorFinal) || 0;
               const paid = paidByServiceId.get(servico.id) ?? 0;
@@ -792,12 +891,14 @@ const AdminFinanceiroPage: React.FC = () => {
               origem: 'servico' as const,
               descricao: `Previsao pendente do servico ${servico.servico.protocolo}`,
               valor: servico.remaining,
-              data: servico.servico.dataAbertura || servico.servico.dataCriacao.slice(0, 10),
+              data:
+                toDateOnly(servico.servico.dataAbertura || servico.servico.dataCriacao) ||
+                toDateOnly(new Date().toISOString()),
               status: 'previsto' as const,
             }));
 
     return [...projectForecasts, ...serviceForecasts];
-  }, [activeTab, projetos, servicos, transacoes]);
+  }, [activeTab, filteredProjetosByUser, filteredServicosByUser, transacoes]);
 
   const periodTransacoes = useMemo(
     () =>
@@ -1068,6 +1169,8 @@ const AdminFinanceiroPage: React.FC = () => {
     { id: 'projetos', label: 'Projetos' },
     { id: 'servicos', label: 'Servicos' },
   ];
+  const selectedUserLabel =
+    userOptions.find((option) => option.value === userFilter)?.label ?? userFilter;
 
   const financeRows = useMemo<FinanceRow[]>(
     () =>
@@ -1219,6 +1322,7 @@ const AdminFinanceiroPage: React.FC = () => {
         { Filtro: 'Data inicial', Valor: customFrom || '-' },
         { Filtro: 'Data final', Valor: customTo || '-' },
         { Filtro: 'Tipo', Valor: typeFilter },
+        { Filtro: 'Usuario', Valor: userFilter === 'todos' ? 'Todos' : selectedUserLabel },
         { Filtro: 'Busca', Valor: searchTerm || '-' },
         { Filtro: 'Registros', Valor: financeRows.length },
       ];
@@ -1452,6 +1556,18 @@ const AdminFinanceiroPage: React.FC = () => {
               <option value="todos">Todos os tipos</option>
               <option value="receita">Receitas</option>
               <option value="despesa">Despesas</option>
+            </select>
+            <select
+              value={userFilter}
+              onChange={(event) => setUserFilter(event.target.value)}
+              className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-xs font-semibold text-slate-200 focus:border-cyan-300 focus:outline-none"
+            >
+              <option value="todos">Todos os usuarios</option>
+              {userOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           {selectedPeriod === 'personalizado' && (
@@ -1696,6 +1812,7 @@ const AdminFinanceiroPage: React.FC = () => {
             />
             {(searchTerm ||
               typeFilter !== 'todos' ||
+              userFilter !== 'todos' ||
               selectedPeriod !== 'todos' ||
               customFrom ||
               customTo) && (
@@ -1706,6 +1823,7 @@ const AdminFinanceiroPage: React.FC = () => {
                 onClick={() => {
                   setSearchTerm('');
                   setTypeFilter('todos');
+                  setUserFilter('todos');
                   setSelectedPeriod('todos');
                   setCustomFrom('');
                   setCustomTo('');

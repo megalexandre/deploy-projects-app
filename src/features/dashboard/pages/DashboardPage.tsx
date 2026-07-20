@@ -83,7 +83,7 @@ export const DashboardPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-alumni-bold text-gray-100">Dashboard</h1>
-          <p className="text-gray-400 mt-1">Visão geral dos projetos fotovoltaicos</p>
+          <p className="text-gray-400 mt-1">Visão geral dos projetos</p>
         </div>
         <Link to="/projetos/novo">
           <Button>

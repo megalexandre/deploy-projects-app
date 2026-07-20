@@ -1,7 +1,7 @@
 export type Passo = 1 | 2 | 3;
 export type TipoDocumento = 'cpf' | 'cnpj';
 export type ModoCliente = 'novo' | 'existente';
-export type TipoProjeto = 'fotovoltaico' | 'padrao_entrada';
+export type TipoProjeto = 'fotovoltaico' | 'padrao_entrada' | 'orcamento_conexao';
 export type ModoEnderecoProjeto = 'cliente' | 'novo';
 
 export interface EnderecoForm {
@@ -69,4 +69,12 @@ export interface PadraoEntradaItemForm {
   classificacao: string;
   quantidade: string;
   disjuntor: string;
+}
+
+export interface DivisaoCreditosForm {
+  id: string;
+  uc: string;
+  endereco: string;
+  classe: string;
+  percentual: string;
 }

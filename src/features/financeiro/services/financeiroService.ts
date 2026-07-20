@@ -77,6 +77,18 @@ const normalizeReason = (reason?: string | null): LedgerKind => {
     : 'receita';
 };
 
+const toDateOnly = (date?: string | null) => {
+  if (!date) return new Date().toISOString().slice(0, 10);
+  const value = date.trim();
+  const isoDate = value.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+  if (isoDate) return isoDate;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? new Date().toISOString().slice(0, 10)
+    : parsed.toISOString().slice(0, 10);
+};
+
 export const ledgerAmountToNumber = (ledger: Pick<Ledger, 'amount' | 'amount_cents'>) => {
   if (Number.isFinite(ledger.amount_cents)) {
     return ledger.amount_cents / 100;
@@ -100,7 +112,7 @@ export const ledgerToTransacao = (ledger: Ledger): TransacaoFinanceira => {
     descricao: ledger.description?.trim() || 'Lancamento financeiro',
     tipo,
     valor: Math.abs(rawValor),
-    data: (ledger.paid_at || ledger.created_at || new Date().toISOString()).slice(0, 10),
+    data: toDateOnly(ledger.paid_at || ledger.created_at),
     categoria: tipo === 'receita' ? 'Receitas' : 'Despesas',
     status: 'pago',
     projectId: ledger.project_id,

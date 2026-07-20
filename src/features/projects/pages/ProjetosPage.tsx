@@ -15,6 +15,8 @@ export const ProjetosPage: React.FC = () => {
     error,
     searchTerm,
     statusFilter,
+    userFilter,
+    userOptions,
     filteredProjetos,
     groupedProjetos,
     visibleColumns,
@@ -28,6 +30,7 @@ export const ProjetosPage: React.FC = () => {
     dragBindings,
     setSearchTerm,
     setStatusFilter,
+    setUserFilter,
     setStatusComment,
     setDraggedId,
     openStatusDialog,
@@ -79,8 +82,11 @@ export const ProjetosPage: React.FC = () => {
       <ProjetosFilter
         searchTerm={searchTerm}
         statusFilter={statusFilter}
+        userFilter={userFilter}
+        userOptions={userOptions}
         onSearchChange={setSearchTerm}
         onStatusChange={setStatusFilter}
+        onUserChange={setUserFilter}
       />
 
       {error && <ErrorAlert message={error} />}

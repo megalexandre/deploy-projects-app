@@ -473,10 +473,6 @@ export const ServicosPage: React.FC = () => {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-100">Serviços</h1>
-          <p className="mt-1 max-w-3xl text-gray-400">
-            Implementação baseada nas paginas 9 a 16 do documento: Ligação Nova, Aumento de Carga,
-            Troca de Titularidade, Alteração Compartilhamento de Crédito e kanban com 11 etapas.
-          </p>
         </div>
         <Link to="/servicos/novo">
           <Button type="button">

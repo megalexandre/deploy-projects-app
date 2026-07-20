@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { concessionairesService, customersService, projectsService } from '@/services';
+import {
+  concessionairesService,
+  customersService,
+  projectsService,
+  usersService,
+} from '@/services';
 import type { Projeto } from '@/types';
 import { columns, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
 import { useDragToScroll } from './useDragToScroll';
@@ -20,12 +25,21 @@ const normalizeText = (value?: string | null) =>
     .trim()
     .toLowerCase();
 
+const getProjectIdentifier = (projeto: Pick<Projeto, 'sequence' | 'subsequente' | 'protocolo'>) => {
+  if (!projeto.sequence) return projeto.protocolo;
+  return projeto.subsequente
+    ? `${projeto.sequence}/${projeto.subsequente}`
+    : String(projeto.sequence);
+};
+
 export const useProjetosKanban = () => {
   const [projetos, setProjetos] = useState<ProjetoKanbanCard[]>([]);
+  const [userOptions, setUserOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | KanbanStatus>('todos');
+  const [userFilter, setUserFilter] = useState('todos');
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
   const [statusComment, setStatusComment] = useState('');
@@ -43,10 +57,11 @@ export const useProjetosKanban = () => {
       setError(null);
 
       try {
-        const [data, customers, concessionarias] = await Promise.all([
+        const [data, customers, concessionarias, users] = await Promise.all([
           projectsService.getProjetos(),
           customersService.getAll().catch(() => []),
           concessionairesService.getAll().catch(() => []),
+          usersService.getAll().catch(() => []),
         ]);
 
         const customersById = new Map(customers.map((customer) => [customer.id, customer]));
@@ -88,6 +103,12 @@ export const useProjetosKanban = () => {
         });
 
         setProjetos(enriched);
+        setUserOptions(
+          users
+            .map((user) => ({ value: user.id, label: user.name.trim() || user.email }))
+            .filter((option) => option.value && option.label)
+            .sort((left, right) => left.label.localeCompare(right.label, 'pt-BR')),
+        );
       } catch (loadError) {
         console.error('Erro ao carregar projetos:', loadError);
         setError('Nao foi possivel carregar os projetos.');
@@ -99,21 +120,60 @@ export const useProjetosKanban = () => {
     void loadProjetos();
   }, []);
 
+  const projectUserOptions = useMemo(() => {
+    const options = new Map<string, string>();
+
+    projetos.forEach((projeto) => {
+      const id = projeto.dadosProjeto.integradorId || projeto.dadosProjeto.integrador;
+      const label = projeto.dadosProjeto.integrador || projeto.dadosProjeto.integradorId;
+      if (!id || !label) return;
+      options.set(id, label);
+    });
+
+    return Array.from(options, ([value, label]) => ({ value, label })).sort((left, right) =>
+      left.label.localeCompare(right.label, 'pt-BR'),
+    );
+  }, [projetos]);
+
+  const availableUserOptions = useMemo(() => {
+    const options = new Map(userOptions.map((option) => [option.value, option.label]));
+    projectUserOptions.forEach((option) => {
+      if (!options.has(option.value)) {
+        options.set(option.value, option.label);
+      }
+    });
+
+    return Array.from(options, ([value, label]) => ({ value, label })).sort((left, right) =>
+      left.label.localeCompare(right.label, 'pt-BR'),
+    );
+  }, [projectUserOptions, userOptions]);
+
   const filteredProjetos = useMemo(
     () =>
       projetos.filter((projeto) => {
-        const query = searchTerm.toLowerCase();
+        const query = normalizeText(searchTerm);
         const statusAtual = toKanbanStatus(projeto.status);
         const matchesStatus = statusFilter === 'todos' || statusAtual === statusFilter;
         if (!matchesStatus) return false;
 
+        const matchesUser =
+          userFilter === 'todos' ||
+          projeto.dadosProjeto.integradorId === userFilter ||
+          projeto.dadosProjeto.integrador === userFilter;
+        if (!matchesUser) return false;
+
+        const identifier = getProjectIdentifier(projeto);
+        if (!query) return true;
+
         return (
-          projeto.protocolo.toLowerCase().includes(query) ||
-          projeto.cliente.nome.toLowerCase().includes(query) ||
-          projeto.dadosProjeto.concessionaria.toLowerCase().includes(query)
+          normalizeText(identifier).includes(query) ||
+          normalizeText(projeto.id).includes(query) ||
+          normalizeText(projeto.protocolo).includes(query) ||
+          normalizeText(projeto.cliente.nome).includes(query) ||
+          normalizeText(projeto.dadosProjeto.concessionaria).includes(query)
         );
       }),
-    [projetos, searchTerm, statusFilter],
+    [projetos, searchTerm, statusFilter, userFilter],
   );
 
   const groupedProjetos = useMemo(() => {
@@ -210,6 +270,8 @@ export const useProjetosKanban = () => {
     error,
     searchTerm,
     statusFilter,
+    userFilter,
+    userOptions: availableUserOptions,
     filteredProjetos,
     groupedProjetos,
     visibleColumns,
@@ -223,6 +285,7 @@ export const useProjetosKanban = () => {
     dragBindings,
     setSearchTerm,
     setStatusFilter,
+    setUserFilter,
     setStatusComment,
     setDraggedId,
     openStatusDialog,

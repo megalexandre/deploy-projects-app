@@ -40,6 +40,7 @@ interface Passo2BasicosProps {
   validarPasso2: () => boolean;
   setPassoAtual: (p: Passo) => void;
   setErro: (e: string | null) => void;
+  isEditing: boolean;
 }
 
 export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
@@ -60,9 +61,13 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
   validarPasso2,
   setPassoAtual,
   setErro,
+  isEditing,
 }) => {
   const setEnderecoProjetoField = (field: keyof EnderecoForm, value: string) =>
     setEnderecoProjeto((prev) => ({ ...prev, [field]: value }));
+  const tiposProjetoVisiveis = tiposProjeto.filter(
+    (tipo) => tipo.value !== 'orcamento_conexao' || isEditing,
+  );
 
   return (
     <div className="space-y-6 page-enter">
@@ -114,7 +119,7 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
         <div>
           <FormField label="Tipo de Projeto">
             <div className="grid grid-cols-2 gap-3">
-              {tiposProjeto.map((tipo) => (
+              {tiposProjetoVisiveis.map((tipo) => (
                 <SelectionCard
                   key={tipo.value}
                   active={dadosBasicos.tipoProjeto === tipo.value}

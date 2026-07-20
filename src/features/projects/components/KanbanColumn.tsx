@@ -31,16 +31,17 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   const canManageStatus = useCurrentUser()?.isAdmin === true;
   const [showAll, setShowAll] = React.useState(false);
   const visibleProjetos = showAll ? projetos : projetos.slice(0, DEFAULT_VISIBLE_PROJECTS);
-  const hiddenProjectsCount = Math.max(projetos.length - visibleProjetos.length, 0);
+  const hiddenProjetos = projetos.slice(DEFAULT_VISIBLE_PROJECTS);
+  const hiddenProjectsCount = hiddenProjetos.length;
 
   return (
     <Card className={`w-[340px] shrink-0 self-start snap-start border ${column.className}`}>
       <CardContent className="p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+        <div className="mb-4 flex min-h-12 items-start justify-between gap-3">
+          <h2 className="pt-1 text-sm font-semibold uppercase tracking-wide text-slate-200">
             {column.label}
           </h2>
-          <span className="rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">
+          <span className="mt-1 shrink-0 rounded-full bg-slate-900/70 px-2.5 py-0.5 text-xs text-slate-300">
             {projetos.length}
           </span>
         </div>
@@ -68,6 +69,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
           {projetos.length > DEFAULT_VISIBLE_PROJECTS && (
             <button
               type="button"
+              data-no-drag-scroll="true"
               className="w-full rounded-lg border border-white/10 bg-slate-950/45 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:bg-slate-900"
               onClick={() => setShowAll((current) => !current)}
             >
@@ -76,7 +78,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
           )}
 
           {projetos.length === 0 && (
-            <div className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-slate-400">
+            <div className="flex min-h-[52px] items-center justify-center rounded-xl border border-dashed border-white/15 px-4 py-3 text-center text-sm text-slate-400">
               Nenhum projeto nesta coluna.
             </div>
           )}

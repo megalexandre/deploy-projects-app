@@ -1,15 +1,17 @@
 import React from 'react';
-import { UploadSimple } from '@phosphor-icons/react';
+import { Plus, Trash, UploadSimple } from '@phosphor-icons/react';
 import { maskNumeric } from '@/core/utils/masks';
 import type {
   DadosBasicosForm,
   DadosDetalhesForm,
   DocumentoCategoria,
+  DivisaoCreditosForm,
   ItemEquipamentoForm,
   PadraoEntradaItemForm,
   Passo,
 } from '@/features/projects/domain/types';
 import {
+  buildDivisaoCreditosVazia,
   buildItemVazio,
   servicosDisponiveis,
   type IntegradorOption,
@@ -34,6 +36,8 @@ interface Passo3DetalhesProps {
   setModulos: React.Dispatch<React.SetStateAction<ItemEquipamentoForm[]>>;
   inversores: ItemEquipamentoForm[];
   setInversores: React.Dispatch<React.SetStateAction<ItemEquipamentoForm[]>>;
+  divisaoCreditos: DivisaoCreditosForm[];
+  setDivisaoCreditos: React.Dispatch<React.SetStateAction<DivisaoCreditosForm[]>>;
   padraoEntradaItens: PadraoEntradaItemForm[];
   tabelaPrecoPadraoEntradaMap: Record<string, number>;
   potenciaTotalModulosW: number;
@@ -57,6 +61,11 @@ interface Passo3DetalhesProps {
   reusedCustomerDocuments: Documento[];
   handleModuloChange: (id: string, field: keyof ItemEquipamentoForm, value: string) => void;
   handleInversorChange: (id: string, field: keyof ItemEquipamentoForm, value: string) => void;
+  handleDivisaoCreditosChange: (
+    id: string,
+    field: keyof Omit<DivisaoCreditosForm, 'id'>,
+    value: string,
+  ) => void;
   handlePadraoEntradaChange: (id: string, field: 'quantidade' | 'disjuntor', value: string) => void;
   handleDocumentosChange: (key: string, files: FileList | null) => void;
   handleCriarProjeto: () => void;
@@ -78,6 +87,8 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
   setModulos,
   inversores,
   setInversores,
+  divisaoCreditos,
+  setDivisaoCreditos,
   padraoEntradaItens,
   tabelaPrecoPadraoEntradaMap,
   potenciaTotalModulosW,
@@ -101,6 +112,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
   reusedCustomerDocuments,
   handleModuloChange,
   handleInversorChange,
+  handleDivisaoCreditosChange,
   handlePadraoEntradaChange,
   handleDocumentosChange,
   handleCriarProjeto,
@@ -109,11 +121,24 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
   setPassoAtual,
 }) => {
   const isFotovoltaico = dadosBasicos.tipoProjeto === 'fotovoltaico';
+  const isOrcamentoConexao = dadosBasicos.tipoProjeto === 'orcamento_conexao';
+  const showDivisaoCreditos =
+    isFotovoltaico &&
+    (detalhesProjeto.modalidadeGeracao === 'autoconsumo_remoto' ||
+      detalhesProjeto.modalidadeGeracao === 'geracao_compartilhada');
+  const totalDivisaoCreditos = divisaoCreditos.reduce(
+    (total, item) => total + (Number(item.percentual.replace(',', '.')) || 0),
+    0,
+  );
 
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-gray-100">
-        {isFotovoltaico ? 'Detalhes do Projeto Fotovoltaico' : 'Detalhes do Projeto'}
+        {isFotovoltaico
+          ? 'Detalhes do Projeto Fotovoltaico'
+          : isOrcamentoConexao
+            ? 'Detalhes do Orcamento de Conexao'
+            : 'Detalhes do Projeto'}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,6 +264,127 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
               </FormField>
             </div>
           </div>
+
+          {showDivisaoCreditos && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-100">Divisao de Creditos</h3>
+                  <p className="text-sm text-gray-400">
+                    Informe as unidades consumidoras beneficiarias e o percentual destinado a cada
+                    uma.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                      Math.abs(totalDivisaoCreditos - 100) < 0.01
+                        ? 'bg-emerald-500/10 text-emerald-200'
+                        : 'bg-amber-500/10 text-amber-200'
+                    }`}
+                  >
+                    Total: {totalDivisaoCreditos.toLocaleString('pt-BR')}%
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setDivisaoCreditos((prev) => [...prev, buildDivisaoCreditosVazia()])
+                    }
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar UC
+                  </Button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded border border-gray-700">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-900/60">
+                    <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
+                      <th className="px-4 py-3">UC</th>
+                      <th className="px-4 py-3">Endereco</th>
+                      <th className="px-4 py-3">Classificacao</th>
+                      <th className="px-4 py-3">Porcentagem</th>
+                      <th className="w-12 px-4 py-3" aria-label="Acoes" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {divisaoCreditos.map((item) => (
+                      <tr key={item.id}>
+                        <td className="px-4 py-3">
+                          <input
+                            value={item.uc}
+                            onChange={(event) =>
+                              handleDivisaoCreditosChange(item.id, 'uc', event.target.value)
+                            }
+                            placeholder="Numero da UC"
+                            className="w-full min-w-[140px] rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            value={item.endereco}
+                            onChange={(event) =>
+                              handleDivisaoCreditosChange(item.id, 'endereco', event.target.value)
+                            }
+                            placeholder="Endereco da UC"
+                            className="w-full min-w-[260px] rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={item.classe}
+                            onChange={(event) =>
+                              handleDivisaoCreditosChange(item.id, 'classe', event.target.value)
+                            }
+                            className="w-full min-w-[180px] rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          >
+                            <option value="Residencial">Residencial</option>
+                            <option value="Comercial">Comercial</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="Condominio">Condominio</option>
+                            <option value="Sistema Suspenso">Sistema Suspenso</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            value={item.percentual}
+                            onChange={(event) =>
+                              handleDivisaoCreditosChange(
+                                item.id,
+                                'percentual',
+                                maskNumeric(event.target.value, 3),
+                              )
+                            }
+                            inputMode="numeric"
+                            placeholder="%"
+                            className="w-full min-w-[120px] rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDivisaoCreditos((prev) =>
+                                prev.length > 1
+                                  ? prev.filter((credito) => credito.id !== item.id)
+                                  : [buildDivisaoCreditosVazia()],
+                              )
+                            }
+                            className="rounded border border-red-400/30 p-2 text-red-200 transition hover:bg-red-500/10"
+                            aria-label="Remover UC"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <EquipamentosTable
             title="Modulos Fotovoltaicos"
@@ -458,7 +604,9 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
         <p className="mt-2 text-sm text-gray-400">
           {isFotovoltaico
             ? `Valor sugerido pela faixa de potência: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
-            : `Valor sugerido pela tabela do EMUC: ${formatCurrencyBRL(custoCalculadoProjeto)}.`}
+            : isOrcamentoConexao
+              ? `Valor sugerido para orcamento de conexao: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
+              : `Valor sugerido pela tabela do EMUC: ${formatCurrencyBRL(custoCalculadoProjeto)}.`}
         </p>
         {valorProjetoEditado && (
           <p className="mt-1 text-xs text-amber-300">

@@ -77,17 +77,13 @@ const deriveRamal = (
   return '';
 };
 
-const deriveDisjuntor = (
-  disjuntorAtual: string,
-  padraoEntradaItens?: PadraoEntradaItem[],
-  protecaoCC?: string,
-) => {
+const deriveDisjuntor = (disjuntorAtual: string, padraoEntradaItens?: PadraoEntradaItem[]) => {
   if (disjuntorAtual.trim()) return disjuntorAtual;
   const padraoDisjuntor = padraoEntradaItens
     ?.find((item) => asString(item.disjuntor))
     ?.disjuntor?.trim();
   if (padraoDisjuntor) return padraoDisjuntor;
-  return asString(protecaoCC);
+  return '';
 };
 
 const deriveCargaInstalada = (
@@ -117,11 +113,7 @@ export const applyDerivedDadosTecnicos = (project: Projeto): Projeto => {
     project.tensaoFornecimento,
   );
   const ramal = deriveRamal(project.dadosTecnicos.ramal, project.padraoEntradaItens, numeroFases);
-  const disjuntor = deriveDisjuntor(
-    project.dadosTecnicos.disjuntor,
-    project.padraoEntradaItens,
-    project.dadosProjeto.protecaoCC,
-  );
+  const disjuntor = deriveDisjuntor(project.dadosTecnicos.disjuntor, project.padraoEntradaItens);
   const cargaInstalada = deriveCargaInstalada(
     project.dadosTecnicos.cargaInstalada,
     project.dadosTecnicos.modulos,

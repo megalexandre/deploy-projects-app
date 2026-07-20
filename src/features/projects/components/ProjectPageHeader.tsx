@@ -7,7 +7,6 @@ export const ProjetosPageHeader: React.FC = () => (
   <div className="flex items-center justify-between">
     <div>
       <h1 className="text-3xl font-bold text-gray-100">Projetos</h1>
-      <p className="mt-1 text-gray-400">Kanban com 12 status aceitos para projetos.</p>
     </div>
     <Link to="/projetos/novo">
       <Button>

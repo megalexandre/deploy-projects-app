@@ -930,12 +930,6 @@ export const ProjetoDetailPage: React.FC = () => {
                   onSave={(value) => handleUpdateField({ framework: value.trim() })}
                 />
                 <EditableProjectField
-                  label="Protecao CC"
-                  value={projeto.dadosProjeto.protecaoCC}
-                  canEdit={false}
-                  onSave={(value) => handleUpdateField({ dcProtection: value.trim() })}
-                />
-                <EditableProjectField
                   label="Valor"
                   value={String(projeto.valor)}
                   displayValue={formatCurrency(projeto.valor)}
@@ -1035,62 +1029,6 @@ export const ProjetoDetailPage: React.FC = () => {
               <CardTitle>Dados Técnicos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                <h4 className="text-lg font-semibold text-gray-100">Resumo Elétrico</h4>
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Tensão (V)
-                    </label>
-                    <p className="mt-2 text-2xl font-semibold text-gray-100">
-                      {projeto.dadosTecnicos.tensao || 0}V
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Número de Fases
-                    </label>
-                    <p className="mt-2 text-2xl font-semibold text-gray-100">
-                      {projeto.dadosTecnicos.numeroFases || '-'}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Tipo de Ramal
-                    </label>
-                    <p className="mt-2 text-lg font-semibold text-gray-100">
-                      {projeto.dadosTecnicos.ramal || '-'}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Disjuntor
-                    </label>
-                    <p className="mt-2 text-lg font-semibold text-gray-100">
-                      {projeto.dadosTecnicos.disjuntor || '-'}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Carga Instalada
-                    </label>
-                    <p className="mt-2 text-2xl font-semibold text-gray-100">
-                      {projeto.dadosTecnicos.cargaInstalada.toLocaleString('pt-BR')} W
-                    </p>
-                  </div>
-                  {projeto.tensaoFornecimento && (
-                    <div className="rounded-xl border border-white/10 bg-slate-900/55 p-4">
-                      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                        Tensao de Fornecimento
-                      </label>
-                      <p className="mt-2 text-lg font-semibold text-gray-100">
-                        {projeto.tensaoFornecimento}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {projeto.padraoEntradaItens && projeto.padraoEntradaItens.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
                   <h4 className="text-lg font-semibold text-gray-100">
@@ -1245,13 +1183,9 @@ export const ProjetoDetailPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                <h4 className="text-lg font-semibold text-gray-100">Divisão de Creditos</h4>
-                {projeto.dadosTecnicos.divisaoCreditos.length === 0 ? (
-                  <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
-                    Nenhuma divisão de creditos cadastrada.
-                  </div>
-                ) : (
+              {projeto.dadosTecnicos.divisaoCreditos.length > 0 && (
+                <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
+                  <h4 className="text-lg font-semibold text-gray-100">Divisão de Creditos</h4>
                   <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
@@ -1290,8 +1224,8 @@ export const ProjetoDetailPage: React.FC = () => {
                       </tbody>
                     </table>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
