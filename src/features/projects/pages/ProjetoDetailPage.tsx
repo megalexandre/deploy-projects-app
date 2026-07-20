@@ -850,27 +850,31 @@ export const ProjetoDetailPage: React.FC = () => {
                   options={integradores}
                   onSave={(value) => handleUpdateField({ integrator: value })}
                 />
-                <EditableProjectField
-                  label="Modalidade"
-                  value={projeto.dadosProjeto.modalidade}
-                  displayValue={formatModalidade(projeto.dadosProjeto.modalidade)}
-                  canEdit={false}
-                  type="select"
-                  options={[
-                    { value: 'autoconsumo_local', label: 'Autoconsumo Local' },
-                    { value: 'autoconsumo_remoto', label: 'Autoconsumo Remoto' },
-                    { value: 'geracao_compartilhada', label: 'Geracao Compartilhada' },
-                  ]}
-                  onSave={(value) => handleUpdateField({ modality: value })}
-                />
-                <EditableProjectField
-                  label="Potencia do Sistema"
-                  value={String(projeto.dadosProjeto.potenciaSistema)}
-                  displayValue={`${projeto.dadosProjeto.potenciaSistema} kWp`}
-                  canEdit={false}
-                  type="number"
-                  onSave={(value) => handleUpdateField({ systemPower: parseNumber(value) })}
-                />
+                {tipoProjetoNormalizado === 'fotovoltaico' && (
+                  <>
+                    <EditableProjectField
+                      label="Modalidade"
+                      value={projeto.dadosProjeto.modalidade}
+                      displayValue={formatModalidade(projeto.dadosProjeto.modalidade)}
+                      canEdit={false}
+                      type="select"
+                      options={[
+                        { value: 'autoconsumo_local', label: 'Autoconsumo Local' },
+                        { value: 'autoconsumo_remoto', label: 'Autoconsumo Remoto' },
+                        { value: 'geracao_compartilhada', label: 'Geracao Compartilhada' },
+                      ]}
+                      onSave={(value) => handleUpdateField({ modality: value })}
+                    />
+                    <EditableProjectField
+                      label="Potencia do Sistema"
+                      value={String(projeto.dadosProjeto.potenciaSistema)}
+                      displayValue={`${projeto.dadosProjeto.potenciaSistema} kWp`}
+                      canEdit={false}
+                      type="number"
+                      onSave={(value) => handleUpdateField({ systemPower: parseNumber(value) })}
+                    />
+                  </>
+                )}
                 <EditableProjectField
                   label="Numero da UC"
                   value={projeto.numeroUc ?? ''}
@@ -945,18 +949,20 @@ export const ProjetoDetailPage: React.FC = () => {
                   type="date"
                   onSave={(value) => handleUpdateField({ dataAbertura: value })}
                 />
-                <EditableProjectField
-                  label="Projeto Fast Track"
-                  value={projeto.projetoFastTrack ?? 'nao'}
-                  displayValue={formatBinaryChoice(projeto.projetoFastTrack)}
-                  canEdit={false}
-                  type="select"
-                  options={[
-                    { value: 'sim', label: 'Sim' },
-                    { value: 'nao', label: 'Nao' },
-                  ]}
-                  onSave={(value) => handleUpdateField({ fastTrack: value })}
-                />
+                {tipoProjetoNormalizado === 'fotovoltaico' && (
+                  <EditableProjectField
+                    label="Projeto Fast Track"
+                    value={projeto.projetoFastTrack ?? 'nao'}
+                    displayValue={formatBinaryChoice(projeto.projetoFastTrack)}
+                    canEdit={false}
+                    type="select"
+                    options={[
+                      { value: 'sim', label: 'Sim' },
+                      { value: 'nao', label: 'Nao' },
+                    ]}
+                    onSave={(value) => handleUpdateField({ fastTrack: value })}
+                  />
+                )}
                 <EditableProjectField
                   label="Projeto Novo"
                   value={projeto.projetoNovo ?? 'sim'}
@@ -969,18 +975,20 @@ export const ProjetoDetailPage: React.FC = () => {
                   ]}
                   onSave={(value) => handleUpdateField({ projetoNovo: value })}
                 />
-                <EditableProjectField
-                  label="Zero Grid / Controle de Exportacao"
-                  value={projeto.zeroGridControleExportacao ?? 'nao'}
-                  displayValue={formatBinaryChoice(projeto.zeroGridControleExportacao)}
-                  canEdit={false}
-                  type="select"
-                  options={[
-                    { value: 'sim', label: 'Sim' },
-                    { value: 'nao', label: 'Nao' },
-                  ]}
-                  onSave={(value) => handleUpdateField({ zeroGridControleExportacao: value })}
-                />
+                {tipoProjetoNormalizado === 'fotovoltaico' && (
+                  <EditableProjectField
+                    label="Zero Grid / Controle de Exportacao"
+                    value={projeto.zeroGridControleExportacao ?? 'nao'}
+                    displayValue={formatBinaryChoice(projeto.zeroGridControleExportacao)}
+                    canEdit={false}
+                    type="select"
+                    options={[
+                      { value: 'sim', label: 'Sim' },
+                      { value: 'nao', label: 'Nao' },
+                    ]}
+                    onSave={(value) => handleUpdateField({ zeroGridControleExportacao: value })}
+                  />
+                )}
                 {tipoProjetoNormalizado === 'fotovoltaico' && (
                   <>
                     <div>
@@ -1075,113 +1083,117 @@ export const ProjetoDetailPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                <h4 className="text-lg font-semibold text-gray-100">Modulos</h4>
-                {projeto.dadosTecnicos.modulos.length === 0 ? (
-                  <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
-                    Nenhum modulo cadastrado.
+              {tipoProjetoNormalizado === 'fotovoltaico' && (
+                <>
+                  <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
+                    <h4 className="text-lg font-semibold text-gray-100">Modulos</h4>
+                    {projeto.dadosTecnicos.modulos.length === 0 ? (
+                      <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
+                        Nenhum modulo cadastrado.
+                      </div>
+                    ) : (
+                      <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
+                        <table className="min-w-full divide-y divide-gray-700">
+                          <thead>
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Fabricante
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Modelo
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Potência (W)
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Quantidade
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Potência Total (kWp)
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-700">
+                            {projeto.dadosTecnicos.modulos.map((modulo) => (
+                              <tr key={modulo.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {modulo.fabricante}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {modulo.modelo}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {modulo.potencia}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {modulo.quantidade}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {modulo.potenciaPico}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
-                    <table className="min-w-full divide-y divide-gray-700">
-                      <thead>
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Fabricante
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Modelo
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potência (W)
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Quantidade
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potência Total (kWp)
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
-                        {projeto.dadosTecnicos.modulos.map((modulo) => (
-                          <tr key={modulo.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {modulo.fabricante}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {modulo.modelo}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {modulo.potencia}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {modulo.quantidade}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {modulo.potenciaPico}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
 
-              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                <h4 className="text-lg font-semibold text-gray-100">Inversores</h4>
-                {projeto.dadosTecnicos.inversores.length === 0 ? (
-                  <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
-                    Nenhum inversor cadastrado.
+                  <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
+                    <h4 className="text-lg font-semibold text-gray-100">Inversores</h4>
+                    {projeto.dadosTecnicos.inversores.length === 0 ? (
+                      <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
+                        Nenhum inversor cadastrado.
+                      </div>
+                    ) : (
+                      <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
+                        <table className="min-w-full divide-y divide-gray-700">
+                          <thead>
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Fabricante
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Modelo
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Potência (W)
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Quantidade
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Potência Total (kW)
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-700">
+                            {projeto.dadosTecnicos.inversores.map((inversor) => (
+                              <tr key={inversor.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {inversor.fabricante}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {inversor.modelo}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {inversor.potencia}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {inversor.quantidade}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                  {inversor.potenciaTotal}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
-                    <table className="min-w-full divide-y divide-gray-700">
-                      <thead>
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Fabricante
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Modelo
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potência (W)
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Quantidade
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Potência Total (kW)
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
-                        {projeto.dadosTecnicos.inversores.map((inversor) => (
-                          <tr key={inversor.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {inversor.fabricante}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {inversor.modelo}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {inversor.potencia}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {inversor.quantidade}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                              {inversor.potenciaTotal}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+                </>
+              )}
 
               {projeto.dadosTecnicos.divisaoCreditos.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
