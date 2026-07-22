@@ -1,9 +1,9 @@
-name: Docker Release
+name: App Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 jobs:
   build-and-push:
@@ -33,3 +33,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Trigger Coolify deployment
+        run: |
+          curl --fail-with-body -sS -X GET "${{ vars.COOLIFY_DEPLOY_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
