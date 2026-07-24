@@ -165,10 +165,10 @@ export const ServicoKanbanColumn: React.FC<ServicoKanbanColumnProps> = ({
 
   return (
     <Card
-      className={`w-[340px] shrink-0 self-start snap-start border ${statusColumnStyles[column.status]}`}
+      className={`w-[340px] min-w-[340px] max-w-[340px] shrink-0 self-start snap-start overflow-hidden border ${statusColumnStyles[column.status]}`}
     >
-      <CardContent className="p-4">
-        <div className="mb-4 flex min-h-12 items-start justify-between gap-3">
+      <CardContent className="min-w-0 p-4">
+        <div className="mb-4 flex h-16 shrink-0 items-start justify-between gap-3">
           <h2 className="pt-1 text-sm font-semibold uppercase tracking-wide text-slate-200">
             {column.etapa}
           </h2>
@@ -178,7 +178,7 @@ export const ServicoKanbanColumn: React.FC<ServicoKanbanColumnProps> = ({
         </div>
 
         <div
-          className="max-h-[68vh] space-y-3 overflow-y-auto pr-1"
+          className="max-h-[68vh] min-w-0 space-y-3 overflow-x-hidden overflow-y-auto pr-1"
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
             if (!canManageStatus) return;
