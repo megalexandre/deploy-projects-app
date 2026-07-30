@@ -15,6 +15,7 @@ type ProjetoCardProps = {
   onDragStart: (id: string, event: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: () => void;
   onStatusChange: (projectId: string, nextStatus: KanbanStatus) => void;
+  onProjectUpdated: (project: ProjetoKanbanCard) => void;
 };
 
 const formatTipoProjeto = (tipoProjeto?: string) => {
@@ -62,16 +63,16 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
   onDragStart,
   onDragEnd,
   onStatusChange,
+  onProjectUpdated,
 }) => {
   const currentUser = useCurrentUser();
   const canManageStatus = currentUser?.isAdmin === true;
-  const [localProjeto, setLocalProjeto] = useState(projeto);
   const [editingIdentifier, setEditingIdentifier] = useState(false);
-  const identifier = useIdentifier({ project: localProjeto, isAdmin: canManageStatus });
-  const isProjetoSolar = localProjeto.tipoProjeto === 'fotovoltaico';
+  const identifier = useIdentifier({ project: projeto, isAdmin: canManageStatus });
+  const isProjetoSolar = projeto.tipoProjeto === 'fotovoltaico';
   const detailValue = isProjetoSolar
-    ? `Pot: ${localProjeto.dadosProjeto.potenciaSistema || 0} kWp`
-    : formatEnderecoResumo(localProjeto);
+    ? `Pot: ${projeto.dadosProjeto.potenciaSistema || 0} kWp`
+    : formatEnderecoResumo(projeto);
 
   return (
     <div
@@ -79,7 +80,7 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
       draggable={canManageStatus}
       onDragStart={(event) => {
         if (!canManageStatus) return;
-        onDragStart(localProjeto.id, event);
+        onDragStart(projeto.id, event);
       }}
       onDragEnd={onDragEnd}
       className={[
@@ -87,7 +88,7 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
         'bg-[rgba(21,27,43,0.6)] backdrop-blur-[12px] transition-all',
         'hover:border-cyan-300/40 hover:bg-[rgba(21,27,43,0.78)]',
         canManageStatus ? 'cursor-grab' : 'cursor-default',
-        draggedId === localProjeto.id ? 'opacity-50' : '',
+        draggedId === projeto.id ? 'opacity-50' : '',
       ].join(' ')}
     >
       <div className="space-y-4 p-5">
@@ -103,26 +104,26 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
               ID {identifier}
             </div>
             <h4 className="mt-1 text-xl font-bold leading-tight text-slate-100">
-              {formatTipoProjeto(localProjeto.tipoProjeto)}
+              {formatTipoProjeto(projeto.tipoProjeto)}
             </h4>
           </div>
 
           <div className="shrink-0 rounded-lg border border-white/10 bg-slate-950/45 p-2">
             <LogoAvatar
-              src={localProjeto.concessionariaLogo}
-              name={localProjeto.dadosProjeto.concessionaria}
+              src={projeto.concessionariaLogo}
+              name={projeto.dadosProjeto.concessionaria}
               size="lg"
             />
           </div>
         </div>
 
         <div>
-          <p className="text-base font-semibold text-slate-100">{localProjeto.cliente.nome}</p>
+          <p className="text-base font-semibold text-slate-100">{projeto.cliente.nome}</p>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <Buildings className="h-4 w-4 text-[#43dde6]" />
-          <span>Concessionaria {localProjeto.dadosProjeto.concessionaria}</span>
+          <span>Concessionaria {projeto.dadosProjeto.concessionaria}</span>
         </div>
 
         {isProjetoSolar ? (
@@ -137,13 +138,13 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
 
       {editingIdentifier && (
         <EditIdentifierDialog
-          project={localProjeto}
+          project={projeto}
           onClose={() => setEditingIdentifier(false)}
           onSaved={(updated) => {
-            setLocalProjeto((current) => ({
+            onProjectUpdated({
               ...updated,
-              concessionariaLogo: current.concessionariaLogo,
-            }));
+              concessionariaLogo: projeto.concessionariaLogo,
+            });
             setEditingIdentifier(false);
           }}
         />
@@ -151,13 +152,13 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
 
       <div className="mt-auto flex items-center gap-2 border-t border-white/10 bg-black/10 p-3">
         <StatusSelect
-          projectId={localProjeto.id}
-          status={localProjeto.status}
+          projectId={projeto.id}
+          status={projeto.status}
           canManageStatus={canManageStatus}
           onStatusChange={onStatusChange}
         />
 
-        <ViewButton to={`/projetos/${localProjeto.id}`} />
+        <ViewButton to={`/projetos/${projeto.id}`} />
       </div>
     </div>
   );

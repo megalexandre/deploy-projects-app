@@ -17,6 +17,7 @@ export const projectStatusFlow: Array<{ status: StatusProjeto; etapa: string }> 
   { status: 'vistoria_reprovada', etapa: 'Vistoria Reprovada' },
   { status: 'aguardando_pagamento', etapa: 'Aguardando Pagamento' },
   { status: 'projeto_encerrado', etapa: 'Projeto Encerrado' },
+  { status: 'projeto_cancelado', etapa: 'Projeto Cancelado' },
 ];
 
 type TimelineStatus = Projeto['timeline'][number]['status'];
@@ -157,13 +158,14 @@ const VALID_STATUSES = new Set<StatusProjeto>([
   'vistoria_reprovada',
   'aguardando_pagamento',
   'projeto_encerrado',
+  'projeto_cancelado',
 ]);
 
 const STATUS_ALIASES: Record<string, StatusProjeto> = {
   completed: 'projeto_encerrado',
   concluido: 'projeto_encerrado',
   cancelled: 'projeto_encerrado',
-  cancelado: 'projeto_encerrado',
+  cancelado: 'projeto_cancelado',
   active: 'em_analise_concessionaria',
   em_analise: 'em_analise_concessionaria',
   in_progress: 'em_analise_concessionaria',
@@ -344,12 +346,19 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
   const id = asString(project.id) || crypto.randomUUID();
   const protocolo =
     asString(project.protocolo) ||
-    asString(project.protocoloConcessionaria) ||
+    asString(project.utility_protocol) ||
+    asString(project.utilityProtocol) ||
     `PROJ-${id.slice(0, 8).toUpperCase()}`;
+  const protocoloConcessionaria =
+    asString(project.protocoloConcessionaria) ||
+    asString(project.secondary_protocol) ||
+    asString(project.secondaryProtocol) ||
+    undefined;
 
   const projetoNormalizado: Projeto = {
     id,
     protocolo,
+    protocoloConcessionaria,
     sequence,
     subsequente,
     addressId:

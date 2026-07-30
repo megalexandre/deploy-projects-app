@@ -18,6 +18,7 @@ const projectResponse = {
   client_id: 'client-1',
   utility_company: 'CEMIG',
   utility_protocol: 'P-001',
+  secondary_protocol: 'CEMIG-2026-001',
   customer_class: 'Residencial',
   integrator: 'Integrador X',
   modality: 'AUTOCONSUMO LOCAL',
@@ -109,6 +110,35 @@ describe('projectsService coordinates payload', () => {
       expect.objectContaining({
         framework: 'Minigeracao',
         services_names: undefined,
+      }),
+    );
+  });
+
+  it('envia o protocolo da concessionaria separadamente ao atualizar o projeto', async () => {
+    await projectsService.update('project-1', {
+      secondaryProtocol: 'CEMIG-2026-002',
+    });
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/projects/project-1',
+      expect.objectContaining({
+        secondary_protocol: 'CEMIG-2026-002',
+        utility_protocol: undefined,
+      }),
+    );
+  });
+
+  it('envia subsequence nulo ao remover o subsequente do identificador', async () => {
+    await projectsService.update('project-1', {
+      sequence: 255,
+      subsequente: null,
+    });
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/projects/project-1',
+      expect.objectContaining({
+        sequence: 255,
+        subsequence: null,
       }),
     );
   });
@@ -212,5 +242,45 @@ describe('projectsService project address enrichment', () => {
     expect(project.endereco.logradouro).toBe('Av. do Cliente');
     expect(project.endereco.numero).toBe('1000');
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe('projectsService project lifecycle', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('cancela o projeto registrando o motivo no historico de status', async () => {
+    vi.mocked(apiClient.post).mockResolvedValue({});
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...projectResponse,
+      status: 'projeto_cancelado',
+    });
+
+    const result = await projectsService.cancel('project-1', 'Cliente desistiu');
+
+    expect(apiClient.post).toHaveBeenCalledWith('/projects/project-1/statuses', {
+      name: 'projeto_cancelado',
+      comment: 'Cliente desistiu',
+    });
+    expect(apiClient.get).toHaveBeenCalledWith('/projects/project-1');
+    expect(result.status).toBe('projeto_cancelado');
+  });
+
+  it('inativa o projeto pela rota de exclusao logica existente', async () => {
+    vi.mocked(apiClient.patch).mockResolvedValue(undefined);
+
+    await projectsService.inactivate('project-1');
+
+    expect(apiClient.patch).toHaveBeenCalledWith('/projects/project-1/inactivate');
+  });
+
+  it('exclui definitivamente o projeto pela rota existente', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue(undefined);
+
+    await projectsService.delete('project-1');
+
+    expect(apiClient.delete).toHaveBeenCalledWith('/projects/project-1');
   });
 });

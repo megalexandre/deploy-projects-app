@@ -1,8 +1,9 @@
 /** Pagina 'ProjetoDetailPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
+  Archive,
   ChatCircleText,
   Check,
   CheckCircle,
@@ -11,8 +12,10 @@ import {
   FileText,
   PencilSimple,
   PlusCircle,
+  Trash,
   UploadSimple,
   X,
+  XCircle,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
@@ -332,6 +335,7 @@ const buildProcuracaoHtml = (
 
 export const ProjetoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const currentUser = useCurrentUser();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [clienteDetalhe, setClienteDetalhe] = useState<Customer | null>(null);
@@ -346,6 +350,12 @@ export const ProjetoDetailPage: React.FC = () => {
   const [timelineComment, setTimelineComment] = useState('');
   const [savingTimelineComment, setSavingTimelineComment] = useState(false);
   const [integradores, setIntegradores] = useState<EditableFieldOption[]>([]);
+  const [projectAction, setProjectAction] = useState<'cancel' | 'inactivate' | 'delete' | null>(
+    null,
+  );
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [processingProjectAction, setProcessingProjectAction] = useState(false);
+  const [projectActionError, setProjectActionError] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -395,6 +405,9 @@ export const ProjetoDetailPage: React.FC = () => {
       case 'projeto_encerrado':
       case 'concluido':
         return 'text-green-400 bg-green-900/20';
+      case 'projeto_cancelado':
+      case 'cancelado':
+        return 'text-red-400 bg-red-900/20';
       case 'aguardando_aprovacao':
         return 'text-amber-200 bg-amber-700/20';
       case 'em_analise_concessionaria':
@@ -448,6 +461,9 @@ export const ProjetoDetailPage: React.FC = () => {
         return 'Aguardando Aprovacao';
       case 'projeto_encerrado':
         return 'Projeto Encerrado';
+      case 'projeto_cancelado':
+      case 'cancelado':
+        return 'Projeto Cancelado';
       case 'em_analise_documentacao':
         return 'Em Analise de Documentacao';
       case 'elaboracao_documentacao_tecnica':
@@ -682,6 +698,55 @@ export const ProjetoDetailPage: React.FC = () => {
     setProjeto(await projectsService.getById(projeto.id));
   };
 
+  const closeProjectAction = () => {
+    if (processingProjectAction) return;
+    setProjectAction(null);
+    setCancellationReason('');
+    setProjectActionError('');
+  };
+
+  const confirmProjectAction = async () => {
+    if (!projeto || !projectAction) return;
+
+    const reason = cancellationReason.trim();
+    if (projectAction === 'cancel' && !reason) {
+      setProjectActionError('Informe o motivo do cancelamento.');
+      return;
+    }
+
+    setProcessingProjectAction(true);
+    setProjectActionError('');
+
+    try {
+      if (projectAction === 'cancel') {
+        setProjeto(await projectsService.cancel(projeto.id, reason));
+        setProjectAction(null);
+        setCancellationReason('');
+        return;
+      }
+
+      if (projectAction === 'delete') {
+        await projectsService.delete(projeto.id);
+      } else {
+        await projectsService.inactivate(projeto.id);
+      }
+      navigate('/projetos', { replace: true });
+    } catch (error) {
+      console.error(`Erro ao executar a ação ${projectAction} no projeto:`, error);
+      setProjectActionError(
+        projectAction === 'cancel'
+          ? 'Não foi possível cancelar o projeto.'
+          : error instanceof Error
+            ? error.message
+            : projectAction === 'delete'
+              ? 'Não foi possível excluir o projeto.'
+              : 'Não foi possível inativar o projeto.',
+      );
+    } finally {
+      setProcessingProjectAction(false);
+    }
+  };
+
   const parseNumber = (value: string) => {
     const parsed = Number(value.replace(',', '.'));
     if (!Number.isFinite(parsed)) {
@@ -707,12 +772,44 @@ export const ProjetoDetailPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           {currentUser?.isAdmin && (
-            <Link to={`/projetos/${projeto.id}/editar`}>
-              <Button size="sm">
-                <PencilSimple className="h-4 w-4 mr-2" />
-                Editar projeto
+            <>
+              {projeto.status !== 'projeto_cancelado' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setProjectAction('cancel')}
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Cancelar projeto
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setProjectAction('inactivate')}
+              >
+                <Archive className="mr-2 h-4 w-4" />
+                Inativar
               </Button>
-            </Link>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-red-400/35 text-red-300 hover:border-red-300 hover:bg-red-950/40"
+                onClick={() => setProjectAction('delete')}
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Excluir
+              </Button>
+              <Link to={`/projetos/${projeto.id}/editar`}>
+                <Button size="sm">
+                  <PencilSimple className="h-4 w-4 mr-2" />
+                  Editar projeto
+                </Button>
+              </Link>
+            </>
           )}
           <span
             className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(projeto.status)}`}
@@ -824,10 +921,16 @@ export const ProjetoDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <EditableProjectField
-                  label="Protocolo da Concessionaria"
+                  label="Protocolo interno"
                   value={projeto.protocolo}
                   canEdit={false}
                   onSave={(value) => handleUpdateField({ utilityProtocol: value.trim() })}
+                />
+                <EditableProjectField
+                  label="Protocolo da concessionária"
+                  value={projeto.protocoloConcessionaria ?? ''}
+                  canEdit={Boolean(currentUser?.isAdmin)}
+                  onSave={(value) => handleUpdateField({ secondaryProtocol: value.trim() })}
                 />
                 <EditableProjectField
                   label="Concessionaria"
@@ -1477,6 +1580,73 @@ export const ProjetoDetailPage: React.FC = () => {
             setTimelineDialogMode('view');
           }}
         />
+      )}
+
+      {projectAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+            <h2 className="text-xl font-semibold text-slate-100">
+              {projectAction === 'cancel'
+                ? 'Cancelar projeto'
+                : projectAction === 'delete'
+                  ? 'Excluir projeto definitivamente'
+                  : 'Inativar projeto'}
+            </h2>
+            <p className="mt-2 text-sm text-slate-400">
+              {projectAction === 'cancel'
+                ? 'O projeto permanecerá disponível com o status de cancelado e o motivo ficará registrado no histórico.'
+                : projectAction === 'delete'
+                  ? 'Esta ação é irreversível. O projeto e seus dados internos serão removidos. Registros financeiros ou outras dependências podem impedir a exclusão.'
+                  : 'O projeto deixará de aparecer nas listagens, mas seus dados serão preservados no sistema.'}
+            </p>
+
+            {projectAction === 'cancel' && (
+              <div className="mt-5">
+                <label className="mb-2 block text-sm font-medium text-slate-300">
+                  Motivo do cancelamento
+                </label>
+                <textarea
+                  value={cancellationReason}
+                  onChange={(event) => setCancellationReason(event.target.value)}
+                  rows={5}
+                  autoFocus
+                  placeholder="Informe obrigatoriamente o motivo..."
+                  className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-red-300 focus:ring-2 focus:ring-red-300/30"
+                />
+              </div>
+            )}
+
+            {projectActionError && (
+              <p className="mt-3 text-sm text-red-400">{projectActionError}</p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={closeProjectAction}>
+                Voltar
+              </Button>
+              <Button
+                type="button"
+                loading={processingProjectAction}
+                className={
+                  projectAction === 'delete'
+                    ? 'from-red-600 to-red-700 shadow-[0_12px_26px_-14px_rgba(220,38,38,0.95)]'
+                    : ''
+                }
+                disabled={
+                  processingProjectAction ||
+                  (projectAction === 'cancel' && !cancellationReason.trim())
+                }
+                onClick={() => void confirmProjectAction()}
+              >
+                {projectAction === 'cancel'
+                  ? 'Confirmar cancelamento'
+                  : projectAction === 'delete'
+                    ? 'Excluir definitivamente'
+                    : 'Confirmar inativação'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

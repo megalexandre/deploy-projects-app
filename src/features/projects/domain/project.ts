@@ -32,6 +32,7 @@ export interface ProjectResponse {
   address_id: string;
   utility_company: string;
   utility_protocol: string;
+  secondary_protocol?: string | null;
   customer_class: string;
   integrator: string | null;
   integrator_name?: string | null;
@@ -75,6 +76,7 @@ export const toProjeto = (
 ): Projeto => ({
   id: r.id,
   protocolo: r.utility_protocol,
+  protocoloConcessionaria: r.secondary_protocol ?? undefined,
   sequence: r.sequence,
   subsequente: r.subsequence ? String(r.subsequence) : '',
 

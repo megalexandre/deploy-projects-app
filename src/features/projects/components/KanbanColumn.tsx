@@ -17,6 +17,7 @@ type KanbanColumnProps = {
   onDragEnd: () => void;
   onDrop: (columnId: KanbanStatus, event: React.DragEvent<HTMLDivElement>) => void;
   onStatusChange: (projectId: string, nextStatus: KanbanStatus) => void;
+  onProjectUpdated: (project: ProjetoKanbanCard) => void;
 };
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({
@@ -27,6 +28,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onDragEnd,
   onDrop,
   onStatusChange,
+  onProjectUpdated,
 }) => {
   const canManageStatus = useCurrentUser()?.isAdmin === true;
   const [showAll, setShowAll] = React.useState(false);
@@ -65,6 +67,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onStatusChange={onStatusChange}
+              onProjectUpdated={onProjectUpdated}
             />
           ))}
 

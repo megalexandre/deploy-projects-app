@@ -12,7 +12,8 @@ export type KanbanStatus =
   | 'vistoria_solicitada'
   | 'vistoria_reprovada'
   | 'aguardando_pagamento'
-  | 'projeto_encerrado';
+  | 'projeto_encerrado'
+  | 'projeto_cancelado';
 
 const legacyStatusMap: Record<string, KanbanStatus> = {
   aguardando_aprovacao: 'em_analise_documentacao',
@@ -23,7 +24,7 @@ const legacyStatusMap: Record<string, KanbanStatus> = {
   instalacao: 'obras_concessionaria',
   aprovado: 'projeto_aprovado',
   concluido: 'projeto_encerrado',
-  cancelado: 'projeto_encerrado',
+  cancelado: 'projeto_cancelado',
 };
 
 export const columns: Array<{ id: KanbanStatus; label: string; className: string }> = [
@@ -86,6 +87,11 @@ export const columns: Array<{ id: KanbanStatus; label: string; className: string
     id: 'projeto_encerrado',
     label: 'Projeto Encerrado',
     className: 'border-white/10 bg-sky-900/20',
+  },
+  {
+    id: 'projeto_cancelado',
+    label: 'Projeto Cancelado',
+    className: 'border-red-500/20 bg-red-950/20',
   },
 ];
 

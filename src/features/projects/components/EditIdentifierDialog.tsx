@@ -48,8 +48,12 @@ export const EditIdentifierDialog: React.FC<Props> = ({ project, onClose, onSave
         subsequente: subsequente.trim() || null,
       });
       onSaved(updated as unknown as Projeto);
-    } catch {
-      setError('Erro ao salvar. Tente novamente.');
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'Não foi possível atualizar o identificador.',
+      );
     } finally {
       setSaving(false);
     }

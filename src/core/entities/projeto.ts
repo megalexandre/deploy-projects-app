@@ -44,6 +44,7 @@ export const StatusProjeto = {
   VISTORIA_REPROVADA: 'vistoria_reprovada',
   AGUARDANDO_PAGAMENTO: 'aguardando_pagamento',
   PROJETO_ENCERRADO: 'projeto_encerrado',
+  PROJETO_CANCELADO: 'projeto_cancelado',
   // Compatibilidade com dados legados.
   PENDENTE: 'pendente',
   EM_ANDAMENTO: 'em_andamento',
@@ -59,6 +60,7 @@ export type StatusProjeto = (typeof StatusProjeto)[keyof typeof StatusProjeto];
 export const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
   [StatusProjeto.CONCLUIDO]: { color: 'text-green-400', label: 'Concluído' },
   [StatusProjeto.PROJETO_ENCERRADO]: { color: 'text-green-400', label: 'Projeto Encerrado' },
+  [StatusProjeto.PROJETO_CANCELADO]: { color: 'text-red-400', label: 'Projeto Cancelado' },
   [StatusProjeto.EM_ANDAMENTO]: { color: 'text-cyan-300', label: 'Em Andamento' },
   [StatusProjeto.EM_ANALISE_CONCESSIONARIA]: {
     color: 'text-cyan-300',
@@ -114,6 +116,7 @@ export interface Cliente {
 export interface Projeto {
   id: string;
   protocolo: string;
+  protocoloConcessionaria?: string;
   sequence: number;
   subsequente: string;
   addressId?: string;

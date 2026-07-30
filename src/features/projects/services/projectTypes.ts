@@ -43,6 +43,7 @@ export interface UpdateProjectData {
   nomeCliente?: string;
   utilityCompany?: string;
   utilityProtocol?: string;
+  secondaryProtocol?: string;
   customerClass?: string;
   integrator?: string;
   modality?: string;

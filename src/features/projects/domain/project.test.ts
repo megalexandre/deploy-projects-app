@@ -9,6 +9,7 @@ const makeProjectResponse = (overrides: Partial<ProjectResponse> = {}): ProjectR
   address_id: 'a-1',
   utility_company: 'Coelba',
   utility_protocol: 'PROJ-P1',
+  secondary_protocol: 'COELBA-2026-123',
   customer_class: 'Residencial',
   integrator: 'b6f8a0e2-4f6e-4b0a-9c1d-2e3f4a5b6c7d',
   integrator_name: 'Integrador X',
@@ -58,6 +59,7 @@ describe('toProjeto', () => {
 
     expect(result.id).toBe('p-1');
     expect(result.protocolo).toBe('PROJ-P1');
+    expect(result.protocoloConcessionaria).toBe('COELBA-2026-123');
     expect(result.sequence).toBe(3);
     expect(result.valor).toBe(600);
     expect(result.tipoProjeto).toBe('fotovoltaico');

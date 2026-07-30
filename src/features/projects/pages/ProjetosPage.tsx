@@ -38,6 +38,7 @@ export const ProjetosPage: React.FC = () => {
     cancelStatusChange,
     handleDrop,
     handleDragStart,
+    handleProjectUpdated,
   } = useProjetosKanban();
 
   if (loading) {
@@ -127,6 +128,7 @@ export const ProjetosPage: React.FC = () => {
                   onDragEnd={() => setDraggedId(null)}
                   onDrop={handleDrop}
                   onStatusChange={openStatusDialog}
+                  onProjectUpdated={handleProjectUpdated}
                 />
               ))}
             </div>

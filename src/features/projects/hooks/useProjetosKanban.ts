@@ -198,7 +198,7 @@ export const useProjetosKanban = () => {
     const total = filteredProjetos.length;
     const valor = filteredProjetos.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
     const abertas = filteredProjetos.filter(
-      (item) => toKanbanStatus(item.status) !== 'projeto_encerrado',
+      (item) => !['projeto_encerrado', 'projeto_cancelado'].includes(toKanbanStatus(item.status)),
     ).length;
     const aprovados = filteredProjetos.filter((item) => {
       const status = toKanbanStatus(item.status);
@@ -265,6 +265,12 @@ export const useProjetosKanban = () => {
     event.dataTransfer.setData('text/project-id', id);
   };
 
+  const handleProjectUpdated = (updatedProject: ProjetoKanbanCard) => {
+    setProjetos((current) =>
+      current.map((project) => (project.id === updatedProject.id ? updatedProject : project)),
+    );
+  };
+
   return {
     loading,
     error,
@@ -293,5 +299,6 @@ export const useProjetosKanban = () => {
     cancelStatusChange,
     handleDrop,
     handleDragStart,
+    handleProjectUpdated,
   };
 };

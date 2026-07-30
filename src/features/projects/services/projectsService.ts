@@ -105,7 +105,6 @@ const createRaw = async (projectData: CreateProjectData): Promise<unknown> => {
     concessionaria: projectData.utilityCompany,
     utility_protocol: projectData.utilityProtocol,
     utilityProtocol: projectData.utilityProtocol,
-    protocoloConcessionaria: projectData.utilityProtocol,
     customer_class: projectData.customerClass,
     customerClass: projectData.customerClass,
     classe: projectData.customerClass,
@@ -344,6 +343,8 @@ export const projectsService = {
           : undefined;
     const shouldUpdateServices =
       isRecord(projectData) && Object.prototype.hasOwnProperty.call(projectData, 'servicesNames');
+    const shouldUpdateSubsequence =
+      isRecord(projectData) && Object.prototype.hasOwnProperty.call(projectData, 'subsequente');
     const servicesNames = shouldUpdateServices
       ? normalizeServicesNames(projectData.servicesNames)
       : undefined;
@@ -358,7 +359,7 @@ export const projectsService = {
           utility_company: projectData.utilityCompany,
           concessionaria: projectData.utilityCompany,
           utility_protocol: projectData.utilityProtocol,
-          protocoloConcessionaria: projectData.utilityProtocol,
+          secondary_protocol: projectData.secondaryProtocol,
           customer_class: projectData.customerClass,
           classe: projectData.customerClass,
           modalidade: projectData.modality,
@@ -373,7 +374,7 @@ export const projectsService = {
               : projectData.amount,
           coordinates: toCoordinatesWkt(projectData.coordinates),
           sequence: projectData.sequence,
-          subsequence: projectData.subsequente ?? projectData.subsequence,
+          subsequence: shouldUpdateSubsequence ? projectData.subsequente : projectData.subsequence,
           services_names: servicesNames,
           servicos: servicesNames,
           project_type: projectData.projectType,
@@ -428,6 +429,19 @@ export const projectsService = {
     return apiClient.delete<void>(`${PROJECTS_ENDPOINT}/${id}`);
   },
 
+  async cancel(id: string, reason: string): Promise<Project> {
+    await apiClient.post<unknown>(`${PROJECTS_ENDPOINT}/${id}/statuses`, {
+      name: 'projeto_cancelado',
+      comment: reason,
+    });
+    const response = await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`);
+    return mergeProjectEnhancement(normalizeProjeto(response));
+  },
+
+  async inactivate(id: string): Promise<void> {
+    await apiClient.patch<void>(`${PROJECTS_ENDPOINT}/${id}/inactivate`);
+  },
+
   async getProjetos(): Promise<Projeto[]> {
     return projectsService.getAll();
   },
@@ -443,7 +457,7 @@ export const projectsService = {
   async getDashboardStats(): Promise<DashboardStats> {
     const projetos = await projectsService.getProjetos();
     const statusPendente = new Set<StatusProjeto>(['em_analise_documentacao']);
-    const statusFinalizado = new Set<StatusProjeto>(['projeto_encerrado']);
+    const statusFinalizado = new Set<StatusProjeto>(['projeto_encerrado', 'projeto_cancelado']);
 
     return {
       totalProjetos: projetos.length,
