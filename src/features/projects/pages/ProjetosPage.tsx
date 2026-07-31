@@ -24,6 +24,8 @@ export const ProjetosPage: React.FC = () => {
     draggedId,
     pendingStatusChange,
     statusComment,
+    statusStartDate,
+    statusDurationDays,
     updatingStatus,
     containerRef,
     isDragging,
@@ -32,6 +34,8 @@ export const ProjetosPage: React.FC = () => {
     setStatusFilter,
     setUserFilter,
     setStatusComment,
+    setStatusStartDate,
+    setStatusDurationDays,
     setDraggedId,
     openStatusDialog,
     confirmStatusChange,
@@ -58,7 +62,7 @@ export const ProjetosPage: React.FC = () => {
         </Card>
         <Card>
           <CardContent className="p-5">
-            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Em aberto</div>
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Em Andamento</div>
             <div className="mt-2 text-3xl font-semibold text-slate-100">{stats.abertas}</div>
           </CardContent>
         </Card>
@@ -140,8 +144,12 @@ export const ProjetosPage: React.FC = () => {
         <StatusChangeDialog
           pendingStatusChange={pendingStatusChange}
           statusComment={statusComment}
+          statusStartDate={statusStartDate}
+          statusDurationDays={statusDurationDays}
           updatingStatus={updatingStatus}
           onCommentChange={setStatusComment}
+          onStartDateChange={setStatusStartDate}
+          onDurationDaysChange={setStatusDurationDays}
           onConfirm={() => void confirmStatusChange()}
           onCancel={cancelStatusChange}
         />

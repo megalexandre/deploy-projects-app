@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   concessionairesService,
   customersService,
+  financeiroService,
   projectsService,
   usersService,
 } from '@/services';
+import type { TransacaoFinanceira } from '@/features/financeiro/services/financeiroService';
 import type { Projeto } from '@/types';
-import { columns, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
+import { columns, getStatusLabel, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
 import { useDragToScroll } from './useDragToScroll';
+import { calendarioService } from '@/features/calendario/services/calendarioService';
 
 type PendingStatusChange = {
   projectId: string;
@@ -16,6 +19,26 @@ type PendingStatusChange = {
 
 export type ProjetoKanbanCard = Projeto & {
   concessionariaLogo?: string | null;
+};
+
+export const calculateExpectedProjectRevenue = (
+  projetos: Array<Pick<Projeto, 'id' | 'valor'>>,
+  transacoes: Array<Pick<TransacaoFinanceira, 'tipo' | 'valor' | 'projectId'>>,
+) => {
+  const receivedByProject = new Map<string, number>();
+  transacoes.forEach((transacao) => {
+    if (transacao.tipo !== 'receita' || !transacao.projectId) return;
+    receivedByProject.set(
+      transacao.projectId,
+      (receivedByProject.get(transacao.projectId) ?? 0) + transacao.valor,
+    );
+  });
+
+  return projetos.reduce(
+    (total, projeto) =>
+      total + Math.max((Number(projeto.valor) || 0) - (receivedByProject.get(projeto.id) ?? 0), 0),
+    0,
+  );
 };
 
 const normalizeText = (value?: string | null) =>
@@ -34,6 +57,7 @@ const getProjectIdentifier = (projeto: Pick<Projeto, 'sequence' | 'subsequente' 
 
 export const useProjetosKanban = () => {
   const [projetos, setProjetos] = useState<ProjetoKanbanCard[]>([]);
+  const [transacoes, setTransacoes] = useState<TransacaoFinanceira[]>([]);
   const [userOptions, setUserOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +67,8 @@ export const useProjetosKanban = () => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
   const [statusComment, setStatusComment] = useState('');
+  const [statusStartDate, setStatusStartDate] = useState(new Date().toISOString().slice(0, 10));
+  const [statusDurationDays, setStatusDurationDays] = useState(5);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const { containerRef, isDragging, dragBindings } = useDragToScroll({
     canStartDrag: (event) =>
@@ -57,11 +83,12 @@ export const useProjetosKanban = () => {
       setError(null);
 
       try {
-        const [data, customers, concessionarias, users] = await Promise.all([
+        const [data, customers, concessionarias, users, financialEntries] = await Promise.all([
           projectsService.getProjetos(),
           customersService.getAll().catch(() => []),
           concessionairesService.getAll().catch(() => []),
           usersService.getAll().catch(() => []),
+          financeiroService.listTransacoes().catch(() => []),
         ]);
 
         const customersById = new Map(customers.map((customer) => [customer.id, customer]));
@@ -103,6 +130,7 @@ export const useProjetosKanban = () => {
         });
 
         setProjetos(enriched);
+        setTransacoes(financialEntries);
         setUserOptions(
           users
             .map((user) => ({ value: user.id, label: user.name.trim() || user.email }))
@@ -169,6 +197,7 @@ export const useProjetosKanban = () => {
           normalizeText(identifier).includes(query) ||
           normalizeText(projeto.id).includes(query) ||
           normalizeText(projeto.protocolo).includes(query) ||
+          normalizeText(projeto.protocoloConcessionaria).includes(query) ||
           normalizeText(projeto.cliente.nome).includes(query) ||
           normalizeText(projeto.dadosProjeto.concessionaria).includes(query)
         );
@@ -196,7 +225,7 @@ export const useProjetosKanban = () => {
 
   const stats = useMemo(() => {
     const total = filteredProjetos.length;
-    const valor = filteredProjetos.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
+    const valor = calculateExpectedProjectRevenue(filteredProjetos, transacoes);
     const abertas = filteredProjetos.filter(
       (item) => !['projeto_encerrado', 'projeto_cancelado'].includes(toKanbanStatus(item.status)),
     ).length;
@@ -206,7 +235,7 @@ export const useProjetosKanban = () => {
     }).length;
 
     return { total, valor, abertas, aprovados };
-  }, [filteredProjetos]);
+  }, [filteredProjetos, transacoes]);
 
   const updateProjetoStatus = async (id: string, nextStatus: KanbanStatus, comment: string) => {
     const previous = projetos;
@@ -219,6 +248,25 @@ export const useProjetosKanban = () => {
     try {
       setUpdatingStatus(true);
       await projectsService.updateStatus(id, nextStatus, comment.trim() || undefined);
+      const project = projetos.find((item) => item.id === id);
+      if (project) {
+        try {
+          await calendarioService.saveStatusDeadline(
+            id,
+            getProjectIdentifier(project),
+            nextStatus,
+            getStatusLabel(nextStatus),
+            statusStartDate,
+            statusDurationDays,
+          );
+        } catch (calendarError) {
+          console.error(
+            'Status atualizado, mas o prazo não foi salvo no calendário:',
+            calendarError,
+          );
+          setError('Status atualizado, mas não foi possível salvar o prazo no calendário.');
+        }
+      }
     } catch (updateError) {
       console.error('Erro ao atualizar status do projeto:', updateError);
       setProjetos(previous);
@@ -234,6 +282,8 @@ export const useProjetosKanban = () => {
 
     setError(null);
     setStatusComment('');
+    setStatusStartDate(new Date().toISOString().slice(0, 10));
+    setStatusDurationDays(5);
     setPendingStatusChange({ projectId, nextStatus });
   };
 
@@ -246,6 +296,8 @@ export const useProjetosKanban = () => {
     );
     setPendingStatusChange(null);
     setStatusComment('');
+    setStatusStartDate(new Date().toISOString().slice(0, 10));
+    setStatusDurationDays(5);
   };
 
   const cancelStatusChange = () => {
@@ -285,6 +337,8 @@ export const useProjetosKanban = () => {
     draggedId,
     pendingStatusChange,
     statusComment,
+    statusStartDate,
+    statusDurationDays,
     updatingStatus,
     containerRef,
     isDragging,
@@ -293,6 +347,8 @@ export const useProjetosKanban = () => {
     setStatusFilter,
     setUserFilter,
     setStatusComment,
+    setStatusStartDate,
+    setStatusDurationDays,
     setDraggedId,
     openStatusDialog,
     confirmStatusChange,

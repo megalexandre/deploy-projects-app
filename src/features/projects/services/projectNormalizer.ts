@@ -359,6 +359,8 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
     id,
     protocolo,
     protocoloConcessionaria,
+    relatedProjectId:
+      asString(project.related_project_id) || asString(project.relatedProjectId) || undefined,
     sequence,
     subsequente,
     addressId:

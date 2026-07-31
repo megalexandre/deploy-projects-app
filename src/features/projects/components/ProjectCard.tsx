@@ -119,6 +119,11 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
 
         <div>
           <p className="text-base font-semibold text-slate-100">{projeto.cliente.nome}</p>
+          {projeto.protocoloConcessionaria && (
+            <p className="mt-1 text-xs text-cyan-200">
+              Protocolo da concessionária: {projeto.protocoloConcessionaria}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">

@@ -117,6 +117,7 @@ export interface Projeto {
   id: string;
   protocolo: string;
   protocoloConcessionaria?: string;
+  relatedProjectId?: string;
   sequence: number;
   subsequente: string;
   addressId?: string;

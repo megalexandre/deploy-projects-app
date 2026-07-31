@@ -1,5 +1,6 @@
 /** Pagina 'CalendarioPage': renderiza a agenda usando hook e helpers do dominio da feature. */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Calendar as CalendarIcon,
   Plus,
@@ -9,6 +10,8 @@ import {
   CaretLeft,
   CaretRight,
   Folder,
+  PencilSimple,
+  Trash,
   Wrench,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
@@ -36,6 +39,9 @@ export const CalendarioPage: React.FC = () => {
     selectedDayFilter,
     isFormOpen,
     novoEvento,
+    projetos,
+    editingEventId,
+    savingEvent,
     agendaFiltradaOrdenada,
     setViewMode,
     setFiltroAgenda,
@@ -46,8 +52,31 @@ export const CalendarioPage: React.FC = () => {
     getItensForDay,
     formatDateFromDay,
     resetNovoEvento,
+    openEventForEdit,
     handleCreateEvento,
+    handleDeleteEvento,
   } = useCalendario();
+  const today = new Date();
+  const defaultFocusDay =
+    selectedDate.getMonth() === today.getMonth() &&
+    selectedDate.getFullYear() === today.getFullYear()
+      ? today.getDate()
+      : 1;
+  const focusDate = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDayFilter ?? defaultFocusDay,
+  );
+  const weekStart = new Date(focusDate);
+  weekStart.setDate(focusDate.getDate() - focusDate.getDay());
+  const compactViewDates =
+    viewMode === 'dia'
+      ? [focusDate]
+      : Array.from({ length: 7 }, (_, index) => {
+          const date = new Date(weekStart);
+          date.setDate(weekStart.getDate() + index);
+          return date;
+        });
 
   return (
     <div className="space-y-6 page-enter">
@@ -72,7 +101,17 @@ export const CalendarioPage: React.FC = () => {
             <option value="semana">Semana</option>
             <option value="mes">Mes</option>
           </select>
-          <Button onClick={() => setIsFormOpen((current) => !current)}>
+          <Button
+            onClick={() => {
+              if (isFormOpen) {
+                setIsFormOpen(false);
+                resetNovoEvento();
+                return;
+              }
+              resetNovoEvento();
+              setIsFormOpen(true);
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Novo Evento
           </Button>
@@ -121,6 +160,26 @@ export const CalendarioPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCreateEvento} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block text-sm text-gray-300 md:col-span-2">
+                <span className="mb-1 block">Projeto relacionado (opcional)</span>
+                <select
+                  value={novoEvento.projectId}
+                  onChange={(event) =>
+                    setNovoEvento((current) => ({ ...current, projectId: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Sem projeto relacionado</option>
+                  {projetos.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.sequence
+                        ? `ID ${project.sequence}${project.subsequente ? `/${project.subsequente}` : ''}`
+                        : project.protocolo}{' '}
+                      — {project.cliente.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <Input
                 label="Titulo"
                 placeholder="Ex: Reuniao com cliente"
@@ -204,83 +263,143 @@ export const CalendarioPage: React.FC = () => {
                 >
                   Cancelar
                 </Button>
-                <Button type="submit">Salvar evento</Button>
+                {editingEventId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={savingEvent}
+                    onClick={() => void handleDeleteEvento(editingEventId)}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Excluir
+                  </Button>
+                )}
+                <Button type="submit" loading={savingEvent}>
+                  {editingEventId ? 'Salvar alterações' : 'Salvar evento'}
+                </Button>
               </div>
             </form>
           </CardContent>
         </Card>
       )}
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="outline" onClick={() => navigateMonth('prev')}>
-              <CaretLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-xl font-semibold text-gray-100">{formatMonthYear(selectedDate)}</h2>
-            <Button variant="outline" onClick={() => navigateMonth('next')}>
-              <CaretRight className="h-4 w-4" />
-            </Button>
-          </div>
+      {viewMode === 'mes' && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <Button variant="outline" onClick={() => navigateMonth('prev')}>
+                <CaretLeft className="h-4 w-4" />
+              </Button>
+              <h2 className="text-xl font-semibold text-gray-100">
+                {formatMonthYear(selectedDate)}
+              </h2>
+              <Button variant="outline" onClick={() => navigateMonth('next')}>
+                <CaretRight className="h-4 w-4" />
+              </Button>
+            </div>
 
-          <div className="grid grid-cols-7 gap-1">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map((day) => (
-              <div key={day} className="text-center py-2 text-sm font-medium text-gray-400">
-                {day}
-              </div>
-            ))}
+            <div className="grid grid-cols-7 gap-1">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map((day) => (
+                <div key={day} className="text-center py-2 text-sm font-medium text-gray-400">
+                  {day}
+                </div>
+              ))}
 
-            {getDaysInMonth(selectedDate).map((day, index) => {
-              const dayItems = day ? getItensForDay(day) : [];
-              const today = new Date();
-              const isToday =
-                day === today.getDate() &&
-                selectedDate.getMonth() === today.getMonth() &&
-                selectedDate.getFullYear() === today.getFullYear();
+              {getDaysInMonth(selectedDate).map((day, index) => {
+                const dayItems = day ? getItensForDay(day) : [];
+                const today = new Date();
+                const isToday =
+                  day === today.getDate() &&
+                  selectedDate.getMonth() === today.getMonth() &&
+                  selectedDate.getFullYear() === today.getFullYear();
 
+                return (
+                  <div
+                    key={String(index)}
+                    className={[
+                      'min-h-[90px] border border-gray-700 rounded-lg p-2',
+                      day ? 'hover:bg-gray-800 cursor-pointer' : '',
+                      isToday ? 'bg-blue-900/20 border-blue-600' : '',
+                      day && selectedDayFilter === day ? 'ring-2 ring-opj-blue bg-blue-900/30' : '',
+                    ].join(' ')}
+                    onClick={() => {
+                      if (!day) return;
+                      setSelectedDayFilter(day);
+                    }}
+                  >
+                    {day && (
+                      <>
+                        <div
+                          className={`text-sm font-medium ${isToday ? 'text-blue-400' : 'text-gray-300'}`}
+                        >
+                          {day}
+                        </div>
+                        <div className="mt-1 space-y-1">
+                          {dayItems.slice(0, 2).map((item) => (
+                            <div
+                              key={item.id}
+                              className={`text-xs px-1 py-0.5 rounded truncate ${getTipoColor(item)}`}
+                              title={item.titulo}
+                            >
+                              {getTipoIcon(item)} {item.titulo}
+                            </div>
+                          ))}
+                          {dayItems.length > 2 && (
+                            <div className="text-xs text-gray-400">+{dayItems.length - 2} mais</div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {viewMode !== 'mes' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{viewMode === 'dia' ? 'Agenda do dia' : 'Agenda da semana'}</CardTitle>
+          </CardHeader>
+          <CardContent className={`grid gap-3 ${viewMode === 'semana' ? 'md:grid-cols-7' : ''}`}>
+            {compactViewDates.map((date) => {
+              const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+              const items = agendaFiltradaOrdenada.filter((item) => item.data === dateKey);
               return (
                 <div
-                  key={String(index)}
-                  className={[
-                    'min-h-[90px] border border-gray-700 rounded-lg p-2',
-                    day ? 'hover:bg-gray-800 cursor-pointer' : '',
-                    isToday ? 'bg-blue-900/20 border-blue-600' : '',
-                    day && selectedDayFilter === day ? 'ring-2 ring-opj-blue bg-blue-900/30' : '',
-                  ].join(' ')}
-                  onClick={() => {
-                    if (!day) return;
-                    setSelectedDayFilter(day);
-                  }}
+                  key={dateKey}
+                  className="rounded-xl border border-white/10 bg-slate-950/35 p-3"
                 >
-                  {day && (
-                    <>
-                      <div
-                        className={`text-sm font-medium ${isToday ? 'text-blue-400' : 'text-gray-300'}`}
+                  <div className="text-sm font-semibold text-slate-200">
+                    {date.toLocaleDateString('pt-BR', {
+                      weekday: 'short',
+                      day: '2-digit',
+                      month: '2-digit',
+                    })}
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {items.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => openEventForEdit(item)}
+                        className={`w-full rounded-lg px-2 py-2 text-left text-xs ${getTipoColor(item)}`}
                       >
-                        {day}
-                      </div>
-                      <div className="mt-1 space-y-1">
-                        {dayItems.slice(0, 2).map((item) => (
-                          <div
-                            key={item.id}
-                            className={`text-xs px-1 py-0.5 rounded truncate ${getTipoColor(item)}`}
-                            title={item.titulo}
-                          >
-                            {getTipoIcon(item)} {item.titulo}
-                          </div>
-                        ))}
-                        {dayItems.length > 2 && (
-                          <div className="text-xs text-gray-400">+{dayItems.length - 2} mais</div>
-                        )}
-                      </div>
-                    </>
-                  )}
+                        <div className="font-semibold">
+                          {item.hora} · {item.titulo}
+                        </div>
+                      </button>
+                    ))}
+                    {items.length === 0 && <div className="text-xs text-slate-500">Sem itens</div>}
+                  </div>
                 </div>
               );
             })}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -322,9 +441,23 @@ export const CalendarioPage: React.FC = () => {
                   </div>
                   <p className="mt-2 text-sm text-gray-300">{item.descricao || 'Sem descricao.'}</p>
                 </div>
-                <Button variant="outline" size="sm">
-                  Ver Detalhes
-                </Button>
+                {item.projectId ? (
+                  <Link to={`/projetos/${item.projectId}`}>
+                    <Button variant="outline" size="sm">
+                      Ver projeto
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button variant="outline" size="sm" disabled>
+                    Evento
+                  </Button>
+                )}
+                {item.origem === 'evento' && item.subtipo !== 'status_deadline' && (
+                  <Button variant="outline" size="sm" onClick={() => openEventForEdit(item)}>
+                    <PencilSimple className="mr-2 h-4 w-4" />
+                    Editar
+                  </Button>
+                )}
               </div>
             ))}
             {agendaFiltradaOrdenada.length === 0 && (

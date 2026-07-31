@@ -8,6 +8,7 @@ export interface CreateProjectData {
   addressId?: string;
   utilityCompany: string;
   utilityProtocol: string;
+  relatedProjectId?: string;
   customerClass: string;
   integrator: string;
   modality: string;
@@ -43,6 +44,7 @@ export interface UpdateProjectData {
   nomeCliente?: string;
   utilityCompany?: string;
   utilityProtocol?: string;
+  relatedProjectId?: string | null;
   secondaryProtocol?: string;
   customerClass?: string;
   integrator?: string;

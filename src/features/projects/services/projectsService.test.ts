@@ -128,6 +128,19 @@ describe('projectsService coordinates payload', () => {
     );
   });
 
+  it('envia o projeto EMUC relacionado ao atualizar o orcamento', async () => {
+    await projectsService.update('project-1', {
+      relatedProjectId: 'emuc-1',
+    });
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/projects/project-1',
+      expect.objectContaining({
+        related_project_id: 'emuc-1',
+      }),
+    );
+  });
+
   it('envia subsequence nulo ao remover o subsequente do identificador', async () => {
     await projectsService.update('project-1', {
       sequence: 255,

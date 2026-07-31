@@ -1,11 +1,17 @@
 import type { Projeto, Servico } from '@/types';
 
-export type TipoEventoManual = 'instalacao' | 'manutencao' | 'reuniao' | 'vistoria';
+export type TipoEventoManual =
+  | 'instalacao'
+  | 'manutencao'
+  | 'reuniao'
+  | 'vistoria'
+  | 'status_deadline';
 export type OrigemAgenda = 'evento' | 'projeto' | 'servico';
 export type FiltroAgenda = 'todos' | OrigemAgenda;
 
 export interface EventoManual {
   id: string;
+  projectId?: string;
   titulo: string;
   data: string;
   hora: string;
@@ -17,6 +23,7 @@ export interface EventoManual {
 
 export interface AgendaItem {
   id: string;
+  projectId?: string;
   origem: OrigemAgenda;
   subtipo?: TipoEventoManual;
   titulo: string;
@@ -35,6 +42,7 @@ export const dayToDate = (day: number) =>
   `${CURRENT_YEAR}-${String(CURRENT_MONTH).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
 export const createEmptyEventoForm = () => ({
+  projectId: '',
   titulo: '',
   tipo: 'instalacao' as TipoEventoManual,
   data: dayToDate(now.getDate()),
@@ -96,6 +104,7 @@ export const buildAgendaItems = (
 ): AgendaItem[] => {
   const eventos = eventosManuais.map((item) => ({
     id: item.id,
+    projectId: item.projectId,
     origem: 'evento' as const,
     subtipo: item.tipo,
     titulo: item.titulo,
@@ -120,6 +129,7 @@ export const buildAgendaItems = (
 
         return {
           id: `projeto-${projeto.id}-timeline-${item.id}`,
+          projectId: projeto.id,
           origem: 'projeto' as const,
           titulo: `${baseTitulo} - ${item.etapa}`,
           data: parsed.data,
@@ -143,6 +153,7 @@ export const buildAgendaItems = (
     return [
       {
         id: `projeto-${projeto.id}-criacao`,
+        projectId: projeto.id,
         origem: 'projeto' as const,
         titulo: `${baseTitulo} - Cadastro do projeto`,
         data: parsedCriacao.data,
@@ -228,6 +239,15 @@ export const formatDateBR = (date: string) =>
 export const getTipoColor = (item: AgendaItem) => {
   if (item.origem === 'projeto') return 'bg-blue-900/50 text-blue-300 border-blue-700';
   if (item.origem === 'servico') return 'bg-green-900/50 text-green-300 border-green-700';
+  if (item.subtipo === 'status_deadline') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deadline = new Date(`${item.data}T00:00:00`);
+    const daysRemaining = Math.ceil((deadline.getTime() - today.getTime()) / 86_400_000);
+    if (daysRemaining <= 0) return 'bg-red-900/50 text-red-200 border-red-700';
+    if (daysRemaining <= 3) return 'bg-yellow-900/50 text-yellow-200 border-yellow-700';
+    return 'bg-cyan-900/50 text-cyan-200 border-cyan-700';
+  }
   if (item.subtipo === 'manutencao') return 'bg-yellow-900/50 text-yellow-300 border-yellow-700';
   if (item.subtipo === 'reuniao') return 'bg-purple-900/50 text-purple-300 border-purple-700';
   if (item.subtipo === 'vistoria') return 'bg-cyan-900/50 text-cyan-300 border-cyan-700';
@@ -240,6 +260,7 @@ export const getTipoIcon = (item: AgendaItem) => {
   if (item.subtipo === 'manutencao') return 'MN';
   if (item.subtipo === 'reuniao') return 'RE';
   if (item.subtipo === 'vistoria') return 'VS';
+  if (item.subtipo === 'status_deadline') return 'PZ';
   return 'IN';
 };
 

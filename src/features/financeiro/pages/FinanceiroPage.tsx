@@ -481,6 +481,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
 
       return [
         row.projeto.protocolo,
+        row.projeto.protocoloConcessionaria,
         row.projeto.cliente.nome,
         row.projeto.dadosProjeto.concessionaria,
       ].some((value) => normalizeSearchText(value).includes(query));
@@ -1238,6 +1239,14 @@ const AdminFinanceiroPage: React.FC = () => {
         const tipo = isForecast ? 'receita' : row.transacao.tipo;
         const valor = isForecast ? row.previsao.valor : row.transacao.valor;
         const data = isForecast ? row.previsao.data : row.transacao.data;
+        const projectId = isForecast
+          ? row.previsao.origem === 'projeto'
+            ? row.previsao.id.replace(/^projeto:/, '')
+            : undefined
+          : row.transacao.projectId || undefined;
+        const reportProject = projectId
+          ? projetos.find((project) => project.id === projectId)
+          : undefined;
 
         return {
           Descricao: descricao,
@@ -1253,6 +1262,8 @@ const AdminFinanceiroPage: React.FC = () => {
               : row.transacao.serviceId
                 ? 'servico'
                 : 'geral',
+          'Protocolo interno': reportProject?.protocolo ?? '-',
+          'Protocolo concessionaria': reportProject?.protocoloConcessionaria ?? '-',
         };
       });
 
@@ -1345,6 +1356,8 @@ const AdminFinanceiroPage: React.FC = () => {
         { wch: 14 },
         { wch: 14 },
         { wch: 12 },
+        { wch: 22 },
+        { wch: 28 },
       ];
       indicadoresSheet['!cols'] = [{ wch: 28 }, { wch: 18 }];
       fluxoSheet['!cols'] = [

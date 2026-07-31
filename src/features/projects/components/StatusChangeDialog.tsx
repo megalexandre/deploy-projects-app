@@ -10,8 +10,12 @@ type PendingStatusChange = {
 type Props = {
   pendingStatusChange: PendingStatusChange;
   statusComment: string;
+  statusStartDate: string;
+  statusDurationDays: number;
   updatingStatus: boolean;
   onCommentChange: (value: string) => void;
+  onStartDateChange: (value: string) => void;
+  onDurationDaysChange: (value: number) => void;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -19,8 +23,12 @@ type Props = {
 export const StatusChangeDialog: React.FC<Props> = ({
   pendingStatusChange,
   statusComment,
+  statusStartDate,
+  statusDurationDays,
   updatingStatus,
   onCommentChange,
+  onStartDateChange,
+  onDurationDaysChange,
   onConfirm,
   onCancel,
 }) => {
@@ -53,6 +61,40 @@ export const StatusChangeDialog: React.FC<Props> = ({
           />
         </div>
 
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="block text-sm text-slate-300">
+            <span className="mb-2 block font-medium">Data inicial do status</span>
+            <input
+              type="date"
+              value={statusStartDate}
+              onChange={(event) => onStartDateChange(event.target.value)}
+              className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
+              required
+            />
+          </label>
+          <label className="block text-sm text-slate-300">
+            <span className="mb-2 block font-medium">Prazo em dias</span>
+            <input
+              type="number"
+              min={1}
+              value={statusDurationDays}
+              onChange={(event) => onDurationDaysChange(Number(event.target.value))}
+              className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
+              required
+            />
+          </label>
+        </div>
+        {statusStartDate && statusDurationDays > 0 && (
+          <p className="mt-3 text-sm text-cyan-200">
+            Vencimento:{' '}
+            {new Date(
+              new Date(`${statusStartDate}T00:00:00`).setDate(
+                new Date(`${statusStartDate}T00:00:00`).getDate() + statusDurationDays,
+              ),
+            ).toLocaleDateString('pt-BR')}
+          </p>
+        )}
+
         <div className="mt-5 flex justify-end gap-3">
           <Button
             variant="outline"
@@ -66,7 +108,12 @@ export const StatusChangeDialog: React.FC<Props> = ({
           <Button
             type="button"
             loading={updatingStatus}
-            disabled={reasonMissing}
+            disabled={
+              reasonMissing ||
+              !statusStartDate ||
+              !Number.isInteger(statusDurationDays) ||
+              statusDurationDays < 1
+            }
             onClick={onConfirm}
           >
             Salvar

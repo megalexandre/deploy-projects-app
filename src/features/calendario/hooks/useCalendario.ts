@@ -11,6 +11,29 @@ import {
   type EventoManual,
   type FiltroAgenda,
 } from '../domain/calendar';
+import { calendarioService, type CalendarEvent } from '../services/calendarioService';
+
+const calendarEventToManual = (event: CalendarEvent): EventoManual => ({
+  id: event.id,
+  projectId: event.project_id ?? undefined,
+  titulo: event.content.title || 'Evento',
+  tipo: event.content.type || 'reuniao',
+  data: event.date,
+  hora: event.content.time || '09:00',
+  local: event.content.location || 'Local não informado',
+  participantes: event.content.participants || [],
+  descricao: event.content.description || '',
+});
+
+const getMonthRange = (date: Date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const from = new Date(year, month, 1);
+  const to = new Date(year, month + 1, 0);
+  const format = (value: Date) =>
+    `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+  return { from: format(from), to: format(to) };
+};
 
 export const useCalendario = () => {
   const [projetos, setProjetos] = useState<Projeto[]>([]);
@@ -23,6 +46,8 @@ export const useCalendario = () => {
   const [filtroAgenda, setFiltroAgenda] = useState<FiltroAgenda>('todos');
   const [selectedDayFilter, setSelectedDayFilter] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [savingEvent, setSavingEvent] = useState(false);
   const [novoEvento, setNovoEvento] = useState(createEmptyEventoForm());
 
   useEffect(() => {
@@ -46,6 +71,20 @@ export const useCalendario = () => {
 
     void loadAgenda();
   }, []);
+
+  useEffect(() => {
+    const loadCalendarEvents = async () => {
+      try {
+        const events = await calendarioService.list(getMonthRange(selectedDate));
+        setEventosManuais(events.map(calendarEventToManual));
+      } catch (error) {
+        console.error('Erro ao carregar eventos persistidos:', error);
+        setErroProjetos('Não foi possível carregar os eventos do calendário.');
+      }
+    };
+
+    void loadCalendarEvents();
+  }, [selectedDate]);
 
   const agendaItems = useMemo<AgendaItem[]>(
     () => buildAgendaItems(eventosManuais, projetos, servicos),
@@ -73,9 +112,29 @@ export const useCalendario = () => {
 
   const resetNovoEvento = () => {
     setNovoEvento(createEmptyEventoForm());
+    setEditingEventId(null);
   };
 
-  const handleCreateEvento = (event: React.FormEvent<HTMLFormElement>) => {
+  const openEventForEdit = (item: AgendaItem) => {
+    if (item.origem !== 'evento' || item.subtipo === 'status_deadline') return;
+    const event = eventosManuais.find((current) => current.id === item.id);
+    if (!event) return;
+
+    setEditingEventId(event.id);
+    setNovoEvento({
+      projectId: event.projectId || '',
+      titulo: event.titulo,
+      tipo: event.tipo,
+      data: event.data,
+      hora: event.hora,
+      local: event.local === 'Local não informado' ? '' : event.local,
+      participantes: event.participantes.join(', '),
+      descricao: event.descricao,
+    });
+    setIsFormOpen(true);
+  };
+
+  const handleCreateEvento = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (
       !novoEvento.titulo.trim() ||
@@ -91,20 +150,58 @@ export const useCalendario = () => {
       .map((item) => item.trim())
       .filter(Boolean);
 
-    const novoRegistro: EventoManual = {
-      id: `e-${Date.now()}`,
-      titulo: novoEvento.titulo.trim(),
-      tipo: novoEvento.tipo,
-      data: novoEvento.data,
-      hora: novoEvento.hora,
-      local: novoEvento.local.trim(),
-      participantes,
-      descricao: novoEvento.descricao.trim(),
-    };
+    setSavingEvent(true);
+    try {
+      const payload = {
+        project_id: novoEvento.projectId || null,
+        date: novoEvento.data,
+        content: {
+          title: novoEvento.titulo.trim(),
+          type: novoEvento.tipo,
+          time: novoEvento.hora,
+          location: novoEvento.local.trim(),
+          participants: participantes,
+          description: novoEvento.descricao.trim(),
+        },
+      };
+      const saved = editingEventId
+        ? await calendarioService.update(editingEventId, payload)
+        : await calendarioService.create(payload);
+      const normalized = calendarEventToManual(saved);
+      setEventosManuais((current) =>
+        editingEventId
+          ? current.map((item) => (item.id === editingEventId ? normalized : item))
+          : [normalized, ...current],
+      );
+      resetNovoEvento();
+      setIsFormOpen(false);
+      setErroProjetos(null);
+    } catch (error) {
+      console.error('Erro ao criar evento:', error);
+      setErroProjetos(error instanceof Error ? error.message : 'Não foi possível salvar o evento.');
+    } finally {
+      setSavingEvent(false);
+    }
+  };
 
-    setEventosManuais((current) => [novoRegistro, ...current]);
-    resetNovoEvento();
-    setIsFormOpen(false);
+  const handleDeleteEvento = async (eventId: string) => {
+    setSavingEvent(true);
+    try {
+      await calendarioService.remove(eventId);
+      setEventosManuais((current) => current.filter((item) => item.id !== eventId));
+      if (editingEventId === eventId) {
+        resetNovoEvento();
+        setIsFormOpen(false);
+      }
+      setErroProjetos(null);
+    } catch (error) {
+      console.error('Erro ao excluir evento:', error);
+      setErroProjetos(
+        error instanceof Error ? error.message : 'Não foi possível excluir o evento.',
+      );
+    } finally {
+      setSavingEvent(false);
+    }
   };
 
   const agendaFiltradaOrdenada = useMemo(
@@ -133,6 +230,9 @@ export const useCalendario = () => {
     selectedDayFilter,
     isFormOpen,
     novoEvento,
+    projetos,
+    editingEventId,
+    savingEvent,
     agendaFiltradaOrdenada,
     setViewMode,
     setFiltroAgenda,
@@ -143,6 +243,8 @@ export const useCalendario = () => {
     getItensForDay,
     formatDateFromDay,
     resetNovoEvento,
+    openEventForEdit,
     handleCreateEvento,
+    handleDeleteEvento,
   };
 };

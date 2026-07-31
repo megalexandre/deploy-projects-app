@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import type { Projeto } from '@/types';
 import { projectsService } from '../services/projectsService';
+import { normalizeSubsequence } from '../domain/identifier';
 
 type Props = {
   project: Projeto;
@@ -39,20 +40,32 @@ export const EditIdentifierDialog: React.FC<Props> = ({ project, onClose, onSave
       setError('Sequência deve ser um número inteiro positivo.');
       return;
     }
+    const normalizedSubsequence = normalizeSubsequence(subsequente);
+    if (
+      normalizedSubsequence &&
+      (!/^[A-Z0-9-]+$/.test(normalizedSubsequence) || normalizedSubsequence.length > 20)
+    ) {
+      setError('Subsequente deve ter até 20 caracteres, usando letras, números ou hífen.');
+      return;
+    }
 
     setSaving(true);
     setError(null);
     try {
       const updated = await projectsService.update(project.id, {
         sequence: seq,
-        subsequente: subsequente.trim() || null,
+        subsequente: normalizedSubsequence || null,
       });
       onSaved(updated as unknown as Projeto);
     } catch (saveError) {
-      setError(
+      const message =
         saveError instanceof Error
           ? saveError.message
-          : 'Não foi possível atualizar o identificador.',
+          : 'Não foi possível atualizar o identificador.';
+      setError(
+        /unique|duplicate|duplicad|já.*uso/i.test(message)
+          ? 'Este identificador já está sendo usado por outro projeto.'
+          : message,
       );
     } finally {
       setSaving(false);

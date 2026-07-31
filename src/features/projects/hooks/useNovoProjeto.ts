@@ -1215,6 +1215,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
               ...projectData,
               id: crypto.randomUUID(),
               utilityProtocol: gerarProtocolo(),
+              relatedProjectId: projetoSalvo.id,
               projectType: 'orcamento_conexao',
               servicesNames: ['Orçamento de Conexão'],
               amount: 0,

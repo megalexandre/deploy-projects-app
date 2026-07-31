@@ -74,13 +74,11 @@ const sortByDateDesc = <T extends { data: string }>(items: T[]) =>
   [...items].sort((left, right) => right.data.localeCompare(left.data));
 
 const listLedgersByScope = async (scope: EntityFinanceScope) => {
-  const ledgers = await financeiroService.listLedgers();
-
-  if (scope.entityType === 'projeto') {
-    return ledgers.filter((ledger) => ledger.project_id === scope.entityId);
-  }
-
-  return ledgers.filter((ledger) => ledger.service_id === scope.entityId);
+  return financeiroService.listFilteredLedgers(
+    scope.entityType === 'projeto'
+      ? { project_id: scope.entityId }
+      : { service_id: scope.entityId },
+  );
 };
 
 const ledgerToReceipt = (ledger: Ledger): EntityReceipt => ({
@@ -150,12 +148,6 @@ export const entityFinanceService = {
         description: getPaymentDescription(scope),
         paid_at: new Date().toISOString().slice(0, 10),
       });
-    }
-
-    if (status === 'pendente') {
-      await Promise.all(
-        snapshot.receipts.map((receipt) => financeiroService.removeLedger(receipt.id)),
-      );
     }
 
     return entityFinanceService.getSnapshot(scope);

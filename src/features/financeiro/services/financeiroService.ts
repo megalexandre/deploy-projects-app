@@ -18,7 +18,7 @@ export interface Ledger {
 
 export interface LedgerListParams {
   page?: number;
-  limit?: number;
+  items?: number;
   project_id?: string;
   service_id?: string;
   reason?: string;
@@ -71,7 +71,10 @@ const toQueryRecord = (params?: LedgerListParams) =>
   params as Record<string, string | number | boolean | undefined | null> | undefined;
 
 const normalizeReason = (reason?: string | null): LedgerKind => {
-  const value = reason?.toLowerCase() ?? '';
+  const value = reason?.trim().toLowerCase() ?? '';
+  if (value === 'despesa') return 'despesa';
+  if (value === 'receita') return 'receita';
+
   return value.includes('despesa') || value.includes('pagamento') || value.includes('custo')
     ? 'despesa'
     : 'receita';
@@ -127,6 +130,18 @@ export const financeiroService = {
 
   paginateLedgers: (params?: LedgerListParams) =>
     apiClient.get<LedgerPage>('/ledgers/paginate', { query: toQueryRecord(params) }),
+
+  async listFilteredLedgers(params?: Omit<LedgerListParams, 'page'>) {
+    const first = await financeiroService.paginateLedgers({ ...params, page: 1, items: 100 });
+    if (first.totalPages <= 1) return first.content;
+
+    const remaining = await Promise.all(
+      Array.from({ length: first.totalPages - 1 }, (_, index) =>
+        financeiroService.paginateLedgers({ ...params, page: index + 2, items: 100 }),
+      ),
+    );
+    return [first, ...remaining].flatMap((page) => page.content);
+  },
 
   getLedgerById: (id: string) => apiClient.get<Ledger>(`/ledgers/${id}`),
 

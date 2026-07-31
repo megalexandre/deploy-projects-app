@@ -1,6 +1,6 @@
 /** Pagina 'ProjetoDetailPage': orquestra estado da tela, eventos do usuario e renderizacao dos componentes. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Archive,
@@ -23,6 +23,7 @@ import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
   customersService,
   filesService,
+  financeiroService,
   projectsService,
   usersService,
   type Customer,
@@ -335,12 +336,16 @@ const buildProcuracaoHtml = (
 
 export const ProjetoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
+  const [relatedProject, setRelatedProject] = useState<Projeto | null>(null);
   const [clienteDetalhe, setClienteDetalhe] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('dados');
+  const [activeTab, setActiveTab] = useState(() =>
+    searchParams.get('tab') === 'financeiro' ? 'financeiro' : 'dados',
+  );
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [savingDocuments, setSavingDocuments] = useState(false);
   const [timelineDialogItem, setTimelineDialogItem] = useState<Projeto['timeline'][number] | null>(
@@ -350,6 +355,9 @@ export const ProjetoDetailPage: React.FC = () => {
   const [timelineComment, setTimelineComment] = useState('');
   const [savingTimelineComment, setSavingTimelineComment] = useState(false);
   const [integradores, setIntegradores] = useState<EditableFieldOption[]>([]);
+  const [emucOptions, setEmucOptions] = useState<EditableFieldOption[]>([]);
+  const [relatedBudgets, setRelatedBudgets] = useState<Projeto[]>([]);
+  const [budgetOwnLedgerCount, setBudgetOwnLedgerCount] = useState(0);
   const [projectAction, setProjectAction] = useState<'cancel' | 'inactivate' | 'delete' | null>(
     null,
   );
@@ -378,6 +386,80 @@ export const ProjetoDetailPage: React.FC = () => {
       .catch((error) => console.error('Erro ao carregar integradores:', error));
   }, [currentUser?.isAdmin]);
 
+  useEffect(() => {
+    if (
+      !currentUser?.isAdmin ||
+      normalizeTipoProjeto({ tipoProjeto: projeto?.tipoProjeto }) !== 'orcamento_conexao'
+    ) {
+      return;
+    }
+
+    void projectsService
+      .getProjetos()
+      .then((projects) =>
+        setEmucOptions(
+          projects
+            .filter(
+              (project) =>
+                project.id !== projeto?.id && normalizeTipoProjeto(project) === 'padrao_entrada',
+            )
+            .sort((left, right) => {
+              const leftSameClient = left.cliente.id === projeto?.cliente.id ? 0 : 1;
+              const rightSameClient = right.cliente.id === projeto?.cliente.id ? 0 : 1;
+              return leftSameClient - rightSameClient;
+            })
+            .map((project) => ({
+              value: project.id,
+              label: project.sequence
+                ? `ID ${project.sequence}${project.subsequente ? `/${project.subsequente}` : ''} — ${project.cliente.nome}`
+                : `${project.protocolo} — ${project.cliente.nome}`,
+            })),
+        ),
+      )
+      .catch((error) => console.error('Erro ao carregar projetos EMUC:', error));
+  }, [currentUser?.isAdmin, projeto]);
+
+  useEffect(() => {
+    if (
+      !projeto?.id ||
+      normalizeTipoProjeto({ tipoProjeto: projeto.tipoProjeto }) !== 'padrao_entrada'
+    ) {
+      setRelatedBudgets([]);
+      return;
+    }
+
+    void projectsService
+      .getProjetos()
+      .then((projects) =>
+        setRelatedBudgets(
+          projects.filter(
+            (project) =>
+              normalizeTipoProjeto(project) === 'orcamento_conexao' &&
+              project.relatedProjectId === projeto.id,
+          ),
+        ),
+      )
+      .catch((error) => console.error('Erro ao carregar orçamentos relacionados:', error));
+  }, [projeto]);
+
+  useEffect(() => {
+    if (
+      !projeto?.id ||
+      !projeto.relatedProjectId ||
+      normalizeTipoProjeto({ tipoProjeto: projeto.tipoProjeto }) !== 'orcamento_conexao'
+    ) {
+      setBudgetOwnLedgerCount(0);
+      return;
+    }
+
+    void financeiroService
+      .listFilteredLedgers({ project_id: projeto.id })
+      .then((ledgers) => setBudgetOwnLedgerCount(ledgers.length))
+      .catch((error) =>
+        console.error('Erro ao verificar financeiro anterior do orçamento:', error),
+      );
+  }, [projeto]);
+
   const loadProjeto = async (projetoId: string) => {
     try {
       const data = await projectsService.getProjetoById(projetoId);
@@ -387,6 +469,11 @@ export const ProjetoDetailPage: React.FC = () => {
         return;
       }
       setProjeto(data);
+      if (data.relatedProjectId) {
+        setRelatedProject(await projectsService.getProjetoById(data.relatedProjectId));
+      } else {
+        setRelatedProject(null);
+      }
       if (data.cliente.id && data.cliente.id !== 'sem-cliente') {
         const customer = await customersService.getById(data.cliente.id).catch(() => null);
         setClienteDetalhe(customer);
@@ -695,7 +782,13 @@ export const ProjetoDetailPage: React.FC = () => {
     if (!projeto) return;
 
     await projectsService.update(projeto.id, projectData);
-    setProjeto(await projectsService.getById(projeto.id));
+    const updated = await projectsService.getById(projeto.id);
+    setProjeto(updated);
+    setRelatedProject(
+      updated.relatedProjectId
+        ? await projectsService.getProjetoById(updated.relatedProjectId)
+        : null,
+    );
   };
 
   const closeProjectAction = () => {
@@ -997,6 +1090,36 @@ export const ProjetoDetailPage: React.FC = () => {
                   ]}
                   onSave={(value) => handleUpdateField({ projectType: value })}
                 />
+                {tipoProjetoNormalizado === 'orcamento_conexao' && (
+                  <EditableProjectField
+                    label="Projeto EMUC relacionado"
+                    value={projeto.relatedProjectId ?? ''}
+                    displayValue={
+                      relatedProject
+                        ? relatedProject.sequence
+                          ? `ID ${relatedProject.sequence}${relatedProject.subsequente ? `/${relatedProject.subsequente}` : ''} — ${relatedProject.cliente.nome}`
+                          : `${relatedProject.protocolo} — ${relatedProject.cliente.nome}`
+                        : 'Não relacionado'
+                    }
+                    canEdit={Boolean(currentUser?.isAdmin)}
+                    type="select"
+                    options={[{ value: '', label: 'Não relacionado' }, ...emucOptions]}
+                    onSave={async (value) => {
+                      if (
+                        projeto.relatedProjectId &&
+                        value !== projeto.relatedProjectId &&
+                        !window.confirm(
+                          value
+                            ? 'Deseja trocar o projeto EMUC relacionado?'
+                            : 'Deseja remover o vínculo com o projeto EMUC?',
+                        )
+                      ) {
+                        return;
+                      }
+                      await handleUpdateField({ relatedProjectId: value || null });
+                    }}
+                  />
+                )}
                 <EditableProjectField
                   label="Tensao de Fornecimento"
                   value={projeto.tensaoFornecimento ?? ''}
@@ -1409,13 +1532,76 @@ export const ProjetoDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'financeiro' && (
-          <EntityFinanceTab
-            entityType="projeto"
-            entityId={projeto.id}
-            entityLabel={projeto.protocolo}
-            amount={projeto.valor}
-            createdAt={projeto.dataCriacao}
-          />
+          <div className="space-y-6">
+            {tipoProjetoNormalizado === 'padrao_entrada' && relatedBudgets.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Orçamentos de Conexão relacionados</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {relatedBudgets.map((budget) => (
+                    <div
+                      key={budget.id}
+                      className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-950/35 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <div className="font-semibold text-slate-100">
+                          {budget.sequence
+                            ? `ID ${budget.sequence}${budget.subsequente ? `/${budget.subsequente}` : ''}`
+                            : budget.protocolo}
+                        </div>
+                        <div className="text-sm text-slate-400">{budget.cliente.nome}</div>
+                      </div>
+                      <Link to={`/projetos/${budget.id}?tab=financeiro`}>
+                        <Button type="button" variant="outline" size="sm">
+                          Ver orçamento
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+            {tipoProjetoNormalizado === 'orcamento_conexao' && relatedProject && (
+              <Card>
+                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      EMUC relacionado
+                    </div>
+                    <div className="mt-2 text-lg font-semibold text-slate-100">
+                      {relatedProject.sequence
+                        ? `ID ${relatedProject.sequence}${relatedProject.subsequente ? `/${relatedProject.subsequente}` : ''}`
+                        : relatedProject.protocolo}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-400">{relatedProject.cliente.nome}</div>
+                    <div className="mt-2 text-sm text-cyan-200">
+                      Os lançamentos financeiros deste orçamento ficam centralizados no projeto
+                      EMUC.
+                    </div>
+                    {budgetOwnLedgerCount > 0 && (
+                      <div className="mt-2 text-sm text-amber-200">
+                        Este orçamento possui {budgetOwnLedgerCount} lançamento(s) próprio(s)
+                        anterior(es). Eles não foram transferidos nem excluídos.
+                      </div>
+                    )}
+                  </div>
+                  <Link to={`/projetos/${relatedProject.id}?tab=financeiro`}>
+                    <Button type="button">Ir para o financeiro do EMUC</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+            {(tipoProjetoNormalizado !== 'orcamento_conexao' || !relatedProject) && (
+              <EntityFinanceTab
+                entityType="projeto"
+                entityId={projeto.id}
+                entityLabel={projeto.protocolo}
+                amount={projeto.valor}
+                createdAt={projeto.dataCriacao}
+              />
+            )}
+          </div>
         )}
 
         {activeTab === 'documentos' && (

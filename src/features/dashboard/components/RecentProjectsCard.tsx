@@ -45,7 +45,12 @@ const ProjectRow: React.FC<{ project: Projeto }> = ({ project }) => {
   return (
     <tr key={project.id} className="hover:bg-gray-700/50">
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-        {identifier}
+        <div>{identifier}</div>
+        {project.protocoloConcessionaria && (
+          <div className="mt-1 text-xs font-normal text-cyan-200">
+            Concessionária: {project.protocoloConcessionaria}
+          </div>
+        )}
       </td>
       <td className={tdCls}>{project.cliente.nome}</td>
       <td className={tdCls}>{project.dadosProjeto.concessionaria}</td>
