@@ -331,6 +331,7 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
   const subsequente = asString(project.subsequence ?? project.subsequente);
 
   const cliente = isRecord(project.cliente) ? project.cliente : {};
+  const client = isRecord(project.client) ? project.client : {};
   const customer = isRecord(project.customer) ? project.customer : {};
   const endereco =
     (isRecord(project.endereco) ? project.endereco : null) ||
@@ -371,6 +372,7 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
     cliente: {
       id:
         asString(cliente.id) ||
+        asString(client.id) ||
         asString(customer.id) ||
         asString(project.client_id) ||
         asString(project.clientId) ||
@@ -379,6 +381,8 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
         'sem-cliente',
       nome:
         asString(cliente.nome) ||
+        asString(client.name) ||
+        asString(client.nome) ||
         asString(customer.nome) ||
         asString(customer.name) ||
         asString(project.nomeCliente) ||
@@ -387,16 +391,24 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
         'Cliente sem nome',
       cpfCnpj:
         asString(cliente.cpfCnpj) ||
+        asString(client.tax_id) ||
+        asString(client.taxId) ||
         asString(customer.cpfCnpj) ||
         asString(customer.tax_id) ||
         asString(customer.taxId) ||
         asString(project.cpfCnpj),
       telefone:
         asString(cliente.telefone) ||
+        asString(client.phone) ||
+        asString(client.telefone) ||
         asString(customer.telefone) ||
         asString(customer.phone) ||
         asString(project.telefone),
-      email: asString(cliente.email) || asString(customer.email) || asString(project.email),
+      email:
+        asString(cliente.email) ||
+        asString(client.email) ||
+        asString(customer.email) ||
+        asString(project.email),
     },
     endereco: {
       cep: asString(endereco.cep),

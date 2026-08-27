@@ -19,7 +19,9 @@ import {
   type FinanceStatus,
 } from '../services/entityFinanceService';
 
-type Props = EntityFinanceScope;
+type Props = EntityFinanceScope & {
+  showExpenseDetails?: boolean;
+};
 
 type ExpenseFormState = {
   descricao: string;
@@ -66,6 +68,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
   entityLabel,
   amount,
   createdAt,
+  showExpenseDetails = true,
 }) => {
   const scope = useMemo(
     () => ({ entityType, entityId, entityLabel, amount, createdAt }),
@@ -259,7 +262,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div
+        className={`grid grid-cols-1 gap-4 ${showExpenseDetails ? 'md:grid-cols-4' : 'md:grid-cols-2'}`}
+      >
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
@@ -288,33 +293,39 @@ export const EntityFinanceTab: React.FC<Props> = ({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Saldo</div>
-                <div className="mt-2 text-2xl font-semibold text-cyan-200">
-                  {formatCurrencyBRL(snapshot.summary.saldo)}
+        {showExpenseDetails && (
+          <>
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Saldo</div>
+                    <div className="mt-2 text-2xl font-semibold text-cyan-200">
+                      {formatCurrencyBRL(snapshot.summary.saldo)}
+                    </div>
+                  </div>
+                  <CurrencyDollar className="h-8 w-8 text-cyan-300" />
                 </div>
-              </div>
-              <CurrencyDollar className="h-8 w-8 text-cyan-300" />
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Despesas</div>
-                <div className="mt-2 text-2xl font-semibold text-rose-200">
-                  {formatCurrencyBRL(snapshot.summary.despesas)}
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      Despesas
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-rose-200">
+                      {formatCurrencyBRL(snapshot.summary.despesas)}
+                    </div>
+                  </div>
+                  <TrendDown className="h-8 w-8 text-rose-300" />
                 </div>
-              </div>
-              <TrendDown className="h-8 w-8 text-rose-300" />
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card>
@@ -505,7 +516,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
         </CardContent>
       </Card>
 
-      {formOpen && (
+      {showExpenseDetails && formOpen && (
         <Card>
           <CardHeader>
             <CardTitle>{editingExpense ? 'Editar despesa' : 'Nova despesa'}</CardTitle>
@@ -600,88 +611,90 @@ export const EntityFinanceTab: React.FC<Props> = ({
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <CardTitle>Despesas vinculadas</CardTitle>
-              <p className="mt-1 text-sm text-slate-400">
-                Lancamentos operacionais associados a {entityLabel}.
-              </p>
+      {showExpenseDetails && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <CardTitle>Despesas vinculadas</CardTitle>
+                <p className="mt-1 text-sm text-slate-400">
+                  Lancamentos operacionais associados a {entityLabel}.
+                </p>
+              </div>
+              <Button type="button" onClick={openCreateForm}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Lancar despesa
+              </Button>
             </div>
-            <Button type="button" onClick={openCreateForm}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Lancar despesa
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {snapshot.expenses.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/30 px-4 py-6 text-sm text-slate-400">
-              Nenhuma despesa cadastrada para este item.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Descrição
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Categoria
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Valor
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Data
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {snapshot.expenses.map((expense) => (
-                    <tr key={expense.id}>
-                      <td className="px-4 py-3 text-sm text-slate-100">{expense.descricao}</td>
-                      <td className="px-4 py-3 text-sm text-slate-300">{expense.categoria}</td>
-                      <td className="px-4 py-3 text-sm text-rose-200">
-                        {formatCurrencyBRL(expense.valor)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-300">
-                        {formatDate(expense.data)}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <span
-                          className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(expense.status)}`}
-                        >
-                          {expense.status === 'pago' ? 'Pago' : 'Pendente'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-300">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditForm(expense)}
-                        >
-                          <PencilSimple className="mr-2 h-4 w-4" />
-                          Editar
-                        </Button>
-                      </td>
+          </CardHeader>
+          <CardContent>
+            {snapshot.expenses.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/30 px-4 py-6 text-sm text-slate-400">
+                Nenhuma despesa cadastrada para este item.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                        Descrição
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                        Categoria
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                        Valor
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                        Data
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {snapshot.expenses.map((expense) => (
+                      <tr key={expense.id}>
+                        <td className="px-4 py-3 text-sm text-slate-100">{expense.descricao}</td>
+                        <td className="px-4 py-3 text-sm text-slate-300">{expense.categoria}</td>
+                        <td className="px-4 py-3 text-sm text-rose-200">
+                          {formatCurrencyBRL(expense.valor)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-300">
+                          {formatDate(expense.data)}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-xs ${getStatusBadgeClass(expense.status)}`}
+                          >
+                            {expense.status === 'pago' ? 'Pago' : 'Pendente'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-300">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditForm(expense)}
+                          >
+                            <PencilSimple className="mr-2 h-4 w-4" />
+                            Editar
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

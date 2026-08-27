@@ -1,0 +1,180 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/projects/components/TimelineCommentsDialog.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { Button } from "/src/shared/components/Button.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "/src/shared/components/Card.tsx";
+const formatDateTime = (value) => {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("pt-BR");
+};
+const CommentRow = ({ comment }) => /* @__PURE__ */ jsxDEV("div", { className: "rounded-xl border border-white/10 bg-slate-950/40 p-4", children: [
+  /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between gap-3", children: [
+    /* @__PURE__ */ jsxDEV("strong", { className: "text-sm text-slate-100", children: comment.autor || "Comentário interno" }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 24,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("span", { className: "text-xs text-slate-400", children: formatDateTime(comment.data) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 25,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+    lineNumber: 23,
+    columnNumber: 5
+  }, this),
+  /* @__PURE__ */ jsxDEV("p", { className: "mt-2 text-sm text-slate-300", children: comment.texto }, void 0, false, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+    lineNumber: 27,
+    columnNumber: 5
+  }, this)
+] }, void 0, true, {
+  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+  lineNumber: 22,
+  columnNumber: 1
+}, this);
+_c = CommentRow;
+export const TimelineCommentsDialog = ({
+  item,
+  mode,
+  commentText,
+  saving,
+  onCommentTextChange,
+  onSave,
+  onClose
+}) => /* @__PURE__ */ jsxDEV("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm", children: /* @__PURE__ */ jsxDEV(Card, { className: "w-full max-w-2xl", children: [
+  /* @__PURE__ */ jsxDEV(CardHeader, { className: "mb-0", children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between gap-4", children: [
+    /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV(CardTitle, { children: mode === "add" ? "Adicionar Comentário" : "Comentários do Status" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+        lineNumber: 45,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("p", { className: "mt-1 text-sm text-slate-400", children: item.etapa }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+        lineNumber: 48,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 44,
+      columnNumber: 11
+    }, this),
+    /* @__PURE__ */ jsxDEV(Button, { type: "button", variant: "outline", size: "sm", onClick: onClose, children: "Fechar" }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 50,
+      columnNumber: 11
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+    lineNumber: 43,
+    columnNumber: 9
+  }, this) }, void 0, false, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+    lineNumber: 42,
+    columnNumber: 7
+  }, this),
+  /* @__PURE__ */ jsxDEV(CardContent, { className: "space-y-4 p-6", children: [
+    (item.comentarios?.length ?? 0) === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "rounded-xl border border-dashed border-white/10 bg-slate-950/30 px-4 py-5 text-sm text-slate-400", children: "Nenhum comentário registrado para este status." }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 58,
+      columnNumber: 7
+    }, this) : /* @__PURE__ */ jsxDEV("div", { className: "space-y-3", children: item.comentarios?.map(
+      (comment) => /* @__PURE__ */ jsxDEV(CommentRow, { comment }, comment.id, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+        lineNumber: 64,
+        columnNumber: 9
+      }, this)
+    ) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 62,
+      columnNumber: 7
+    }, this),
+    mode === "add" && /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm font-medium text-slate-300", children: "Novo comentário" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+        lineNumber: 71,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        "textarea",
+        {
+          value: commentText,
+          onChange: (event) => onCommentTextChange(event.target.value),
+          rows: 5,
+          placeholder: "Escreva um comentário para este status...",
+          className: "w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+          lineNumber: 72,
+          columnNumber: 13
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 70,
+      columnNumber: 7
+    }, this),
+    mode === "add" && /* @__PURE__ */ jsxDEV("div", { className: "flex justify-end gap-3", children: [
+      /* @__PURE__ */ jsxDEV(Button, { type: "button", variant: "outline", onClick: onClose, children: "Cancelar" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+        lineNumber: 84,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV(Button, { type: "button", loading: saving, onClick: onSave, children: "Salvar comentário" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+        lineNumber: 87,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+      lineNumber: 83,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+    lineNumber: 56,
+    columnNumber: 7
+  }, this)
+] }, void 0, true, {
+  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+  lineNumber: 41,
+  columnNumber: 5
+}, this) }, void 0, false, {
+  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx",
+  lineNumber: 40,
+  columnNumber: 1
+}, this);
+_c2 = TimelineCommentsDialog;
+var _c, _c2;
+$RefreshReg$(_c, "CommentRow");
+$RefreshReg$(_c2, "TimelineCommentsDialog");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/TimelineCommentsDialog.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFBO0FBQUE7QUFBQTtBQUFBLFdBU0E7QUFBQSxJQUdEZSxTQUFTLFNBQ1IsdUJBQUMsU0FBSSxXQUFVLDBCQUNiO0FBQUEsNkJBQUMsVUFBTyxNQUFLLFVBQVMsU0FBUSxXQUFVLFNBQVNLLFNBQVEsd0JBQXpEO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFFQTtBQUFBLE1BQ0EsdUJBQUMsVUFBTyxNQUFLLFVBQVMsU0FBU0gsUUFBUSxTQUFTRSxRQUFPLGlDQUF2RDtBQUFBO0FBQUE7QUFBQTtBQUFBLGFBRUE7QUFBQSxTQU5GO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FPQTtBQUFBLE9BbENKO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0FvQ0E7QUFBQSxLQW5ERjtBQUFBO0FBQUE7QUFBQTtBQUFBLE9Bb0RBLEtBckRGO0FBQUE7QUFBQTtBQUFBO0FBQUEsT0FzREE7QUFDQVMsTUFoRVdmO0FBQXVDLElBQUFELElBQUFnQjtBQUFBLGFBQUFoQixJQUFBO0FBQUEsYUFBQWdCLEtBQUEiLCJuYW1lcyI6WyJSZWFjdCIsIkJ1dHRvbiIsIkNhcmQiLCJDYXJkQ29udGVudCIsIkNhcmRIZWFkZXIiLCJDYXJkVGl0bGUiLCJmb3JtYXREYXRlVGltZSIsInZhbHVlIiwicGFyc2VkIiwiRGF0ZSIsIk51bWJlciIsImlzTmFOIiwiZ2V0VGltZSIsInRvTG9jYWxlU3RyaW5nIiwiQ29tbWVudFJvdyIsImNvbW1lbnQiLCJhdXRvciIsImRhdGEiLCJ0ZXh0byIsIl9jIiwiVGltZWxpbmVDb21tZW50c0RpYWxvZyIsIml0ZW0iLCJtb2RlIiwiY29tbWVudFRleHQiLCJzYXZpbmciLCJvbkNvbW1lbnRUZXh0Q2hhbmdlIiwib25TYXZlIiwib25DbG9zZSIsImV0YXBhIiwiY29tZW50YXJpb3MiLCJsZW5ndGgiLCJtYXAiLCJpZCIsImV2ZW50IiwidGFyZ2V0IiwiX2MyIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIlRpbWVsaW5lQ29tbWVudHNEaWFsb2cudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBCdXR0b24gfSBmcm9tICdAL3NoYXJlZC9jb21wb25lbnRzL0J1dHRvbic7XG5pbXBvcnQgeyBDYXJkLCBDYXJkQ29udGVudCwgQ2FyZEhlYWRlciwgQ2FyZFRpdGxlIH0gZnJvbSAnQC9zaGFyZWQvY29tcG9uZW50cy9DYXJkJztcbmltcG9ydCB0eXBlIHsgVGltZWxpbmVDb21tZW50LCBUaW1lbGluZUl0ZW0gfSBmcm9tICdAL3R5cGVzJztcblxudHlwZSBQcm9wcyA9IHtcbiAgaXRlbTogVGltZWxpbmVJdGVtO1xuICBtb2RlOiAndmlldycgfCAnYWRkJztcbiAgY29tbWVudFRleHQ6IHN0cmluZztcbiAgc2F2aW5nOiBib29sZWFuO1xuICBvbkNvbW1lbnRUZXh0Q2hhbmdlOiAodmFsdWU6IHN0cmluZykgPT4gdm9pZDtcbiAgb25TYXZlOiAoKSA9PiB2b2lkO1xuICBvbkNsb3NlOiAoKSA9PiB2b2lkO1xufTtcblxuY29uc3QgZm9ybWF0RGF0ZVRpbWUgPSAodmFsdWU6IHN0cmluZykgPT4ge1xuICBjb25zdCBwYXJzZWQgPSBuZXcgRGF0ZSh2YWx1ZSk7XG4gIHJldHVybiBOdW1iZXIuaXNOYU4ocGFyc2VkLmdldFRpbWUoKSkgPyB2YWx1ZSA6IHBhcnNlZC50b0xvY2FsZVN0cmluZygncHQtQlInKTtcbn07XG5cbmNvbnN0IENvbW1lbnRSb3c6IFJlYWN0LkZDPHsgY29tbWVudDogVGltZWxpbmVDb21tZW50IH0+ID0gKHsgY29tbWVudCB9KSA9PiAoXG4gIDxkaXYgY2xhc3NOYW1lPVwicm91bmRlZC14bCBib3JkZXIgYm9yZGVyLXdoaXRlLzEwIGJnLXNsYXRlLTk1MC80MCBwLTRcIj5cbiAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBnYXAtM1wiPlxuICAgICAgPHN0cm9uZyBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtc2xhdGUtMTAwXCI+e2NvbW1lbnQuYXV0b3IgfHwgJ0NvbWVudMOhcmlvIGludGVybm8nfTwvc3Ryb25nPlxuICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXNsYXRlLTQwMFwiPntmb3JtYXREYXRlVGltZShjb21tZW50LmRhdGEpfTwvc3Bhbj5cbiAgICA8L2Rpdj5cbiAgICA8cCBjbGFzc05hbWU9XCJtdC0yIHRleHQtc20gdGV4dC1zbGF0ZS0zMDBcIj57Y29tbWVudC50ZXh0b308L3A+XG4gIDwvZGl2PlxuKTtcblxuZXhwb3J0IGNvbnN0IFRpbWVsaW5lQ29tbWVudHNEaWFsb2c6IFJlYWN0LkZDPFByb3BzPiA9ICh7XG4gIGl0ZW0sXG4gIG1vZGUsXG4gIGNvbW1lbnRUZXh0LFxuICBzYXZpbmcsXG4gIG9uQ29tbWVudFRleHRDaGFuZ2UsXG4gIG9uU2F2ZSxcbiAgb25DbG9zZSxcbn0pID0+IChcbiAgPGRpdiBjbGFzc05hbWU9XCJmaXhlZCBpbnNldC0wIHotNTAgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYmctc2xhdGUtOTUwLzcwIHAtNCBiYWNrZHJvcC1ibHVyLXNtXCI+XG4gICAgPENhcmQgY2xhc3NOYW1lPVwidy1mdWxsIG1heC13LTJ4bFwiPlxuICAgICAgPENhcmRIZWFkZXIgY2xhc3NOYW1lPVwibWItMFwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBnYXAtNFwiPlxuICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICA8Q2FyZFRpdGxlPlxuICAgICAgICAgICAgICB7bW9kZSA9PT0gJ2FkZCcgPyAnQWRpY2lvbmFyIENvbWVudMOhcmlvJyA6ICdDb21lbnTDoXJpb3MgZG8gU3RhdHVzJ31cbiAgICAgICAgICAgIDwvQ2FyZFRpdGxlPlxuICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwibXQtMSB0ZXh0LXNtIHRleHQtc2xhdGUtNDAwXCI+e2l0ZW0uZXRhcGF9PC9wPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDxCdXR0b24gdHlwZT1cImJ1dHRvblwiIHZhcmlhbnQ9XCJvdXRsaW5lXCIgc2l6ZT1cInNtXCIgb25DbGljaz17b25DbG9zZX0+XG4gICAgICAgICAgICBGZWNoYXJcbiAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L0NhcmRIZWFkZXI+XG5cbiAgICAgIDxDYXJkQ29udGVudCBjbGFzc05hbWU9XCJzcGFjZS15LTQgcC02XCI+XG4gICAgICAgIHsoaXRlbS5jb21lbnRhcmlvcz8ubGVuZ3RoID8/IDApID09PSAwID8gKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicm91bmRlZC14bCBib3JkZXIgYm9yZGVyLWRhc2hlZCBib3JkZXItd2hpdGUvMTAgYmctc2xhdGUtOTUwLzMwIHB4LTQgcHktNSB0ZXh0LXNtIHRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICBOZW5odW0gY29tZW50w6FyaW8gcmVnaXN0cmFkbyBwYXJhIGVzdGUgc3RhdHVzLlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApIDogKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0zXCI+XG4gICAgICAgICAgICB7aXRlbS5jb21lbnRhcmlvcz8ubWFwKChjb21tZW50KSA9PiAoXG4gICAgICAgICAgICAgIDxDb21tZW50Um93IGtleT17Y29tbWVudC5pZH0gY29tbWVudD17Y29tbWVudH0gLz5cbiAgICAgICAgICAgICkpfVxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuXG4gICAgICAgIHttb2RlID09PSAnYWRkJyAmJiAoXG4gICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJtYi0yIGJsb2NrIHRleHQtc20gZm9udC1tZWRpdW0gdGV4dC1zbGF0ZS0zMDBcIj5Ob3ZvIGNvbWVudMOhcmlvPC9sYWJlbD5cbiAgICAgICAgICAgIDx0ZXh0YXJlYVxuICAgICAgICAgICAgICB2YWx1ZT17Y29tbWVudFRleHR9XG4gICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+IG9uQ29tbWVudFRleHRDaGFuZ2UoZXZlbnQudGFyZ2V0LnZhbHVlKX1cbiAgICAgICAgICAgICAgcm93cz17NX1cbiAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCJFc2NyZXZhIHVtIGNvbWVudMOhcmlvIHBhcmEgZXN0ZSBzdGF0dXMuLi5cIlxuICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgcm91bmRlZC14bCBib3JkZXIgYm9yZGVyLXdoaXRlLzE1IGJnLXNsYXRlLTk1MC83MCBweC0zIHB5LTIgdGV4dC1zbSB0ZXh0LXNsYXRlLTEwMCBvdXRsaW5lLW5vbmUgdHJhbnNpdGlvbiBmb2N1czpib3JkZXItY3lhbi0zMDAgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctY3lhbi0zMDAvMzBcIlxuICAgICAgICAgICAgLz5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgKX1cblxuICAgICAgICB7bW9kZSA9PT0gJ2FkZCcgJiYgKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBqdXN0aWZ5LWVuZCBnYXAtM1wiPlxuICAgICAgICAgICAgPEJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgdmFyaWFudD1cIm91dGxpbmVcIiBvbkNsaWNrPXtvbkNsb3NlfT5cbiAgICAgICAgICAgICAgQ2FuY2VsYXJcbiAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgICAgPEJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgbG9hZGluZz17c2F2aW5nfSBvbkNsaWNrPXtvblNhdmV9PlxuICAgICAgICAgICAgICBTYWx2YXIgY29tZW50w6FyaW9cbiAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuICAgICAgPC9DYXJkQ29udGVudD5cbiAgICA8L0NhcmQ+XG4gIDwvZGl2PlxuKTtcbiJdLCJmaWxlIjoiQTovd29ya3NwYWNlL25vdmEgYXR0L2RlcGxveS1wcm9qZWN0cy1hcHAvc3JjL2ZlYXR1cmVzL3Byb2plY3RzL2NvbXBvbmVudHMvVGltZWxpbmVDb21tZW50c0RpYWxvZy50c3gifQ==

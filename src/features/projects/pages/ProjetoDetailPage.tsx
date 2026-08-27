@@ -348,6 +348,7 @@ export const ProjetoDetailPage: React.FC = () => {
   );
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [savingDocuments, setSavingDocuments] = useState(false);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
   const [timelineDialogItem, setTimelineDialogItem] = useState<Projeto['timeline'][number] | null>(
     null,
   );
@@ -700,6 +701,7 @@ export const ProjetoDetailPage: React.FC = () => {
     }
 
     setSavingDocuments(true);
+    setDocumentsError(null);
 
     try {
       let nextDocuments = [...projeto.documentos];
@@ -731,6 +733,11 @@ export const ProjetoDetailPage: React.FC = () => {
       setSelectedCustomerDocumentIds([]);
     } catch (error) {
       console.error('Erro ao salvar documentos do projeto:', error);
+      setDocumentsError(
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel enviar os documentos. Tente novamente.',
+      );
     } finally {
       setSavingDocuments(false);
     }
@@ -1599,6 +1606,7 @@ export const ProjetoDetailPage: React.FC = () => {
                 entityLabel={projeto.protocolo}
                 amount={projeto.valor}
                 createdAt={projeto.dataCriacao}
+                showExpenseDetails={currentUser?.isAdmin === true}
               />
             )}
           </div>
@@ -1639,6 +1647,14 @@ export const ProjetoDetailPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
+              {documentsError && (
+                <div
+                  role="alert"
+                  className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+                >
+                  {documentsError}
+                </div>
+              )}
               {clienteDetalhe && clienteDetalhe.documentos.length > 0 && (
                 <div className="mb-6 rounded-xl border border-white/10 bg-slate-950/35 p-4">
                   <div className="flex items-center justify-between gap-3">

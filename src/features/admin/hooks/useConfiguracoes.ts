@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react';
 import type { ConfiguracoesSistema } from '@/types';
-import { loadConfiguracoesSistema, saveConfiguracoesSistema } from '@/utils/configuracoesSistema';
+import {
+  loadConfiguracoesSistema,
+  loadConfiguracoesSistemaFromApi,
+  saveConfiguracoesSistemaToApi,
+} from '@/utils/configuracoesSistema';
 import { usersService, type User } from '@/features/admin/services/usersService';
 
 export const useConfiguracoes = () => {
   const [formData, setFormData] = useState<ConfiguracoesSistema>(loadConfiguracoesSistema());
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [usuarios, setUsuarios] = useState<User[]>([]);
+
+  useEffect(() => {
+    void loadConfiguracoesSistemaFromApi()
+      .then(setFormData)
+      .catch((error) => console.error('Erro ao carregar tabelas de configuração:', error));
+  }, []);
 
   useEffect(() => {
     const loadUsuarios = async () => {
@@ -150,9 +160,14 @@ export const useConfiguracoes = () => {
     }));
   };
 
-  const handleSalvar = () => {
-    saveConfiguracoesSistema(formData);
-    setSaveMessage('Configurações salvas. Novos projetos passam a usar esses valores.');
+  const handleSalvar = async () => {
+    try {
+      await saveConfiguracoesSistemaToApi(formData);
+      setSaveMessage('Configurações salvas na API. Novos projetos passam a usar esses valores.');
+    } catch (error) {
+      console.error('Erro ao salvar tabelas de configuração:', error);
+      setSaveMessage('Não foi possível salvar as configurações. Tente novamente.');
+    }
     window.setTimeout(() => setSaveMessage(null), 3000);
   };
 

@@ -1,0 +1,225 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/projects/components/StatusChangeDialog.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { Button } from "/src/shared/components/Button.tsx";
+import { getStatusLabel } from "/src/features/projects/kanban/kanbanConfig.ts";
+export const StatusChangeDialog = ({
+  pendingStatusChange,
+  statusComment,
+  statusStartDate,
+  statusDurationDays,
+  updatingStatus,
+  onCommentChange,
+  onStartDateChange,
+  onDurationDaysChange,
+  onConfirm,
+  onCancel
+}) => {
+  const cancellation = pendingStatusChange.nextStatus === "projeto_cancelado";
+  const reasonMissing = cancellation && !statusComment.trim();
+  return /* @__PURE__ */ jsxDEV("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm", children: /* @__PURE__ */ jsxDEV("div", { className: "w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl", children: [
+    /* @__PURE__ */ jsxDEV("h2", { className: "text-xl font-semibold text-slate-100", children: "Atualizar status" }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+      lineNumber: 41,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("p", { className: "mt-2 text-sm text-slate-400", children: [
+      "Novo status:",
+      " ",
+      /* @__PURE__ */ jsxDEV("span", { className: "text-slate-200", children: getStatusLabel(pendingStatusChange.nextStatus) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+        lineNumber: 44,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+      lineNumber: 42,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "mt-4", children: [
+      /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm font-medium text-slate-300", children: cancellation ? "Motivo do cancelamento" : "Comentário" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+        lineNumber: 48,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        "textarea",
+        {
+          value: statusComment,
+          onChange: (event) => onCommentChange(event.target.value),
+          rows: 5,
+          placeholder: cancellation ? "Informe obrigatoriamente por que o projeto está sendo cancelado..." : "Escreva um comentário sobre esta alteração de status...",
+          className: "w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+          lineNumber: 51,
+          columnNumber: 11
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+      lineNumber: 47,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+      /* @__PURE__ */ jsxDEV("label", { className: "block text-sm text-slate-300", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "mb-2 block font-medium", children: "Data inicial do status" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+          lineNumber: 66,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          "input",
+          {
+            type: "date",
+            value: statusStartDate,
+            onChange: (event) => onStartDateChange(event.target.value),
+            className: "w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300",
+            required: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+            lineNumber: 67,
+            columnNumber: 13
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+        lineNumber: 65,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("label", { className: "block text-sm text-slate-300", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "mb-2 block font-medium", children: "Prazo em dias" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+          lineNumber: 76,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          "input",
+          {
+            type: "number",
+            min: 1,
+            value: statusDurationDays,
+            onChange: (event) => onDurationDaysChange(Number(event.target.value)),
+            className: "w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300",
+            required: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+            lineNumber: 77,
+            columnNumber: 13
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+        lineNumber: 75,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+      lineNumber: 64,
+      columnNumber: 9
+    }, this),
+    statusStartDate && statusDurationDays > 0 && /* @__PURE__ */ jsxDEV("p", { className: "mt-3 text-sm text-cyan-200", children: [
+      "Vencimento:",
+      " ",
+      new Date(
+        (/* @__PURE__ */ new Date(`${statusStartDate}T00:00:00`)).setDate(
+          (/* @__PURE__ */ new Date(`${statusStartDate}T00:00:00`)).getDate() + statusDurationDays
+        )
+      ).toLocaleDateString("pt-BR")
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+      lineNumber: 88,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "mt-5 flex justify-end gap-3", children: [
+      /* @__PURE__ */ jsxDEV(
+        Button,
+        {
+          variant: "outline",
+          type: "button",
+          onClick: () => {
+            if (!updatingStatus) onCancel();
+          },
+          children: "Voltar"
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+          lineNumber: 99,
+          columnNumber: 11
+        },
+        this
+      ),
+      /* @__PURE__ */ jsxDEV(
+        Button,
+        {
+          type: "button",
+          loading: updatingStatus,
+          disabled: reasonMissing || !statusStartDate || !Number.isInteger(statusDurationDays) || statusDurationDays < 1,
+          onClick: onConfirm,
+          children: "Salvar"
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+          lineNumber: 108,
+          columnNumber: 11
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+      lineNumber: 98,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+    lineNumber: 40,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx",
+    lineNumber: 39,
+    columnNumber: 5
+  }, this);
+};
+_c = StatusChangeDialog;
+var _c;
+$RefreshReg$(_c, "StatusChangeDialog");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/projects/components/StatusChangeDialog.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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LG9CQUFJQSxLQUFLLEdBQUdoQixlQUFlLFdBQVcsR0FBRWlCO0FBQUFBLFdBQ3RDLG9CQUFJRCxLQUFLLEdBQUdoQixlQUFlLFdBQVcsR0FBRWtCLFFBQVEsSUFBSWpCO0FBQUFBLFFBQ3REO0FBQUEsTUFDRixFQUFFa0IsbUJBQW1CLE9BQU87QUFBQSxTQU45QjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBT0E7QUFBQSxJQUdGLHVCQUFDLFNBQUksV0FBVSwrQkFDYjtBQUFBO0FBQUEsUUFBQztBQUFBO0FBQUEsVUFDQyxTQUFRO0FBQUEsVUFDUixNQUFLO0FBQUEsVUFDTCxTQUFTLE1BQU07QUFDYixnQkFBSSxDQUFDakIsZUFBZ0JLLFVBQVM7QUFBQSxVQUNoQztBQUFBLFVBQUU7QUFBQTtBQUFBLFFBTEo7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBLE1BUUE7QUFBQSxNQUNBO0FBQUEsUUFBQztBQUFBO0FBQUEsVUFDQyxNQUFLO0FBQUEsVUFDTCxTQUFTTDtBQUFBQSxVQUNULFVBQ0VRLGlCQUNBLENBQUNWLG1CQUNELENBQUNlLE9BQU9LLFVBQVVuQixrQkFBa0IsS0FDcENBLHFCQUFxQjtBQUFBLFVBRXZCLFNBQVNLO0FBQUFBLFVBQVU7QUFBQTtBQUFBLFFBVHJCO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxNQVlBO0FBQUEsU0F0QkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQXVCQTtBQUFBLE9BakZGO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0FrRkEsS0FuRkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQW9GQTtBQUVKO0FBQUVlLEtBdEdXeEI7QUFBbUMsSUFBQXdCO0FBQUEsYUFBQUEsSUFBQSIsIm5hbWVzIjpbIlJlYWN0IiwiQnV0dG9uIiwiZ2V0U3RhdHVzTGFiZWwiLCJTdGF0dXNDaGFuZ2VEaWFsb2ciLCJwZW5kaW5nU3RhdHVzQ2hhbmdlIiwic3RhdHVzQ29tbWVudCIsInN0YXR1c1N0YXJ0RGF0ZSIsInN0YXR1c0R1cmF0aW9uRGF5cyIsInVwZGF0aW5nU3RhdHVzIiwib25Db21tZW50Q2hhbmdlIiwib25TdGFydERhdGVDaGFuZ2UiLCJvbkR1cmF0aW9uRGF5c0NoYW5nZSIsIm9uQ29uZmlybSIsIm9uQ2FuY2VsIiwiY2FuY2VsbGF0aW9uIiwibmV4dFN0YXR1cyIsInJlYXNvbk1pc3NpbmciLCJ0cmltIiwiZXZlbnQiLCJ0YXJnZXQiLCJ2YWx1ZSIsIk51bWJlciIsIkRhdGUiLCJzZXREYXRlIiwiZ2V0RGF0ZSIsInRvTG9jYWxlRGF0ZVN0cmluZyIsImlzSW50ZWdlciIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIlN0YXR1c0NoYW5nZURpYWxvZy50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JztcbmltcG9ydCB7IEJ1dHRvbiB9IGZyb20gJ0Avc2hhcmVkL2NvbXBvbmVudHMvQnV0dG9uJztcbmltcG9ydCB7IGdldFN0YXR1c0xhYmVsLCB0eXBlIEthbmJhblN0YXR1cyB9IGZyb20gJy4uL2thbmJhbi9rYW5iYW5Db25maWcnO1xuXG50eXBlIFBlbmRpbmdTdGF0dXNDaGFuZ2UgPSB7XG4gIHByb2plY3RJZDogc3RyaW5nO1xuICBuZXh0U3RhdHVzOiBLYW5iYW5TdGF0dXM7XG59O1xuXG50eXBlIFByb3BzID0ge1xuICBwZW5kaW5nU3RhdHVzQ2hhbmdlOiBQZW5kaW5nU3RhdHVzQ2hhbmdlO1xuICBzdGF0dXNDb21tZW50OiBzdHJpbmc7XG4gIHN0YXR1c1N0YXJ0RGF0ZTogc3RyaW5nO1xuICBzdGF0dXNEdXJhdGlvbkRheXM6IG51bWJlcjtcbiAgdXBkYXRpbmdTdGF0dXM6IGJvb2xlYW47XG4gIG9uQ29tbWVudENoYW5nZTogKHZhbHVlOiBzdHJpbmcpID0+IHZvaWQ7XG4gIG9uU3RhcnREYXRlQ2hhbmdlOiAodmFsdWU6IHN0cmluZykgPT4gdm9pZDtcbiAgb25EdXJhdGlvbkRheXNDaGFuZ2U6ICh2YWx1ZTogbnVtYmVyKSA9PiB2b2lkO1xuICBvbkNvbmZpcm06ICgpID0+IHZvaWQ7XG4gIG9uQ2FuY2VsOiAoKSA9PiB2b2lkO1xufTtcblxuZXhwb3J0IGNvbnN0IFN0YXR1c0NoYW5nZURpYWxvZzogUmVhY3QuRkM8UHJvcHM+ID0gKHtcbiAgcGVuZGluZ1N0YXR1c0NoYW5nZSxcbiAgc3RhdHVzQ29tbWVudCxcbiAgc3RhdHVzU3RhcnREYXRlLFxuICBzdGF0dXNEdXJhdGlvbkRheXMsXG4gIHVwZGF0aW5nU3RhdHVzLFxuICBvbkNvbW1lbnRDaGFuZ2UsXG4gIG9uU3RhcnREYXRlQ2hhbmdlLFxuICBvbkR1cmF0aW9uRGF5c0NoYW5nZSxcbiAgb25Db25maXJtLFxuICBvbkNhbmNlbCxcbn0pID0+IHtcbiAgY29uc3QgY2FuY2VsbGF0aW9uID0gcGVuZGluZ1N0YXR1c0NoYW5nZS5uZXh0U3RhdHVzID09PSAncHJvamV0b19jYW5jZWxhZG8nO1xuICBjb25zdCByZWFzb25NaXNzaW5nID0gY2FuY2VsbGF0aW9uICYmICFzdGF0dXNDb21tZW50LnRyaW0oKTtcblxuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPVwiZml4ZWQgaW5zZXQtMCB6LTUwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGJnLXNsYXRlLTk1MC83MCBwLTQgYmFja2Ryb3AtYmx1ci1zbVwiPlxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LWZ1bGwgbWF4LXctbGcgcm91bmRlZC0yeGwgYm9yZGVyIGJvcmRlci13aGl0ZS8xMCBiZy1zbGF0ZS05MDAgcC02IHNoYWRvdy0yeGxcIj5cbiAgICAgICAgPGgyIGNsYXNzTmFtZT1cInRleHQteGwgZm9udC1zZW1pYm9sZCB0ZXh0LXNsYXRlLTEwMFwiPkF0dWFsaXphciBzdGF0dXM8L2gyPlxuICAgICAgICA8cCBjbGFzc05hbWU9XCJtdC0yIHRleHQtc20gdGV4dC1zbGF0ZS00MDBcIj5cbiAgICAgICAgICBOb3ZvIHN0YXR1czp7JyAnfVxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtMjAwXCI+e2dldFN0YXR1c0xhYmVsKHBlbmRpbmdTdGF0dXNDaGFuZ2UubmV4dFN0YXR1cyl9PC9zcGFuPlxuICAgICAgICA8L3A+XG5cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJtdC00XCI+XG4gICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cIm1iLTIgYmxvY2sgdGV4dC1zbSBmb250LW1lZGl1bSB0ZXh0LXNsYXRlLTMwMFwiPlxuICAgICAgICAgICAge2NhbmNlbGxhdGlvbiA/ICdNb3Rpdm8gZG8gY2FuY2VsYW1lbnRvJyA6ICdDb21lbnTDoXJpbyd9XG4gICAgICAgICAgPC9sYWJlbD5cbiAgICAgICAgICA8dGV4dGFyZWFcbiAgICAgICAgICAgIHZhbHVlPXtzdGF0dXNDb21tZW50fVxuICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT4gb25Db21tZW50Q2hhbmdlKGV2ZW50LnRhcmdldC52YWx1ZSl9XG4gICAgICAgICAgICByb3dzPXs1fVxuICAgICAgICAgICAgcGxhY2Vob2xkZXI9e1xuICAgICAgICAgICAgICBjYW5jZWxsYXRpb25cbiAgICAgICAgICAgICAgICA/ICdJbmZvcm1lIG9icmlnYXRvcmlhbWVudGUgcG9yIHF1ZSBvIHByb2pldG8gZXN0w6Egc2VuZG8gY2FuY2VsYWRvLi4uJ1xuICAgICAgICAgICAgICAgIDogJ0VzY3JldmEgdW0gY29tZW50w6FyaW8gc29icmUgZXN0YSBhbHRlcmHDp8OjbyBkZSBzdGF0dXMuLi4nXG4gICAgICAgICAgICB9XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgcm91bmRlZC14bCBib3JkZXIgYm9yZGVyLXdoaXRlLzE1IGJnLXNsYXRlLTk1MC83MCBweC0zIHB5LTIgdGV4dC1zbSB0ZXh0LXNsYXRlLTEwMCBvdXRsaW5lLW5vbmUgdHJhbnNpdGlvbiBmb2N1czpib3JkZXItY3lhbi0zMDAgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctY3lhbi0zMDAvMzBcIlxuICAgICAgICAgIC8+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtNCBncmlkIGdyaWQtY29scy0xIGdhcC00IHNtOmdyaWQtY29scy0yXCI+XG4gICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cImJsb2NrIHRleHQtc20gdGV4dC1zbGF0ZS0zMDBcIj5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cIm1iLTIgYmxvY2sgZm9udC1tZWRpdW1cIj5EYXRhIGluaWNpYWwgZG8gc3RhdHVzPC9zcGFuPlxuICAgICAgICAgICAgPGlucHV0XG4gICAgICAgICAgICAgIHR5cGU9XCJkYXRlXCJcbiAgICAgICAgICAgICAgdmFsdWU9e3N0YXR1c1N0YXJ0RGF0ZX1cbiAgICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT4gb25TdGFydERhdGVDaGFuZ2UoZXZlbnQudGFyZ2V0LnZhbHVlKX1cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHJvdW5kZWQteGwgYm9yZGVyIGJvcmRlci13aGl0ZS8xNSBiZy1zbGF0ZS05NTAvNzAgcHgtMyBweS0yIHRleHQtc20gdGV4dC1zbGF0ZS0xMDAgb3V0bGluZS1ub25lIHRyYW5zaXRpb24gZm9jdXM6Ym9yZGVyLWN5YW4tMzAwXCJcbiAgICAgICAgICAgICAgcmVxdWlyZWRcbiAgICAgICAgICAgIC8+XG4gICAgICAgICAgPC9sYWJlbD5cbiAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPVwiYmxvY2sgdGV4dC1zbSB0ZXh0LXNsYXRlLTMwMFwiPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwibWItMiBibG9jayBmb250LW1lZGl1bVwiPlByYXpvIGVtIGRpYXM8L3NwYW4+XG4gICAgICAgICAgICA8aW5wdXRcbiAgICAgICAgICAgICAgdHlwZT1cIm51bWJlclwiXG4gICAgICAgICAgICAgIG1pbj17MX1cbiAgICAgICAgICAgICAgdmFsdWU9e3N0YXR1c0R1cmF0aW9uRGF5c31cbiAgICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT4gb25EdXJhdGlvbkRheXNDaGFuZ2UoTnVtYmVyKGV2ZW50LnRhcmdldC52YWx1ZSkpfVxuICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgcm91bmRlZC14bCBib3JkZXIgYm9yZGVyLXdoaXRlLzE1IGJnLXNsYXRlLTk1MC83MCBweC0zIHB5LTIgdGV4dC1zbSB0ZXh0LXNsYXRlLTEwMCBvdXRsaW5lLW5vbmUgdHJhbnNpdGlvbiBmb2N1czpib3JkZXItY3lhbi0zMDBcIlxuICAgICAgICAgICAgICByZXF1aXJlZFxuICAgICAgICAgICAgLz5cbiAgICAgICAgICA8L2xhYmVsPlxuICAgICAgICA8L2Rpdj5cbiAgICAgICAge3N0YXR1c1N0YXJ0RGF0ZSAmJiBzdGF0dXNEdXJhdGlvbkRheXMgPiAwICYmIChcbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJtdC0zIHRleHQtc20gdGV4dC1jeWFuLTIwMFwiPlxuICAgICAgICAgICAgVmVuY2ltZW50bzp7JyAnfVxuICAgICAgICAgICAge25ldyBEYXRlKFxuICAgICAgICAgICAgICBuZXcgRGF0ZShgJHtzdGF0dXNTdGFydERhdGV9VDAwOjAwOjAwYCkuc2V0RGF0ZShcbiAgICAgICAgICAgICAgICBuZXcgRGF0ZShgJHtzdGF0dXNTdGFydERhdGV9VDAwOjAwOjAwYCkuZ2V0RGF0ZSgpICsgc3RhdHVzRHVyYXRpb25EYXlzLFxuICAgICAgICAgICAgICApLFxuICAgICAgICAgICAgKS50b0xvY2FsZURhdGVTdHJpbmcoJ3B0LUJSJyl9XG4gICAgICAgICAgPC9wPlxuICAgICAgICApfVxuXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtNSBmbGV4IGp1c3RpZnktZW5kIGdhcC0zXCI+XG4gICAgICAgICAgPEJ1dHRvblxuICAgICAgICAgICAgdmFyaWFudD1cIm91dGxpbmVcIlxuICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiB7XG4gICAgICAgICAgICAgIGlmICghdXBkYXRpbmdTdGF0dXMpIG9uQ2FuY2VsKCk7XG4gICAgICAgICAgICB9fVxuICAgICAgICAgID5cbiAgICAgICAgICAgIFZvbHRhclxuICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICAgICAgbG9hZGluZz17dXBkYXRpbmdTdGF0dXN9XG4gICAgICAgICAgICBkaXNhYmxlZD17XG4gICAgICAgICAgICAgIHJlYXNvbk1pc3NpbmcgfHxcbiAgICAgICAgICAgICAgIXN0YXR1c1N0YXJ0RGF0ZSB8fFxuICAgICAgICAgICAgICAhTnVtYmVyLmlzSW50ZWdlcihzdGF0dXNEdXJhdGlvbkRheXMpIHx8XG4gICAgICAgICAgICAgIHN0YXR1c0R1cmF0aW9uRGF5cyA8IDFcbiAgICAgICAgICAgIH1cbiAgICAgICAgICAgIG9uQ2xpY2s9e29uQ29uZmlybX1cbiAgICAgICAgICA+XG4gICAgICAgICAgICBTYWx2YXJcbiAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbiAgKTtcbn07XG4iXSwiZmlsZSI6IkE6L3dvcmtzcGFjZS9ub3ZhIGF0dC9kZXBsb3ktcHJvamVjdHMtYXBwL3NyYy9mZWF0dXJlcy9wcm9qZWN0cy9jb21wb25lbnRzL1N0YXR1c0NoYW5nZURpYWxvZy50c3gifQ==

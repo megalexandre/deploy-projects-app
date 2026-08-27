@@ -17,7 +17,7 @@ import {
   type IntegradorOption,
 } from '@/features/projects/hooks/useNovoProjeto';
 import type { Customer } from '@/services';
-import type { CupomDesconto, Documento } from '@/types';
+import type { CupomDesconto, Documento, User } from '@/types';
 import { Button } from '@/shared/components/Button';
 import { formatCurrencyBRL } from '@/core/utils/masks';
 import { EquipamentosTable } from './EquipamentosTable';
@@ -25,6 +25,7 @@ import { FormField } from './FormField';
 import { inputCls, selectCls } from './fieldCls';
 
 interface Passo3DetalhesProps {
+  currentUser: User | null;
   dadosBasicos: DadosBasicosForm;
   setDadosBasicos: React.Dispatch<React.SetStateAction<DadosBasicosForm>>;
   detalhesProjeto: DadosDetalhesForm;
@@ -76,6 +77,7 @@ interface Passo3DetalhesProps {
 }
 
 export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
+  currentUser,
   dadosBasicos,
   setDadosBasicos,
   detalhesProjeto,
@@ -148,6 +150,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
               value={dadosBasicos.integrador}
               onChange={(e) => setDadosBasicos((prev) => ({ ...prev, integrador: e.target.value }))}
               className={selectCls}
+              disabled={!isEditing && currentUser?.isAdmin === false}
             >
               <option value="">Selecione...</option>
               {integradores.map((item) => (

@@ -1,4 +1,9 @@
 import type { ConfiguracoesSistema, CupomDesconto, PrecoPadraoEntrada } from '@/types';
+import {
+  priceTablesService,
+  type PriceTableKind,
+  type PriceTableResponse,
+} from '@/features/admin/services/priceTablesService';
 
 const STORAGE_KEY = 'opj_configuracoes_sistema';
 
@@ -60,7 +65,7 @@ const normalizeConfig = (
 ): ConfiguracoesSistema => {
   const defaults = getDefaultConfiguracoesSistema();
   const normalizeCupons = (items: CupomDesconto[] | undefined, fallback: CupomDesconto[]) =>
-    Array.isArray(items) && items.length > 0
+    Array.isArray(items)
       ? items.map((item, index) => ({
           id: item.id || `cupom-${index + 1}`,
           nome: item.nome || `Cupom ${index + 1}`,
@@ -121,6 +126,66 @@ export const saveConfiguracoesSistema = (config: ConfiguracoesSistema) => {
   }
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeConfig(config)));
+};
+
+const TABLE_NAMES: Record<PriceTableKind, string> = {
+  fotovoltaico: 'Tabela de preço fotovoltaico',
+  padrao_entrada: 'Tabela de preço padrão de entrada',
+  cupom_projeto: 'Cupons de projetos',
+  cupom_servico: 'Cupons de serviços',
+};
+
+const mergePriceTables = (
+  config: ConfiguracoesSistema,
+  tables: PriceTableResponse[],
+): ConfiguracoesSistema => {
+  const byKind = new Map(tables.map((table) => [table.kind, table.values]));
+
+  return normalizeConfig({
+    ...config,
+    tabelaPrecoFotovoltaico:
+      (byKind.get('fotovoltaico') as ConfiguracoesSistema['tabelaPrecoFotovoltaico']) ??
+      config.tabelaPrecoFotovoltaico,
+    tabelaPrecoPadraoEntrada:
+      (byKind.get('padrao_entrada') as ConfiguracoesSistema['tabelaPrecoPadraoEntrada']) ??
+      config.tabelaPrecoPadraoEntrada,
+    cuponsDescontoProjetos:
+      (byKind.get('cupom_projeto') as ConfiguracoesSistema['cuponsDescontoProjetos']) ??
+      config.cuponsDescontoProjetos,
+    cuponsDescontoServicos:
+      (byKind.get('cupom_servico') as ConfiguracoesSistema['cuponsDescontoServicos']) ??
+      config.cuponsDescontoServicos,
+  });
+};
+
+export const loadConfiguracoesSistemaFromApi = async (): Promise<ConfiguracoesSistema> => {
+  const cached = loadConfiguracoesSistema();
+  const tables = await priceTablesService.getAll();
+  const config = mergePriceTables(cached, tables);
+  saveConfiguracoesSistema(config);
+  return config;
+};
+
+export const saveConfiguracoesSistemaToApi = async (config: ConfiguracoesSistema) => {
+  const normalized = normalizeConfig(config);
+  const current = await priceTablesService.getAll();
+  const currentByKind = new Map(current.map((table) => [table.kind, table]));
+  const valuesByKind: Record<PriceTableKind, unknown[]> = {
+    fotovoltaico: normalized.tabelaPrecoFotovoltaico,
+    padrao_entrada: normalized.tabelaPrecoPadraoEntrada,
+    cupom_projeto: normalized.cuponsDescontoProjetos,
+    cupom_servico: normalized.cuponsDescontoServicos,
+  };
+
+  await Promise.all(
+    (Object.keys(valuesByKind) as PriceTableKind[]).map((kind) =>
+      priceTablesService.upsert(
+        { kind, name: TABLE_NAMES[kind], values: valuesByKind[kind] },
+        currentByKind.get(kind),
+      ),
+    ),
+  );
+  saveConfiguracoesSistema(normalized);
 };
 
 export const buildTabelaPrecoPadraoEntradaMap = (items: PrecoPadraoEntrada[]) =>

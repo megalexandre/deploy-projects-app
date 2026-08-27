@@ -16,7 +16,9 @@ export const projectsResource = {
     const projectResponse = await apiClient.get<ProjectResponse>(`${PROJECTS_ENDPOINT}/${id}`);
 
     const [customerResponse, addressResponse] = await Promise.all([
-      apiClient.get<CustomerResponse>(`${CUSTOMERS_ENDPOINT}/${projectResponse.client_id}`),
+      projectResponse.client
+        ? Promise.resolve(projectResponse.client)
+        : apiClient.get<CustomerResponse>(`${CUSTOMERS_ENDPOINT}/${projectResponse.client_id}`),
       apiClient.get<AddressResponse>(`${ADDRESSES_ENDPOINT}/${projectResponse.address_id}`),
     ]);
 

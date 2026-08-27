@@ -1,0 +1,312 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/financeiro/pages/FaturasPage.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { Link } from "/node_modules/.vite/deps/react-router-dom.js?v=725e42e2";
+import { ArrowLeft, FileText, FilePdf, FunnelSimple } from "/node_modules/.vite/deps/@phosphor-icons_react.js?v=725e42e2";
+import { Card, CardContent, CardHeader, CardTitle } from "/src/shared/components/Card.tsx";
+import { Button } from "/src/shared/components/Button.tsx";
+const faturasMock = [
+  {
+    id: "1",
+    numero: "FAT-2026-0017",
+    cliente: "Condominio Vale Verde",
+    referencia: "Janeiro/2026",
+    emissao: "2026-02-02",
+    valor: "R$ 24.500,00",
+    status: "enviada"
+  },
+  {
+    id: "2",
+    numero: "FAT-2026-0018",
+    cliente: "Mercado Nova Era",
+    referencia: "Janeiro/2026",
+    emissao: "2026-02-03",
+    valor: "R$ 11.200,00",
+    status: "paga"
+  },
+  {
+    id: "3",
+    numero: "FAT-2026-0019",
+    cliente: "Carlos Santos",
+    referencia: "Fevereiro/2026",
+    emissao: "2026-02-09",
+    valor: "R$ 7.800,00",
+    status: "emitida"
+  }
+];
+export const FaturasPage = () => {
+  const formatDateBR = (date) => (/* @__PURE__ */ new Date(`${date}T00:00:00`)).toLocaleDateString("pt-BR");
+  const getStatusBadge = (status) => {
+    if (status === "paga") return "bg-green-900/50 text-green-300 border-green-700";
+    if (status === "enviada") return "bg-blue-900/50 text-blue-300 border-blue-700";
+    return "bg-yellow-900/50 text-yellow-300 border-yellow-700";
+  };
+  const getStatusLabel = (status) => {
+    if (status === "paga") return "Paga";
+    if (status === "enviada") return "Enviada";
+    return "Emitida";
+  };
+  return /* @__PURE__ */ jsxDEV("div", { className: "space-y-6 page-enter", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between", children: [
+      /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV("h1", { className: "text-2xl font-bold text-gray-100", children: "Faturas" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 67,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-gray-400 mt-1", children: "Esboco para emissao e acompanhamento de faturas." }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 68,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 66,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsxDEV(Link, { to: "/financeiro", children: /* @__PURE__ */ jsxDEV(Button, { variant: "outline", children: [
+          /* @__PURE__ */ jsxDEV(ArrowLeft, { className: "h-4 w-4 mr-2" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 73,
+            columnNumber: 15
+          }, this),
+          "Voltar ao financeiro"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 72,
+          columnNumber: 13
+        }, this) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 71,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV(Button, { children: [
+          /* @__PURE__ */ jsxDEV(FileText, { className: "h-4 w-4 mr-2" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 78,
+            columnNumber: 13
+          }, this),
+          "Nova fatura"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 77,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 70,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+      lineNumber: 65,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxDEV("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", children: [
+      /* @__PURE__ */ jsxDEV("p", { className: "text-gray-300", children: "Estrutura pronta para incluir filtros por cliente, periodo e status." }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 87,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsxDEV(Button, { variant: "outline", size: "sm", children: [
+          /* @__PURE__ */ jsxDEV(FunnelSimple, { className: "h-4 w-4 mr-2" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 92,
+            columnNumber: 17
+          }, this),
+          "Filtrar"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 91,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(Button, { variant: "outline", size: "sm", children: [
+          /* @__PURE__ */ jsxDEV(FilePdf, { className: "h-4 w-4 mr-2" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 96,
+            columnNumber: 17
+          }, this),
+          "Exportar PDF"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 95,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 90,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+      lineNumber: 86,
+      columnNumber: 11
+    }, this) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+      lineNumber: 85,
+      columnNumber: 9
+    }, this) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+      lineNumber: 84,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Card, { children: [
+      /* @__PURE__ */ jsxDEV(CardHeader, { children: /* @__PURE__ */ jsxDEV(CardTitle, { children: "Historico de faturas" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 106,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 105,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(CardContent, { children: /* @__PURE__ */ jsxDEV("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxDEV("table", { className: "w-full", children: [
+        /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { className: "border-b border-gray-700", children: [
+          /* @__PURE__ */ jsxDEV("th", { className: "text-left py-3 px-4 text-gray-300 font-medium", children: "Numero" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 113,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("th", { className: "text-left py-3 px-4 text-gray-300 font-medium", children: "Cliente" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 114,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("th", { className: "text-left py-3 px-4 text-gray-300 font-medium", children: "Referencia" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 115,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("th", { className: "text-left py-3 px-4 text-gray-300 font-medium", children: "Emissao" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 116,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("th", { className: "text-left py-3 px-4 text-gray-300 font-medium", children: "Valor" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 117,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("th", { className: "text-left py-3 px-4 text-gray-300 font-medium", children: "Status" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 118,
+            columnNumber: 19
+          }, this)
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 112,
+          columnNumber: 17
+        }, this) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 111,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("tbody", { children: faturasMock.map(
+          (fatura) => /* @__PURE__ */ jsxDEV("tr", { className: "border-b border-gray-800 hover:bg-gray-800/50", children: [
+            /* @__PURE__ */ jsxDEV("td", { className: "py-3 px-4 text-gray-100", children: fatura.numero }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+              lineNumber: 124,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("td", { className: "py-3 px-4 text-gray-100", children: fatura.cliente }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+              lineNumber: 125,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("td", { className: "py-3 px-4 text-gray-100", children: fatura.referencia }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+              lineNumber: 126,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("td", { className: "py-3 px-4 text-gray-100", children: formatDateBR(fatura.emissao) }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+              lineNumber: 127,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("td", { className: "py-3 px-4 text-gray-100", children: fatura.valor }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+              lineNumber: 128,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("td", { className: "py-3 px-4", children: /* @__PURE__ */ jsxDEV(
+              "span",
+              {
+                className: `px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(fatura.status)}`,
+                children: getStatusLabel(fatura.status)
+              },
+              void 0,
+              false,
+              {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+                lineNumber: 130,
+                columnNumber: 23
+              },
+              this
+            ) }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+              lineNumber: 129,
+              columnNumber: 21
+            }, this)
+          ] }, fatura.id, true, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+            lineNumber: 123,
+            columnNumber: 17
+          }, this)
+        ) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+          lineNumber: 121,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 110,
+        columnNumber: 13
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 109,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+        lineNumber: 108,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+      lineNumber: 104,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx",
+    lineNumber: 64,
+    columnNumber: 5
+  }, this);
+};
+_c = FaturasPage;
+var _c;
+$RefreshReg$(_c, "FaturasPage");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/financeiro/pages/FaturasPage.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFBO0FBQUE7QUFBQTtBQUFBLGFBaUNBO0FBQUEsU0FyQ0Y7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQXNDQTtBQUFBLE9BOUVGO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0ErRUE7QUFFSjtBQUFFZ0IsS0FqR1dUO0FBQXFCLElBQUFTO0FBQUEsYUFBQUEsSUFBQSIsIm5hbWVzIjpbIlJlYWN0IiwiTGluayIsIkFycm93TGVmdCIsIkZpbGVUZXh0IiwiRmlsZVBkZiIsIkZ1bm5lbFNpbXBsZSIsIkNhcmQiLCJDYXJkQ29udGVudCIsIkNhcmRIZWFkZXIiLCJDYXJkVGl0bGUiLCJCdXR0b24iLCJmYXR1cmFzTW9jayIsImlkIiwibnVtZXJvIiwiY2xpZW50ZSIsInJlZmVyZW5jaWEiLCJlbWlzc2FvIiwidmFsb3IiLCJzdGF0dXMiLCJGYXR1cmFzUGFnZSIsImZvcm1hdERhdGVCUiIsImRhdGUiLCJEYXRlIiwidG9Mb2NhbGVEYXRlU3RyaW5nIiwiZ2V0U3RhdHVzQmFkZ2UiLCJnZXRTdGF0dXNMYWJlbCIsIm1hcCIsImZhdHVyYSIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIkZhdHVyYXNQYWdlLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyIvKiogUGFnaW5hICdGYXR1cmFzUGFnZSc6IG9ycXVlc3RyYSBlc3RhZG8gZGEgdGVsYSwgZXZlbnRvcyBkbyB1c3VhcmlvIGUgcmVuZGVyaXphY2FvIGRvcyBjb21wb25lbnRlcy4gKi9cbmltcG9ydCBSZWFjdCBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBMaW5rIH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSc7XG5pbXBvcnQgeyBBcnJvd0xlZnQsIEZpbGVUZXh0LCBGaWxlUGRmLCBGdW5uZWxTaW1wbGUgfSBmcm9tICdAcGhvc3Bob3ItaWNvbnMvcmVhY3QnO1xuaW1wb3J0IHsgQ2FyZCwgQ2FyZENvbnRlbnQsIENhcmRIZWFkZXIsIENhcmRUaXRsZSB9IGZyb20gJ0Avc2hhcmVkL2NvbXBvbmVudHMvQ2FyZCc7XG5pbXBvcnQgeyBCdXR0b24gfSBmcm9tICdAL3NoYXJlZC9jb21wb25lbnRzL0J1dHRvbic7XG5cbmludGVyZmFjZSBGYXR1cmEge1xuICBpZDogc3RyaW5nO1xuICBudW1lcm86IHN0cmluZztcbiAgY2xpZW50ZTogc3RyaW5nO1xuICByZWZlcmVuY2lhOiBzdHJpbmc7XG4gIGVtaXNzYW86IHN0cmluZztcbiAgdmFsb3I6IHN0cmluZztcbiAgc3RhdHVzOiAnZW1pdGlkYScgfCAnZW52aWFkYScgfCAncGFnYSc7XG59XG5cbmNvbnN0IGZhdHVyYXNNb2NrOiBGYXR1cmFbXSA9IFtcbiAge1xuICAgIGlkOiAnMScsXG4gICAgbnVtZXJvOiAnRkFULTIwMjYtMDAxNycsXG4gICAgY2xpZW50ZTogJ0NvbmRvbWluaW8gVmFsZSBWZXJkZScsXG4gICAgcmVmZXJlbmNpYTogJ0phbmVpcm8vMjAyNicsXG4gICAgZW1pc3NhbzogJzIwMjYtMDItMDInLFxuICAgIHZhbG9yOiAnUiQgMjQuNTAwLDAwJyxcbiAgICBzdGF0dXM6ICdlbnZpYWRhJyxcbiAgfSxcbiAge1xuICAgIGlkOiAnMicsXG4gICAgbnVtZXJvOiAnRkFULTIwMjYtMDAxOCcsXG4gICAgY2xpZW50ZTogJ01lcmNhZG8gTm92YSBFcmEnLFxuICAgIHJlZmVyZW5jaWE6ICdKYW5laXJvLzIwMjYnLFxuICAgIGVtaXNzYW86ICcyMDI2LTAyLTAzJyxcbiAgICB2YWxvcjogJ1IkIDExLjIwMCwwMCcsXG4gICAgc3RhdHVzOiAncGFnYScsXG4gIH0sXG4gIHtcbiAgICBpZDogJzMnLFxuICAgIG51bWVybzogJ0ZBVC0yMDI2LTAwMTknLFxuICAgIGNsaWVudGU6ICdDYXJsb3MgU2FudG9zJyxcbiAgICByZWZlcmVuY2lhOiAnRmV2ZXJlaXJvLzIwMjYnLFxuICAgIGVtaXNzYW86ICcyMDI2LTAyLTA5JyxcbiAgICB2YWxvcjogJ1IkIDcuODAwLDAwJyxcbiAgICBzdGF0dXM6ICdlbWl0aWRhJyxcbiAgfSxcbl07XG5cbmV4cG9ydCBjb25zdCBGYXR1cmFzUGFnZTogUmVhY3QuRkMgPSAoKSA9PiB7XG4gIGNvbnN0IGZvcm1hdERhdGVCUiA9IChkYXRlOiBzdHJpbmcpID0+IG5ldyBEYXRlKGAke2RhdGV9VDAwOjAwOjAwYCkudG9Mb2NhbGVEYXRlU3RyaW5nKCdwdC1CUicpO1xuXG4gIGNvbnN0IGdldFN0YXR1c0JhZGdlID0gKHN0YXR1czogRmF0dXJhWydzdGF0dXMnXSkgPT4ge1xuICAgIGlmIChzdGF0dXMgPT09ICdwYWdhJykgcmV0dXJuICdiZy1ncmVlbi05MDAvNTAgdGV4dC1ncmVlbi0zMDAgYm9yZGVyLWdyZWVuLTcwMCc7XG4gICAgaWYgKHN0YXR1cyA9PT0gJ2VudmlhZGEnKSByZXR1cm4gJ2JnLWJsdWUtOTAwLzUwIHRleHQtYmx1ZS0zMDAgYm9yZGVyLWJsdWUtNzAwJztcbiAgICByZXR1cm4gJ2JnLXllbGxvdy05MDAvNTAgdGV4dC15ZWxsb3ctMzAwIGJvcmRlci15ZWxsb3ctNzAwJztcbiAgfTtcblxuICBjb25zdCBnZXRTdGF0dXNMYWJlbCA9IChzdGF0dXM6IEZhdHVyYVsnc3RhdHVzJ10pID0+IHtcbiAgICBpZiAoc3RhdHVzID09PSAncGFnYScpIHJldHVybiAnUGFnYSc7XG4gICAgaWYgKHN0YXR1cyA9PT0gJ2VudmlhZGEnKSByZXR1cm4gJ0VudmlhZGEnO1xuICAgIHJldHVybiAnRW1pdGlkYSc7XG4gIH07XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktNiBwYWdlLWVudGVyXCI+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC1jb2wgZ2FwLTQgc206ZmxleC1yb3cgc206aXRlbXMtY2VudGVyIHNtOmp1c3RpZnktYmV0d2VlblwiPlxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxoMSBjbGFzc05hbWU9XCJ0ZXh0LTJ4bCBmb250LWJvbGQgdGV4dC1ncmF5LTEwMFwiPkZhdHVyYXM8L2gxPlxuICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtZ3JheS00MDAgbXQtMVwiPkVzYm9jbyBwYXJhIGVtaXNzYW8gZSBhY29tcGFuaGFtZW50byBkZSBmYXR1cmFzLjwvcD5cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBnYXAtMlwiPlxuICAgICAgICAgIDxMaW5rIHRvPVwiL2ZpbmFuY2Vpcm9cIj5cbiAgICAgICAgICAgIDxCdXR0b24gdmFyaWFudD1cIm91dGxpbmVcIj5cbiAgICAgICAgICAgICAgPEFycm93TGVmdCBjbGFzc05hbWU9XCJoLTQgdy00IG1yLTJcIiAvPlxuICAgICAgICAgICAgICBWb2x0YXIgYW8gZmluYW5jZWlyb1xuICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgPC9MaW5rPlxuICAgICAgICAgIDxCdXR0b24+XG4gICAgICAgICAgICA8RmlsZVRleHQgY2xhc3NOYW1lPVwiaC00IHctNCBtci0yXCIgLz5cbiAgICAgICAgICAgIE5vdmEgZmF0dXJhXG4gICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG5cbiAgICAgIDxDYXJkPlxuICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPVwicC02XCI+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtY29sIGdhcC0zIHNtOmZsZXgtcm93IHNtOml0ZW1zLWNlbnRlciBzbTpqdXN0aWZ5LWJldHdlZW5cIj5cbiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtZ3JheS0zMDBcIj5cbiAgICAgICAgICAgICAgRXN0cnV0dXJhIHByb250YSBwYXJhIGluY2x1aXIgZmlsdHJvcyBwb3IgY2xpZW50ZSwgcGVyaW9kbyBlIHN0YXR1cy5cbiAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBnYXAtMlwiPlxuICAgICAgICAgICAgICA8QnV0dG9uIHZhcmlhbnQ9XCJvdXRsaW5lXCIgc2l6ZT1cInNtXCI+XG4gICAgICAgICAgICAgICAgPEZ1bm5lbFNpbXBsZSBjbGFzc05hbWU9XCJoLTQgdy00IG1yLTJcIiAvPlxuICAgICAgICAgICAgICAgIEZpbHRyYXJcbiAgICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgICAgIDxCdXR0b24gdmFyaWFudD1cIm91dGxpbmVcIiBzaXplPVwic21cIj5cbiAgICAgICAgICAgICAgICA8RmlsZVBkZiBjbGFzc05hbWU9XCJoLTQgdy00IG1yLTJcIiAvPlxuICAgICAgICAgICAgICAgIEV4cG9ydGFyIFBERlxuICAgICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICA8L0NhcmRDb250ZW50PlxuICAgICAgPC9DYXJkPlxuXG4gICAgICA8Q2FyZD5cbiAgICAgICAgPENhcmRIZWFkZXI+XG4gICAgICAgICAgPENhcmRUaXRsZT5IaXN0b3JpY28gZGUgZmF0dXJhczwvQ2FyZFRpdGxlPlxuICAgICAgICA8L0NhcmRIZWFkZXI+XG4gICAgICAgIDxDYXJkQ29udGVudD5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm92ZXJmbG93LXgtYXV0b1wiPlxuICAgICAgICAgICAgPHRhYmxlIGNsYXNzTmFtZT1cInctZnVsbFwiPlxuICAgICAgICAgICAgICA8dGhlYWQ+XG4gICAgICAgICAgICAgICAgPHRyIGNsYXNzTmFtZT1cImJvcmRlci1iIGJvcmRlci1ncmF5LTcwMFwiPlxuICAgICAgICAgICAgICAgICAgPHRoIGNsYXNzTmFtZT1cInRleHQtbGVmdCBweS0zIHB4LTQgdGV4dC1ncmF5LTMwMCBmb250LW1lZGl1bVwiPk51bWVybzwvdGg+XG4gICAgICAgICAgICAgICAgICA8dGggY2xhc3NOYW1lPVwidGV4dC1sZWZ0IHB5LTMgcHgtNCB0ZXh0LWdyYXktMzAwIGZvbnQtbWVkaXVtXCI+Q2xpZW50ZTwvdGg+XG4gICAgICAgICAgICAgICAgICA8dGggY2xhc3NOYW1lPVwidGV4dC1sZWZ0IHB5LTMgcHgtNCB0ZXh0LWdyYXktMzAwIGZvbnQtbWVkaXVtXCI+UmVmZXJlbmNpYTwvdGg+XG4gICAgICAgICAgICAgICAgICA8dGggY2xhc3NOYW1lPVwidGV4dC1sZWZ0IHB5LTMgcHgtNCB0ZXh0LWdyYXktMzAwIGZvbnQtbWVkaXVtXCI+RW1pc3NhbzwvdGg+XG4gICAgICAgICAgICAgICAgICA8dGggY2xhc3NOYW1lPVwidGV4dC1sZWZ0IHB5LTMgcHgtNCB0ZXh0LWdyYXktMzAwIGZvbnQtbWVkaXVtXCI+VmFsb3I8L3RoPlxuICAgICAgICAgICAgICAgICAgPHRoIGNsYXNzTmFtZT1cInRleHQtbGVmdCBweS0zIHB4LTQgdGV4dC1ncmF5LTMwMCBmb250LW1lZGl1bVwiPlN0YXR1czwvdGg+XG4gICAgICAgICAgICAgICAgPC90cj5cbiAgICAgICAgICAgICAgPC90aGVhZD5cbiAgICAgICAgICAgICAgPHRib2R5PlxuICAgICAgICAgICAgICAgIHtmYXR1cmFzTW9jay5tYXAoKGZhdHVyYSkgPT4gKFxuICAgICAgICAgICAgICAgICAgPHRyIGtleT17ZmF0dXJhLmlkfSBjbGFzc05hbWU9XCJib3JkZXItYiBib3JkZXItZ3JheS04MDAgaG92ZXI6YmctZ3JheS04MDAvNTBcIj5cbiAgICAgICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT1cInB5LTMgcHgtNCB0ZXh0LWdyYXktMTAwXCI+e2ZhdHVyYS5udW1lcm99PC90ZD5cbiAgICAgICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT1cInB5LTMgcHgtNCB0ZXh0LWdyYXktMTAwXCI+e2ZhdHVyYS5jbGllbnRlfTwvdGQ+XG4gICAgICAgICAgICAgICAgICAgIDx0ZCBjbGFzc05hbWU9XCJweS0zIHB4LTQgdGV4dC1ncmF5LTEwMFwiPntmYXR1cmEucmVmZXJlbmNpYX08L3RkPlxuICAgICAgICAgICAgICAgICAgICA8dGQgY2xhc3NOYW1lPVwicHktMyBweC00IHRleHQtZ3JheS0xMDBcIj57Zm9ybWF0RGF0ZUJSKGZhdHVyYS5lbWlzc2FvKX08L3RkPlxuICAgICAgICAgICAgICAgICAgICA8dGQgY2xhc3NOYW1lPVwicHktMyBweC00IHRleHQtZ3JheS0xMDBcIj57ZmF0dXJhLnZhbG9yfTwvdGQ+XG4gICAgICAgICAgICAgICAgICAgIDx0ZCBjbGFzc05hbWU9XCJweS0zIHB4LTRcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8c3BhblxuICAgICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgcHgtMiBweS0xIHJvdW5kZWQtZnVsbCB0ZXh0LXhzIGZvbnQtbWVkaXVtIGJvcmRlciAke2dldFN0YXR1c0JhZGdlKGZhdHVyYS5zdGF0dXMpfWB9XG4gICAgICAgICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgICAgICAge2dldFN0YXR1c0xhYmVsKGZhdHVyYS5zdGF0dXMpfVxuICAgICAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPC90ZD5cbiAgICAgICAgICAgICAgICAgIDwvdHI+XG4gICAgICAgICAgICAgICAgKSl9XG4gICAgICAgICAgICAgIDwvdGJvZHk+XG4gICAgICAgICAgICA8L3RhYmxlPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICA8L0NhcmRDb250ZW50PlxuICAgICAgPC9DYXJkPlxuICAgIDwvZGl2PlxuICApO1xufTtcbiJdLCJmaWxlIjoiQTovd29ya3NwYWNlL25vdmEgYXR0L2RlcGxveS1wcm9qZWN0cy1hcHAvc3JjL2ZlYXR1cmVzL2ZpbmFuY2Vpcm8vcGFnZXMvRmF0dXJhc1BhZ2UudHN4In0=

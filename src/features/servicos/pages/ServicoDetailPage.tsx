@@ -23,6 +23,7 @@ import type { Documento, Servico, StatusServico } from '@/types';
 import {
   getCuponsDescontoServicosAtivos,
   loadConfiguracoesSistema,
+  loadConfiguracoesSistemaFromApi,
 } from '@/utils/configuracoesSistema';
 import { formatCurrencyBRL, maskLatitude, maskLongitude } from '@/core/utils/masks';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
@@ -116,7 +117,14 @@ export const ServicoDetailPage: React.FC = () => {
   const [savingDocuments, setSavingDocuments] = useState(false);
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const [configuracoesSistema, setConfiguracoesSistema] = useState(() =>
+    loadConfiguracoesSistema(),
+  );
+  useEffect(() => {
+    void loadConfiguracoesSistemaFromApi()
+      .then(setConfiguracoesSistema)
+      .catch((loadError) => console.error('Erro ao carregar cupons de serviços:', loadError));
+  }, []);
   const cupons = useMemo(() => {
     if (!currentUser?.id) return [];
     return getCuponsDescontoServicosAtivos(configuracoesSistema).filter((cupom) =>

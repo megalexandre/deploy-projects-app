@@ -1,0 +1,341 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/admin/components/UserFormModal.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { Eye, EyeSlash, X } from "/node_modules/.vite/deps/@phosphor-icons_react.js?v=725e42e2";
+import { Button } from "/src/shared/components/Button.tsx";
+export const UserFormModal = ({
+  form,
+  editingUserId,
+  saving,
+  showPassword,
+  showPasswordConfirmation,
+  onFormChange,
+  onTogglePassword,
+  onTogglePasswordConfirmation,
+  onSubmit,
+  onClose
+}) => /* @__PURE__ */ jsxDEV("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm", children: /* @__PURE__ */ jsxDEV("div", { className: "w-full max-w-xl rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl", children: [
+  /* @__PURE__ */ jsxDEV("div", { className: "flex items-start justify-between gap-4", children: [
+    /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV("h2", { className: "text-xl font-semibold text-slate-100", children: editingUserId ? "Editar Usuário" : "Novo Usuário" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 35,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("p", { className: "mt-1 text-sm text-slate-400", children: editingUserId ? "Atualize os dados básicos do usuário." : "Cadastro enviado para POST /auth/register." }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 38,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+      lineNumber: 34,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(
+      "button",
+      {
+        type: "button",
+        className: "rounded-lg border border-white/10 p-2 text-slate-300 hover:bg-slate-800",
+        onClick: onClose,
+        children: /* @__PURE__ */ jsxDEV(X, { className: "h-4 w-4" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 49,
+          columnNumber: 11
+        }, this)
+      },
+      void 0,
+      false,
+      {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 44,
+        columnNumber: 9
+      },
+      this
+    )
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+    lineNumber: 33,
+    columnNumber: 7
+  }, this),
+  /* @__PURE__ */ jsxDEV("form", { onSubmit, className: "mt-6 space-y-4", children: [
+    /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm text-slate-300", children: "Nome" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 55,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        "input",
+        {
+          value: form.name,
+          onChange: (event) => onFormChange((current) => ({ ...current, name: event.target.value })),
+          className: "w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 56,
+          columnNumber: 11
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+      lineNumber: 54,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm text-slate-300", children: "E-mail" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 66,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        "input",
+        {
+          type: "email",
+          value: form.email,
+          onChange: (event) => onFormChange((current) => ({ ...current, email: event.target.value })),
+          className: "w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 67,
+          columnNumber: 11
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+      lineNumber: 65,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm text-slate-300", children: "Perfil" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 78,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        "select",
+        {
+          value: form.role,
+          onChange: (event) => onFormChange((current) => ({ ...current, role: event.target.value })),
+          className: "w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue",
+          children: [
+            /* @__PURE__ */ jsxDEV("option", { value: "user", children: "Usuário" }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+              lineNumber: 86,
+              columnNumber: 13
+            }, this),
+            /* @__PURE__ */ jsxDEV("option", { value: "main", children: "Main" }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+              lineNumber: 87,
+              columnNumber: 13
+            }, this)
+          ]
+        },
+        void 0,
+        true,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 79,
+          columnNumber: 11
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+      lineNumber: 77,
+      columnNumber: 9
+    }, this),
+    !editingUserId && /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-1 gap-4 md:grid-cols-2", children: [
+      /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm text-slate-300", children: "Senha" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 94,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "relative", children: [
+          /* @__PURE__ */ jsxDEV(
+            "input",
+            {
+              type: showPassword ? "text" : "password",
+              value: form.password,
+              onChange: (event) => onFormChange((current) => ({ ...current, password: event.target.value })),
+              className: "password-visibility-input w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 pr-12 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+            },
+            void 0,
+            false,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+              lineNumber: 96,
+              columnNumber: 17
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "button",
+            {
+              type: "button",
+              onClick: onTogglePassword,
+              className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 transition hover:text-white",
+              "aria-label": showPassword ? "Ocultar senha" : "Mostrar senha",
+              children: showPassword ? /* @__PURE__ */ jsxDEV(EyeSlash, { className: "h-5 w-5" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+                lineNumber: 110,
+                columnNumber: 35
+              }, this) : /* @__PURE__ */ jsxDEV(Eye, { className: "h-5 w-5" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+                lineNumber: 110,
+                columnNumber: 70
+              }, this)
+            },
+            void 0,
+            false,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+              lineNumber: 104,
+              columnNumber: 17
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 95,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 93,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "mb-2 block text-sm text-slate-300", children: "Confirmar senha" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 116,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "relative", children: [
+          /* @__PURE__ */ jsxDEV(
+            "input",
+            {
+              type: showPasswordConfirmation ? "text" : "password",
+              value: form.passwordConfirmation,
+              onChange: (event) => onFormChange((current) => ({
+                ...current,
+                passwordConfirmation: event.target.value
+              })),
+              className: "password-visibility-input w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 pr-12 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
+            },
+            void 0,
+            false,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+              lineNumber: 118,
+              columnNumber: 17
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "button",
+            {
+              type: "button",
+              onClick: onTogglePasswordConfirmation,
+              className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 transition hover:text-white",
+              "aria-label": showPasswordConfirmation ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha",
+              children: showPasswordConfirmation ? /* @__PURE__ */ jsxDEV(EyeSlash, { className: "h-5 w-5" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+                lineNumber: 140,
+                columnNumber: 15
+              }, this) : /* @__PURE__ */ jsxDEV(Eye, { className: "h-5 w-5" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+                lineNumber: 142,
+                columnNumber: 15
+              }, this)
+            },
+            void 0,
+            false,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+              lineNumber: 129,
+              columnNumber: 17
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+          lineNumber: 117,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 115,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+      lineNumber: 92,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "flex justify-end gap-3 pt-2", children: [
+      /* @__PURE__ */ jsxDEV(Button, { type: "button", variant: "outline", onClick: onClose, children: "Cancelar" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 151,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(Button, { type: "submit", loading: saving, children: editingUserId ? "Salvar alterações" : "Criar usuário" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+        lineNumber: 154,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+      lineNumber: 150,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+    lineNumber: 53,
+    columnNumber: 7
+  }, this)
+] }, void 0, true, {
+  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+  lineNumber: 32,
+  columnNumber: 5
+}, this) }, void 0, false, {
+  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx",
+  lineNumber: 31,
+  columnNumber: 1
+}, this);
+_c = UserFormModal;
+var _c;
+$RefreshReg$(_c, "UserFormModal");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/admin/components/UserFormModal.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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RCwwQkFBZ0Isc0JBQXNCLG1CQUR6QztBQUFBO0FBQUE7QUFBQTtBQUFBLGFBRUE7QUFBQSxTQU5GO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FPQTtBQUFBLE9BeEdGO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0F5R0E7QUFBQSxLQTlIRjtBQUFBO0FBQUE7QUFBQTtBQUFBLE9BK0hBLEtBaElGO0FBQUE7QUFBQTtBQUFBO0FBQUEsT0FpSUE7QUFDQWtCLEtBOUlXcEI7QUFBOEIsSUFBQW9CO0FBQUEsYUFBQUEsSUFBQSIsIm5hbWVzIjpbIlJlYWN0IiwiRXllIiwiRXllU2xhc2giLCJYIiwiQnV0dG9uIiwiVXNlckZvcm1Nb2RhbCIsImZvcm0iLCJlZGl0aW5nVXNlcklkIiwic2F2aW5nIiwic2hvd1Bhc3N3b3JkIiwic2hvd1Bhc3N3b3JkQ29uZmlybWF0aW9uIiwib25Gb3JtQ2hhbmdlIiwib25Ub2dnbGVQYXNzd29yZCIsIm9uVG9nZ2xlUGFzc3dvcmRDb25maXJtYXRpb24iLCJvblN1Ym1pdCIsIm9uQ2xvc2UiLCJuYW1lIiwiZXZlbnQiLCJjdXJyZW50IiwidGFyZ2V0IiwidmFsdWUiLCJlbWFpbCIsInJvbGUiLCJwYXNzd29yZCIsInBhc3N3b3JkQ29uZmlybWF0aW9uIiwiX2MiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiVXNlckZvcm1Nb2RhbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JztcbmltcG9ydCB7IEV5ZSwgRXllU2xhc2gsIFggfSBmcm9tICdAcGhvc3Bob3ItaWNvbnMvcmVhY3QnO1xuaW1wb3J0IHsgQnV0dG9uIH0gZnJvbSAnQC9zaGFyZWQvY29tcG9uZW50cy9CdXR0b24nO1xuaW1wb3J0IHR5cGUgeyBVc2VyRm9ybSB9IGZyb20gJy4uL2hvb2tzL3VzZVVzZXJzJztcblxudHlwZSBQcm9wcyA9IHtcbiAgZm9ybTogVXNlckZvcm07XG4gIGVkaXRpbmdVc2VySWQ6IHN0cmluZyB8IG51bGw7XG4gIHNhdmluZzogYm9vbGVhbjtcbiAgc2hvd1Bhc3N3b3JkOiBib29sZWFuO1xuICBzaG93UGFzc3dvcmRDb25maXJtYXRpb246IGJvb2xlYW47XG4gIG9uRm9ybUNoYW5nZTogKHVwZGF0ZXI6IChjdXJyZW50OiBVc2VyRm9ybSkgPT4gVXNlckZvcm0pID0+IHZvaWQ7XG4gIG9uVG9nZ2xlUGFzc3dvcmQ6ICgpID0+IHZvaWQ7XG4gIG9uVG9nZ2xlUGFzc3dvcmRDb25maXJtYXRpb246ICgpID0+IHZvaWQ7XG4gIG9uU3VibWl0OiAoZXZlbnQ6IFJlYWN0LkZvcm1FdmVudCkgPT4gdm9pZDtcbiAgb25DbG9zZTogKCkgPT4gdm9pZDtcbn07XG5cbmV4cG9ydCBjb25zdCBVc2VyRm9ybU1vZGFsOiBSZWFjdC5GQzxQcm9wcz4gPSAoe1xuICBmb3JtLFxuICBlZGl0aW5nVXNlcklkLFxuICBzYXZpbmcsXG4gIHNob3dQYXNzd29yZCxcbiAgc2hvd1Bhc3N3b3JkQ29uZmlybWF0aW9uLFxuICBvbkZvcm1DaGFuZ2UsXG4gIG9uVG9nZ2xlUGFzc3dvcmQsXG4gIG9uVG9nZ2xlUGFzc3dvcmRDb25maXJtYXRpb24sXG4gIG9uU3VibWl0LFxuICBvbkNsb3NlLFxufSkgPT4gKFxuICA8ZGl2IGNsYXNzTmFtZT1cImZpeGVkIGluc2V0LTAgei01MCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBiZy1zbGF0ZS05NTAvNzAgcC00IGJhY2tkcm9wLWJsdXItc21cIj5cbiAgICA8ZGl2IGNsYXNzTmFtZT1cInctZnVsbCBtYXgtdy14bCByb3VuZGVkLTJ4bCBib3JkZXIgYm9yZGVyLXdoaXRlLzEwIGJnLXNsYXRlLTkwMCBwLTYgc2hhZG93LTJ4bFwiPlxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLXN0YXJ0IGp1c3RpZnktYmV0d2VlbiBnYXAtNFwiPlxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJ0ZXh0LXhsIGZvbnQtc2VtaWJvbGQgdGV4dC1zbGF0ZS0xMDBcIj5cbiAgICAgICAgICAgIHtlZGl0aW5nVXNlcklkID8gJ0VkaXRhciBVc3XDoXJpbycgOiAnTm92byBVc3XDoXJpbyd9XG4gICAgICAgICAgPC9oMj5cbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJtdC0xIHRleHQtc20gdGV4dC1zbGF0ZS00MDBcIj5cbiAgICAgICAgICAgIHtlZGl0aW5nVXNlcklkXG4gICAgICAgICAgICAgID8gJ0F0dWFsaXplIG9zIGRhZG9zIGLDoXNpY29zIGRvIHVzdcOhcmlvLidcbiAgICAgICAgICAgICAgOiAnQ2FkYXN0cm8gZW52aWFkbyBwYXJhIFBPU1QgL2F1dGgvcmVnaXN0ZXIuJ31cbiAgICAgICAgICA8L3A+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgY2xhc3NOYW1lPVwicm91bmRlZC1sZyBib3JkZXIgYm9yZGVyLXdoaXRlLzEwIHAtMiB0ZXh0LXNsYXRlLTMwMCBob3ZlcjpiZy1zbGF0ZS04MDBcIlxuICAgICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgID5cbiAgICAgICAgICA8WCBjbGFzc05hbWU9XCJoLTQgdy00XCIgLz5cbiAgICAgICAgPC9idXR0b24+XG4gICAgICA8L2Rpdj5cblxuICAgICAgPGZvcm0gb25TdWJtaXQ9e29uU3VibWl0fSBjbGFzc05hbWU9XCJtdC02IHNwYWNlLXktNFwiPlxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJtYi0yIGJsb2NrIHRleHQtc20gdGV4dC1zbGF0ZS0zMDBcIj5Ob21lPC9sYWJlbD5cbiAgICAgICAgICA8aW5wdXRcbiAgICAgICAgICAgIHZhbHVlPXtmb3JtLm5hbWV9XG4gICAgICAgICAgICBvbkNoYW5nZT17KGV2ZW50KSA9PlxuICAgICAgICAgICAgICBvbkZvcm1DaGFuZ2UoKGN1cnJlbnQpID0+ICh7IC4uLmN1cnJlbnQsIG5hbWU6IGV2ZW50LnRhcmdldC52YWx1ZSB9KSlcbiAgICAgICAgICAgIH1cbiAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCByb3VuZGVkIGJvcmRlciBib3JkZXItZ3JheS02MDAgYmctZ3JheS04MDAgcHgtMyBweS0zIHRleHQtZ3JheS0xMDAgZm9jdXM6b3V0bGluZS1ub25lIGZvY3VzOnJpbmctMiBmb2N1czpyaW5nLW9wai1ibHVlXCJcbiAgICAgICAgICAvPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJtYi0yIGJsb2NrIHRleHQtc20gdGV4dC1zbGF0ZS0zMDBcIj5FLW1haWw8L2xhYmVsPlxuICAgICAgICAgIDxpbnB1dFxuICAgICAgICAgICAgdHlwZT1cImVtYWlsXCJcbiAgICAgICAgICAgIHZhbHVlPXtmb3JtLmVtYWlsfVxuICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT5cbiAgICAgICAgICAgICAgb25Gb3JtQ2hhbmdlKChjdXJyZW50KSA9PiAoeyAuLi5jdXJyZW50LCBlbWFpbDogZXZlbnQudGFyZ2V0LnZhbHVlIH0pKVxuICAgICAgICAgICAgfVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHJvdW5kZWQgYm9yZGVyIGJvcmRlci1ncmF5LTYwMCBiZy1ncmF5LTgwMCBweC0zIHB5LTMgdGV4dC1ncmF5LTEwMCBmb2N1czpvdXRsaW5lLW5vbmUgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctb3BqLWJsdWVcIlxuICAgICAgICAgIC8+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIDxkaXY+XG4gICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cIm1iLTIgYmxvY2sgdGV4dC1zbSB0ZXh0LXNsYXRlLTMwMFwiPlBlcmZpbDwvbGFiZWw+XG4gICAgICAgICAgPHNlbGVjdFxuICAgICAgICAgICAgdmFsdWU9e2Zvcm0ucm9sZX1cbiAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+XG4gICAgICAgICAgICAgIG9uRm9ybUNoYW5nZSgoY3VycmVudCkgPT4gKHsgLi4uY3VycmVudCwgcm9sZTogZXZlbnQudGFyZ2V0LnZhbHVlIH0pKVxuICAgICAgICAgICAgfVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHJvdW5kZWQgYm9yZGVyIGJvcmRlci1ncmF5LTYwMCBiZy1ncmF5LTgwMCBweC0zIHB5LTMgdGV4dC1ncmF5LTEwMCBmb2N1czpvdXRsaW5lLW5vbmUgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctb3BqLWJsdWVcIlxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJ1c2VyXCI+VXN1w6FyaW88L29wdGlvbj5cbiAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJtYWluXCI+TWFpbjwvb3B0aW9uPlxuICAgICAgICAgIDwvc2VsZWN0PlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7IWVkaXRpbmdVc2VySWQgJiYgKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBncmlkLWNvbHMtMSBnYXAtNCBtZDpncmlkLWNvbHMtMlwiPlxuICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cIm1iLTIgYmxvY2sgdGV4dC1zbSB0ZXh0LXNsYXRlLTMwMFwiPlNlbmhhPC9sYWJlbD5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJyZWxhdGl2ZVwiPlxuICAgICAgICAgICAgICAgIDxpbnB1dFxuICAgICAgICAgICAgICAgICAgdHlwZT17c2hvd1Bhc3N3b3JkID8gJ3RleHQnIDogJ3Bhc3N3b3JkJ31cbiAgICAgICAgICAgICAgICAgIHZhbHVlPXtmb3JtLnBhc3N3b3JkfVxuICAgICAgICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT5cbiAgICAgICAgICAgICAgICAgICAgb25Gb3JtQ2hhbmdlKChjdXJyZW50KSA9PiAoeyAuLi5jdXJyZW50LCBwYXNzd29yZDogZXZlbnQudGFyZ2V0LnZhbHVlIH0pKVxuICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwicGFzc3dvcmQtdmlzaWJpbGl0eS1pbnB1dCB3LWZ1bGwgcm91bmRlZCBib3JkZXIgYm9yZGVyLWdyYXktNjAwIGJnLWdyYXktODAwIHB4LTMgcHktMyBwci0xMiB0ZXh0LWdyYXktMTAwIGZvY3VzOm91dGxpbmUtbm9uZSBmb2N1czpyaW5nLTIgZm9jdXM6cmluZy1vcGotYmx1ZVwiXG4gICAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcbiAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9e29uVG9nZ2xlUGFzc3dvcmR9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJhYnNvbHV0ZSByaWdodC0zIHRvcC0xLzIgLXRyYW5zbGF0ZS15LTEvMiB0ZXh0LXNsYXRlLTMwMCB0cmFuc2l0aW9uIGhvdmVyOnRleHQtd2hpdGVcIlxuICAgICAgICAgICAgICAgICAgYXJpYS1sYWJlbD17c2hvd1Bhc3N3b3JkID8gJ09jdWx0YXIgc2VuaGEnIDogJ01vc3RyYXIgc2VuaGEnfVxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIHtzaG93UGFzc3dvcmQgPyA8RXllU2xhc2ggY2xhc3NOYW1lPVwiaC01IHctNVwiIC8+IDogPEV5ZSBjbGFzc05hbWU9XCJoLTUgdy01XCIgLz59XG4gICAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJtYi0yIGJsb2NrIHRleHQtc20gdGV4dC1zbGF0ZS0zMDBcIj5Db25maXJtYXIgc2VuaGE8L2xhYmVsPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlXCI+XG4gICAgICAgICAgICAgICAgPGlucHV0XG4gICAgICAgICAgICAgICAgICB0eXBlPXtzaG93UGFzc3dvcmRDb25maXJtYXRpb24gPyAndGV4dCcgOiAncGFzc3dvcmQnfVxuICAgICAgICAgICAgICAgICAgdmFsdWU9e2Zvcm0ucGFzc3dvcmRDb25maXJtYXRpb259XG4gICAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGV2ZW50KSA9PlxuICAgICAgICAgICAgICAgICAgICBvbkZvcm1DaGFuZ2UoKGN1cnJlbnQpID0+ICh7XG4gICAgICAgICAgICAgICAgICAgICAgLi4uY3VycmVudCxcbiAgICAgICAgICAgICAgICAgICAgICBwYXNzd29yZENvbmZpcm1hdGlvbjogZXZlbnQudGFyZ2V0LnZhbHVlLFxuICAgICAgICAgICAgICAgICAgICB9KSlcbiAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInBhc3N3b3JkLXZpc2liaWxpdHktaW5wdXQgdy1mdWxsIHJvdW5kZWQgYm9yZGVyIGJvcmRlci1ncmF5LTYwMCBiZy1ncmF5LTgwMCBweC0zIHB5LTMgcHItMTIgdGV4dC1ncmF5LTEwMCBmb2N1czpvdXRsaW5lLW5vbmUgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctb3BqLWJsdWVcIlxuICAgICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgICAgICBvbkNsaWNrPXtvblRvZ2dsZVBhc3N3b3JkQ29uZmlybWF0aW9ufVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYWJzb2x1dGUgcmlnaHQtMyB0b3AtMS8yIC10cmFuc2xhdGUteS0xLzIgdGV4dC1zbGF0ZS0zMDAgdHJhbnNpdGlvbiBob3Zlcjp0ZXh0LXdoaXRlXCJcbiAgICAgICAgICAgICAgICAgIGFyaWEtbGFiZWw9e1xuICAgICAgICAgICAgICAgICAgICBzaG93UGFzc3dvcmRDb25maXJtYXRpb25cbiAgICAgICAgICAgICAgICAgICAgICA/ICdPY3VsdGFyIGNvbmZpcm1hw6fDo28gZGUgc2VuaGEnXG4gICAgICAgICAgICAgICAgICAgICAgOiAnTW9zdHJhciBjb25maXJtYcOnw6NvIGRlIHNlbmhhJ1xuICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIHtzaG93UGFzc3dvcmRDb25maXJtYXRpb24gPyAoXG4gICAgICAgICAgICAgICAgICAgIDxFeWVTbGFzaCBjbGFzc05hbWU9XCJoLTUgdy01XCIgLz5cbiAgICAgICAgICAgICAgICAgICkgOiAoXG4gICAgICAgICAgICAgICAgICAgIDxFeWUgY2xhc3NOYW1lPVwiaC01IHctNVwiIC8+XG4gICAgICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBqdXN0aWZ5LWVuZCBnYXAtMyBwdC0yXCI+XG4gICAgICAgICAgPEJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgdmFyaWFudD1cIm91dGxpbmVcIiBvbkNsaWNrPXtvbkNsb3NlfT5cbiAgICAgICAgICAgIENhbmNlbGFyXG4gICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgPEJ1dHRvbiB0eXBlPVwic3VibWl0XCIgbG9hZGluZz17c2F2aW5nfT5cbiAgICAgICAgICAgIHtlZGl0aW5nVXNlcklkID8gJ1NhbHZhciBhbHRlcmHDp8O1ZXMnIDogJ0NyaWFyIHVzdcOhcmlvJ31cbiAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Zvcm0+XG4gICAgPC9kaXY+XG4gIDwvZGl2PlxuKTtcbiJdLCJmaWxlIjoiQTovd29ya3NwYWNlL25vdmEgYXR0L2RlcGxveS1wcm9qZWN0cy1hcHAvc3JjL2ZlYXR1cmVzL2FkbWluL2NvbXBvbmVudHMvVXNlckZvcm1Nb2RhbC50c3gifQ==

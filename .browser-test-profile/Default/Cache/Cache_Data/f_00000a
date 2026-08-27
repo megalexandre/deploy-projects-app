@@ -1,0 +1,323 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/projects/pages/ProjetosPage.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { formatCurrencyBRL } from "/src/core/utils/masks.ts";
+import { ErrorAlert } from "/src/shared/components/ErrorAlert.tsx";
+import { LoadingSpinner } from "/src/shared/components/LoadingSpinner.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "/src/shared/components/Card.tsx";
+import { ProjetosPageHeader } from "/src/features/projects/components/ProjectPageHeader.tsx";
+import { ProjetosFilter } from "/src/features/projects/components/ProjectFilter.tsx";
+import { KanbanColumn } from "/src/features/projects/components/KanbanColumn.tsx";
+import { StatusChangeDialog } from "/src/features/projects/components/StatusChangeDialog.tsx";
+import { useProjetosKanban } from "/src/features/projects/hooks/useProjetosKanban.ts";
+export const ProjetosPage = () => {
+  _s();
+  const {
+    loading,
+    error,
+    searchTerm,
+    statusFilter,
+    userFilter,
+    userOptions,
+    filteredProjetos,
+    groupedProjetos,
+    visibleColumns,
+    stats,
+    draggedId,
+    pendingStatusChange,
+    statusComment,
+    statusStartDate,
+    statusDurationDays,
+    updatingStatus,
+    containerRef,
+    isDragging,
+    dragBindings,
+    setSearchTerm,
+    setStatusFilter,
+    setUserFilter,
+    setStatusComment,
+    setStatusStartDate,
+    setStatusDurationDays,
+    setDraggedId,
+    openStatusDialog,
+    confirmStatusChange,
+    cancelStatusChange,
+    handleDrop,
+    handleDragStart,
+    handleProjectUpdated
+  } = useProjetosKanban();
+  if (loading) {
+    return /* @__PURE__ */ jsxDEV(LoadingSpinner, {}, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+      lineNumber: 49,
+      columnNumber: 12
+    }, this);
+  }
+  return /* @__PURE__ */ jsxDEV("div", { className: "space-y-6 page-enter", children: [
+    /* @__PURE__ */ jsxDEV(ProjetosPageHeader, {}, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+      lineNumber: 54,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-1 gap-4 md:grid-cols-4", children: [
+      /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-5", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "text-xs uppercase tracking-[0.18em] text-slate-400", children: "Projetos" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 59,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "mt-2 text-3xl font-semibold text-slate-100", children: stats.total }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 60,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 58,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 57,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-5", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "text-xs uppercase tracking-[0.18em] text-slate-400", children: "Em Andamento" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 65,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "mt-2 text-3xl font-semibold text-slate-100", children: stats.abertas }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 66,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 64,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 63,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-5", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "text-xs uppercase tracking-[0.18em] text-slate-400", children: "Aprovados" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 71,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "mt-2 text-3xl font-semibold text-slate-100", children: stats.aprovados }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 72,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 70,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 69,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-5", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "text-xs uppercase tracking-[0.18em] text-slate-400", children: "Receita prevista" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 77,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "mt-2 text-2xl font-semibold text-slate-100", children: formatCurrencyBRL(stats.valor) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 80,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 76,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 75,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+      lineNumber: 56,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(
+      ProjetosFilter,
+      {
+        searchTerm,
+        statusFilter,
+        userFilter,
+        userOptions,
+        onSearchChange: setSearchTerm,
+        onStatusChange: setStatusFilter,
+        onUserChange: setUserFilter
+      },
+      void 0,
+      false,
+      {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 87,
+        columnNumber: 7
+      },
+      this
+    ),
+    error && /* @__PURE__ */ jsxDEV(ErrorAlert, { message: error }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+      lineNumber: 97,
+      columnNumber: 17
+    }, this),
+    /* @__PURE__ */ jsxDEV(Card, { padding: "none", children: [
+      /* @__PURE__ */ jsxDEV(CardHeader, { className: "mb-0 px-6 pb-4 pt-6", children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between gap-4", children: [
+        /* @__PURE__ */ jsxDEV("div", { children: [
+          /* @__PURE__ */ jsxDEV(CardTitle, { children: "Pipeline de Projetos" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+            lineNumber: 103,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("p", { className: "mt-1 text-sm text-slate-400", children: "Arraste lateralmente para navegar pelas colunas do kanban." }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+            lineNumber: 104,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 102,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "rounded-full border border-white/10 bg-slate-950/70 px-3 py-1 text-xs text-slate-300", children: [
+          filteredProjetos.length,
+          " projeto(s)"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 108,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 101,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 100,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(CardContent, { className: "px-6 pb-6", children: /* @__PURE__ */ jsxDEV(
+        "div",
+        {
+          ref: containerRef,
+          className: [
+            "hide-scrollbar overflow-x-auto pb-2",
+            "touch-pan-y select-none",
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          ].join(" "),
+          ...dragBindings,
+          children: /* @__PURE__ */ jsxDEV("div", { className: "flex min-w-max snap-x snap-mandatory items-start gap-4", children: visibleColumns.map(
+            (column) => /* @__PURE__ */ jsxDEV(
+              KanbanColumn,
+              {
+                column,
+                projetos: groupedProjetos[column.id],
+                draggedId,
+                onDragStart: handleDragStart,
+                onDragEnd: () => setDraggedId(null),
+                onDrop: handleDrop,
+                onStatusChange: openStatusDialog,
+                onProjectUpdated: handleProjectUpdated
+              },
+              column.id,
+              false,
+              {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+                lineNumber: 126,
+                columnNumber: 15
+              },
+              this
+            )
+          ) }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+            lineNumber: 124,
+            columnNumber: 13
+          }, this)
+        },
+        void 0,
+        false,
+        {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+          lineNumber: 115,
+          columnNumber: 11
+        },
+        this
+      ) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 114,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+      lineNumber: 99,
+      columnNumber: 7
+    }, this),
+    pendingStatusChange && /* @__PURE__ */ jsxDEV(
+      StatusChangeDialog,
+      {
+        pendingStatusChange,
+        statusComment,
+        statusStartDate,
+        statusDurationDays,
+        updatingStatus,
+        onCommentChange: setStatusComment,
+        onStartDateChange: setStatusStartDate,
+        onDurationDaysChange: setStatusDurationDays,
+        onConfirm: () => void confirmStatusChange(),
+        onCancel: cancelStatusChange
+      },
+      void 0,
+      false,
+      {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+        lineNumber: 144,
+        columnNumber: 7
+      },
+      this
+    )
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx",
+    lineNumber: 53,
+    columnNumber: 5
+  }, this);
+};
+_s(ProjetosPage, "Ft1G+EJIMbqi5svrhUC0pelIjW8=", false, function() {
+  return [useProjetosKanban];
+});
+_c = ProjetosPage;
+var _c;
+$RefreshReg$(_c, "ProjetosPage");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/projects/pages/ProjetosPage.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBZ0RXOztBQWhEWCxPQUFPQSxXQUFXO0FBQ2xCLFNBQVNDLHlCQUF5QjtBQUNsQyxTQUFTQyxrQkFBa0I7QUFDM0IsU0FBU0Msc0JBQXNCO0FBQy9CLFNBQVNDLE1BQU1DLGFBQWFDLFlBQVlDLGlCQUFpQjtBQUN6RCxTQUFTQywwQkFBMEI7QUFDbkMsU0FBU0Msc0JBQXNCO0FBQy9CLFNBQVNDLG9CQUFvQjtBQUM3QixTQUFTQywwQkFBMEI7QUFDbkMsU0FBU0MseUJBQXlCO0FBRTNCLGFBQU1DLGVBQXlCQSxNQUFNO0FBQUFDLEtBQUE7QUFDMUMsUUFBTTtBQUFBLElBQ0pDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLElBQ0FDO0FBQUFBLEVBQ0YsSUFBSWxDLGtCQUFrQjtBQUV0QixNQUFJRyxTQUFTO0FBQ1gsV0FBTyx1QkFBQyxvQkFBRDtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBQWU7QUFBQSxFQUN4QjtBQUVBLFNBQ0UsdUJBQUMsU0FBSSxXQUFVLHdCQUNiO0FBQUEsMkJBQUMsd0JBQUQ7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQUFtQjtBQUFBLElBRW5CLHVCQUFDLFNBQUksV0FBVSx5Q0FDYjtBQUFBLDZCQUFDLFFBQ0MsaUNBQUMsZUFBWSxXQUFVLE9BQ3JCO0FBQUEsK0JBQUMsU0FBSSxXQUFVLHNEQUFxRCx3QkFBcEU7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUE0RTtBQUFBLFFBQzVFLHVCQUFDLFNBQUksV0FBVSw4Q0FBOENTLGdCQUFNdUIsU0FBbkU7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUF5RTtBQUFBLFdBRjNFO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFHQSxLQUpGO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFLQTtBQUFBLE1BQ0EsdUJBQUMsUUFDQyxpQ0FBQyxlQUFZLFdBQVUsT0FDckI7QUFBQSwrQkFBQyxTQUFJLFdBQVUsc0RBQXFELDRCQUFwRTtBQUFBO0FBQUE7QUFBQTtBQUFBLGVBQWdGO0FBQUEsUUFDaEYsdUJBQUMsU0FBSSxXQUFVLDhDQUE4Q3ZCLGdCQUFNd0IsV0FBbkU7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUEyRTtBQUFBLFdBRjdFO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFHQSxLQUpGO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFLQTtBQUFBLE1BQ0EsdUJBQUMsUUFDQyxpQ0FBQyxlQUFZLFdBQVUsT0FDckI7QUFBQSwrQkFBQyxTQUFJLFdBQVUsc0RBQXFELHlCQUFwRTtBQUFBO0FBQUE7QUFBQTtBQUFBLGVBQTZFO0FBQUEsUUFDN0UsdUJBQUMsU0FBSSxXQUFVLDhDQUE4Q3hCLGdCQUFNeUIsYUFBbkU7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUE2RTtBQUFBLFdBRi9FO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFHQSxLQUpGO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFLQTtBQUFBLE1BQ0EsdUJBQUMsUUFDQyxpQ0FBQyxlQUFZLFdBQVUsT0FDckI7QUFBQSwrQkFBQyxTQUFJLFdBQVUsc0RBQW9ELGdDQUFuRTtBQUFBO0FBQUE7QUFBQTtBQUFBLGVBRUE7QUFBQSxRQUNBLHVCQUFDLFNBQUksV0FBVSw4Q0FDWmhELDRCQUFrQnVCLE1BQU0wQixLQUFLLEtBRGhDO0FBQUE7QUFBQTtBQUFBO0FBQUEsZUFFQTtBQUFBLFdBTkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQU9BLEtBUkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQVNBO0FBQUEsU0E1QkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQTZCQTtBQUFBLElBRUE7QUFBQSxNQUFDO0FBQUE7QUFBQSxRQUNDO0FBQUEsUUFDQTtBQUFBLFFBQ0E7QUFBQSxRQUNBO0FBQUEsUUFDQSxnQkFBZ0JoQjtBQUFBQSxRQUNoQixnQkFBZ0JDO0FBQUFBLFFBQ2hCLGNBQWNDO0FBQUFBO0FBQUFBLE1BUGhCO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxJQU84QjtBQUFBLElBRzdCcEIsU0FBUyx1QkFBQyxjQUFXLFNBQVNBLFNBQXJCO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FBMkI7QUFBQSxJQUVyQyx1QkFBQyxRQUFLLFNBQVEsUUFDWjtBQUFBLDZCQUFDLGNBQVcsV0FBVSx1QkFDcEIsaUNBQUMsU0FBSSxXQUFVLDJDQUNiO0FBQUEsK0JBQUMsU0FDQztBQUFBLGlDQUFDLGFBQVUsb0NBQVg7QUFBQTtBQUFBO0FBQUE7QUFBQSxpQkFBK0I7QUFBQSxVQUMvQix1QkFBQyxPQUFFLFdBQVUsK0JBQTZCLDBFQUExQztBQUFBO0FBQUE7QUFBQTtBQUFBLGlCQUVBO0FBQUEsYUFKRjtBQUFBO0FBQUE7QUFBQTtBQUFBLGVBS0E7QUFBQSxRQUNBLHVCQUFDLFVBQUssV0FBVSx3RkFDYks7QUFBQUEsMkJBQWlCOEI7QUFBQUEsVUFBTztBQUFBLGFBRDNCO0FBQUE7QUFBQTtBQUFBO0FBQUEsZUFFQTtBQUFBLFdBVEY7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQVVBLEtBWEY7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQVlBO0FBQUEsTUFFQSx1QkFBQyxlQUFZLFdBQVUsYUFDckI7QUFBQSxRQUFDO0FBQUE7QUFBQSxVQUNDLEtBQUtwQjtBQUFBQSxVQUNMLFdBQVc7QUFBQSxZQUNUO0FBQUEsWUFDQTtBQUFBLFlBQ0FDLGFBQWEsb0JBQW9CO0FBQUEsVUFBYSxFQUM5Q29CLEtBQUssR0FBRztBQUFBLFVBQ1YsR0FBSW5CO0FBQUFBLFVBRUosaUNBQUMsU0FBSSxXQUFVLDBEQUNaVix5QkFBZThCO0FBQUFBLFlBQUksQ0FBQ0MsV0FDbkI7QUFBQSxjQUFDO0FBQUE7QUFBQSxnQkFFQztBQUFBLGdCQUNBLFVBQVVoQyxnQkFBZ0JnQyxPQUFPQyxFQUFFO0FBQUEsZ0JBQ25DO0FBQUEsZ0JBQ0EsYUFBYVY7QUFBQUEsZ0JBQ2IsV0FBVyxNQUFNTCxhQUFhLElBQUk7QUFBQSxnQkFDbEMsUUFBUUk7QUFBQUEsZ0JBQ1IsZ0JBQWdCSDtBQUFBQSxnQkFDaEIsa0JBQWtCSztBQUFBQTtBQUFBQSxjQVJiUSxPQUFPQztBQUFBQSxjQURkO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsWUFTeUM7QUFBQSxVQUUxQyxLQWJIO0FBQUE7QUFBQTtBQUFBO0FBQUEsaUJBY0E7QUFBQTtBQUFBLFFBdkJGO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxNQXdCQSxLQXpCRjtBQUFBO0FBQUE7QUFBQTtBQUFBLGFBMEJBO0FBQUEsU0F6Q0Y7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQTBDQTtBQUFBLElBRUM3Qix1QkFDQztBQUFBLE1BQUM7QUFBQTtBQUFBLFFBQ0M7QUFBQSxRQUNBO0FBQUEsUUFDQTtBQUFBLFFBQ0E7QUFBQSxRQUNBO0FBQUEsUUFDQSxpQkFBaUJXO0FBQUFBLFFBQ2pCLG1CQUFtQkM7QUFBQUEsUUFDbkIsc0JBQXNCQztBQUFBQSxRQUN0QixXQUFXLE1BQU0sS0FBS0csb0JBQW9CO0FBQUEsUUFDMUMsVUFBVUM7QUFBQUE7QUFBQUEsTUFWWjtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsSUFVK0I7QUFBQSxPQXJHbkM7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQXdHQTtBQUVKO0FBQUU3QixHQW5KV0QsY0FBc0I7QUFBQSxVQWtDN0JELGlCQUFpQjtBQUFBO0FBQUEsS0FsQ1ZDO0FBQXNCLElBQUEyQztBQUFBLGFBQUFBLElBQUEiLCJuYW1lcyI6WyJSZWFjdCIsImZvcm1hdEN1cnJlbmN5QlJMIiwiRXJyb3JBbGVydCIsIkxvYWRpbmdTcGlubmVyIiwiQ2FyZCIsIkNhcmRDb250ZW50IiwiQ2FyZEhlYWRlciIsIkNhcmRUaXRsZSIsIlByb2pldG9zUGFnZUhlYWRlciIsIlByb2pldG9zRmlsdGVyIiwiS2FuYmFuQ29sdW1uIiwiU3RhdHVzQ2hhbmdlRGlhbG9nIiwidXNlUHJvamV0b3NLYW5iYW4iLCJQcm9qZXRvc1BhZ2UiLCJfcyIsImxvYWRpbmciLCJlcnJvciIsInNlYXJjaFRlcm0iLCJzdGF0dXNGaWx0ZXIiLCJ1c2VyRmlsdGVyIiwidXNlck9wdGlvbnMiLCJmaWx0ZXJlZFByb2pldG9zIiwiZ3JvdXBlZFByb2pldG9zIiwidmlzaWJsZUNvbHVtbnMiLCJzdGF0cyIsImRyYWdnZWRJZCIsInBlbmRpbmdTdGF0dXNDaGFuZ2UiLCJzdGF0dXNDb21tZW50Iiwic3RhdHVzU3RhcnREYXRlIiwic3RhdHVzRHVyYXRpb25EYXlzIiwidXBkYXRpbmdTdGF0dXMiLCJjb250YWluZXJSZWYiLCJpc0RyYWdnaW5nIiwiZHJhZ0JpbmRpbmdzIiwic2V0U2VhcmNoVGVybSIsInNldFN0YXR1c0ZpbHRlciIsInNldFVzZXJGaWx0ZXIiLCJzZXRTdGF0dXNDb21tZW50Iiwic2V0U3RhdHVzU3RhcnREYXRlIiwic2V0U3RhdHVzRHVyYXRpb25EYXlzIiwic2V0RHJhZ2dlZElkIiwib3BlblN0YXR1c0RpYWxvZyIsImNvbmZpcm1TdGF0dXNDaGFuZ2UiLCJjYW5jZWxTdGF0dXNDaGFuZ2UiLCJoYW5kbGVEcm9wIiwiaGFuZGxlRHJhZ1N0YXJ0IiwiaGFuZGxlUHJvamVjdFVwZGF0ZWQiLCJ0b3RhbCIsImFiZXJ0YXMiLCJhcHJvdmFkb3MiLCJ2YWxvciIsImxlbmd0aCIsImpvaW4iLCJtYXAiLCJjb2x1bW4iLCJpZCIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIlByb2pldG9zUGFnZS50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JztcbmltcG9ydCB7IGZvcm1hdEN1cnJlbmN5QlJMIH0gZnJvbSAnQC9jb3JlL3V0aWxzL21hc2tzJztcbmltcG9ydCB7IEVycm9yQWxlcnQgfSBmcm9tICdAL3NoYXJlZC9jb21wb25lbnRzL0Vycm9yQWxlcnQnO1xuaW1wb3J0IHsgTG9hZGluZ1NwaW5uZXIgfSBmcm9tICdAL3NoYXJlZC9jb21wb25lbnRzL0xvYWRpbmdTcGlubmVyJztcbmltcG9ydCB7IENhcmQsIENhcmRDb250ZW50LCBDYXJkSGVhZGVyLCBDYXJkVGl0bGUgfSBmcm9tICdAL3NoYXJlZC9jb21wb25lbnRzL0NhcmQnO1xuaW1wb3J0IHsgUHJvamV0b3NQYWdlSGVhZGVyIH0gZnJvbSAnLi4vY29tcG9uZW50cy9Qcm9qZWN0UGFnZUhlYWRlcic7XG5pbXBvcnQgeyBQcm9qZXRvc0ZpbHRlciB9IGZyb20gJy4uL2NvbXBvbmVudHMvUHJvamVjdEZpbHRlcic7XG5pbXBvcnQgeyBLYW5iYW5Db2x1bW4gfSBmcm9tICcuLi9jb21wb25lbnRzL0thbmJhbkNvbHVtbic7XG5pbXBvcnQgeyBTdGF0dXNDaGFuZ2VEaWFsb2cgfSBmcm9tICcuLi9jb21wb25lbnRzL1N0YXR1c0NoYW5nZURpYWxvZyc7XG5pbXBvcnQgeyB1c2VQcm9qZXRvc0thbmJhbiB9IGZyb20gJy4uL2hvb2tzL3VzZVByb2pldG9zS2FuYmFuJztcblxuZXhwb3J0IGNvbnN0IFByb2pldG9zUGFnZTogUmVhY3QuRkMgPSAoKSA9PiB7XG4gIGNvbnN0IHtcbiAgICBsb2FkaW5nLFxuICAgIGVycm9yLFxuICAgIHNlYXJjaFRlcm0sXG4gICAgc3RhdHVzRmlsdGVyLFxuICAgIHVzZXJGaWx0ZXIsXG4gICAgdXNlck9wdGlvbnMsXG4gICAgZmlsdGVyZWRQcm9qZXRvcyxcbiAgICBncm91cGVkUHJvamV0b3MsXG4gICAgdmlzaWJsZUNvbHVtbnMsXG4gICAgc3RhdHMsXG4gICAgZHJhZ2dlZElkLFxuICAgIHBlbmRpbmdTdGF0dXNDaGFuZ2UsXG4gICAgc3RhdHVzQ29tbWVudCxcbiAgICBzdGF0dXNTdGFydERhdGUsXG4gICAgc3RhdHVzRHVyYXRpb25EYXlzLFxuICAgIHVwZGF0aW5nU3RhdHVzLFxuICAgIGNvbnRhaW5lclJlZixcbiAgICBpc0RyYWdnaW5nLFxuICAgIGRyYWdCaW5kaW5ncyxcbiAgICBzZXRTZWFyY2hUZXJtLFxuICAgIHNldFN0YXR1c0ZpbHRlcixcbiAgICBzZXRVc2VyRmlsdGVyLFxuICAgIHNldFN0YXR1c0NvbW1lbnQsXG4gICAgc2V0U3RhdHVzU3RhcnREYXRlLFxuICAgIHNldFN0YXR1c0R1cmF0aW9uRGF5cyxcbiAgICBzZXREcmFnZ2VkSWQsXG4gICAgb3BlblN0YXR1c0RpYWxvZyxcbiAgICBjb25maXJtU3RhdHVzQ2hhbmdlLFxuICAgIGNhbmNlbFN0YXR1c0NoYW5nZSxcbiAgICBoYW5kbGVEcm9wLFxuICAgIGhhbmRsZURyYWdTdGFydCxcbiAgICBoYW5kbGVQcm9qZWN0VXBkYXRlZCxcbiAgfSA9IHVzZVByb2pldG9zS2FuYmFuKCk7XG5cbiAgaWYgKGxvYWRpbmcpIHtcbiAgICByZXR1cm4gPExvYWRpbmdTcGlubmVyIC8+O1xuICB9XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktNiBwYWdlLWVudGVyXCI+XG4gICAgICA8UHJvamV0b3NQYWdlSGVhZGVyIC8+XG5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBncmlkLWNvbHMtMSBnYXAtNCBtZDpncmlkLWNvbHMtNFwiPlxuICAgICAgICA8Q2FyZD5cbiAgICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPVwicC01XCI+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRleHQteHMgdXBwZXJjYXNlIHRyYWNraW5nLVswLjE4ZW1dIHRleHQtc2xhdGUtNDAwXCI+UHJvamV0b3M8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtMiB0ZXh0LTN4bCBmb250LXNlbWlib2xkIHRleHQtc2xhdGUtMTAwXCI+e3N0YXRzLnRvdGFsfTwvZGl2PlxuICAgICAgICAgIDwvQ2FyZENvbnRlbnQ+XG4gICAgICAgIDwvQ2FyZD5cbiAgICAgICAgPENhcmQ+XG4gICAgICAgICAgPENhcmRDb250ZW50IGNsYXNzTmFtZT1cInAtNVwiPlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0ZXh0LXhzIHVwcGVyY2FzZSB0cmFja2luZy1bMC4xOGVtXSB0ZXh0LXNsYXRlLTQwMFwiPkVtIEFuZGFtZW50bzwvZGl2PlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJtdC0yIHRleHQtM3hsIGZvbnQtc2VtaWJvbGQgdGV4dC1zbGF0ZS0xMDBcIj57c3RhdHMuYWJlcnRhc308L2Rpdj5cbiAgICAgICAgICA8L0NhcmRDb250ZW50PlxuICAgICAgICA8L0NhcmQ+XG4gICAgICAgIDxDYXJkPlxuICAgICAgICAgIDxDYXJkQ29udGVudCBjbGFzc05hbWU9XCJwLTVcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGV4dC14cyB1cHBlcmNhc2UgdHJhY2tpbmctWzAuMThlbV0gdGV4dC1zbGF0ZS00MDBcIj5BcHJvdmFkb3M8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtMiB0ZXh0LTN4bCBmb250LXNlbWlib2xkIHRleHQtc2xhdGUtMTAwXCI+e3N0YXRzLmFwcm92YWRvc308L2Rpdj5cbiAgICAgICAgICA8L0NhcmRDb250ZW50PlxuICAgICAgICA8L0NhcmQ+XG4gICAgICAgIDxDYXJkPlxuICAgICAgICAgIDxDYXJkQ29udGVudCBjbGFzc05hbWU9XCJwLTVcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGV4dC14cyB1cHBlcmNhc2UgdHJhY2tpbmctWzAuMThlbV0gdGV4dC1zbGF0ZS00MDBcIj5cbiAgICAgICAgICAgICAgUmVjZWl0YSBwcmV2aXN0YVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm10LTIgdGV4dC0yeGwgZm9udC1zZW1pYm9sZCB0ZXh0LXNsYXRlLTEwMFwiPlxuICAgICAgICAgICAgICB7Zm9ybWF0Q3VycmVuY3lCUkwoc3RhdHMudmFsb3IpfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9DYXJkQ29udGVudD5cbiAgICAgICAgPC9DYXJkPlxuICAgICAgPC9kaXY+XG5cbiAgICAgIDxQcm9qZXRvc0ZpbHRlclxuICAgICAgICBzZWFyY2hUZXJtPXtzZWFyY2hUZXJtfVxuICAgICAgICBzdGF0dXNGaWx0ZXI9e3N0YXR1c0ZpbHRlcn1cbiAgICAgICAgdXNlckZpbHRlcj17dXNlckZpbHRlcn1cbiAgICAgICAgdXNlck9wdGlvbnM9e3VzZXJPcHRpb25zfVxuICAgICAgICBvblNlYXJjaENoYW5nZT17c2V0U2VhcmNoVGVybX1cbiAgICAgICAgb25TdGF0dXNDaGFuZ2U9e3NldFN0YXR1c0ZpbHRlcn1cbiAgICAgICAgb25Vc2VyQ2hhbmdlPXtzZXRVc2VyRmlsdGVyfVxuICAgICAgLz5cblxuICAgICAge2Vycm9yICYmIDxFcnJvckFsZXJ0IG1lc3NhZ2U9e2Vycm9yfSAvPn1cblxuICAgICAgPENhcmQgcGFkZGluZz1cIm5vbmVcIj5cbiAgICAgICAgPENhcmRIZWFkZXIgY2xhc3NOYW1lPVwibWItMCBweC02IHBiLTQgcHQtNlwiPlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIGdhcC00XCI+XG4gICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICA8Q2FyZFRpdGxlPlBpcGVsaW5lIGRlIFByb2pldG9zPC9DYXJkVGl0bGU+XG4gICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cIm10LTEgdGV4dC1zbSB0ZXh0LXNsYXRlLTQwMFwiPlxuICAgICAgICAgICAgICAgIEFycmFzdGUgbGF0ZXJhbG1lbnRlIHBhcmEgbmF2ZWdhciBwZWxhcyBjb2x1bmFzIGRvIGthbmJhbi5cbiAgICAgICAgICAgICAgPC9wPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJyb3VuZGVkLWZ1bGwgYm9yZGVyIGJvcmRlci13aGl0ZS8xMCBiZy1zbGF0ZS05NTAvNzAgcHgtMyBweS0xIHRleHQteHMgdGV4dC1zbGF0ZS0zMDBcIj5cbiAgICAgICAgICAgICAge2ZpbHRlcmVkUHJvamV0b3MubGVuZ3RofSBwcm9qZXRvKHMpXG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvQ2FyZEhlYWRlcj5cblxuICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPVwicHgtNiBwYi02XCI+XG4gICAgICAgICAgPGRpdlxuICAgICAgICAgICAgcmVmPXtjb250YWluZXJSZWZ9XG4gICAgICAgICAgICBjbGFzc05hbWU9e1tcbiAgICAgICAgICAgICAgJ2hpZGUtc2Nyb2xsYmFyIG92ZXJmbG93LXgtYXV0byBwYi0yJyxcbiAgICAgICAgICAgICAgJ3RvdWNoLXBhbi15IHNlbGVjdC1ub25lJyxcbiAgICAgICAgICAgICAgaXNEcmFnZ2luZyA/ICdjdXJzb3ItZ3JhYmJpbmcnIDogJ2N1cnNvci1ncmFiJyxcbiAgICAgICAgICAgIF0uam9pbignICcpfVxuICAgICAgICAgICAgey4uLmRyYWdCaW5kaW5nc31cbiAgICAgICAgICA+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggbWluLXctbWF4IHNuYXAteCBzbmFwLW1hbmRhdG9yeSBpdGVtcy1zdGFydCBnYXAtNFwiPlxuICAgICAgICAgICAgICB7dmlzaWJsZUNvbHVtbnMubWFwKChjb2x1bW4pID0+IChcbiAgICAgICAgICAgICAgICA8S2FuYmFuQ29sdW1uXG4gICAgICAgICAgICAgICAgICBrZXk9e2NvbHVtbi5pZH1cbiAgICAgICAgICAgICAgICAgIGNvbHVtbj17Y29sdW1ufVxuICAgICAgICAgICAgICAgICAgcHJvamV0b3M9e2dyb3VwZWRQcm9qZXRvc1tjb2x1bW4uaWRdfVxuICAgICAgICAgICAgICAgICAgZHJhZ2dlZElkPXtkcmFnZ2VkSWR9XG4gICAgICAgICAgICAgICAgICBvbkRyYWdTdGFydD17aGFuZGxlRHJhZ1N0YXJ0fVxuICAgICAgICAgICAgICAgICAgb25EcmFnRW5kPXsoKSA9PiBzZXREcmFnZ2VkSWQobnVsbCl9XG4gICAgICAgICAgICAgICAgICBvbkRyb3A9e2hhbmRsZURyb3B9XG4gICAgICAgICAgICAgICAgICBvblN0YXR1c0NoYW5nZT17b3BlblN0YXR1c0RpYWxvZ31cbiAgICAgICAgICAgICAgICAgIG9uUHJvamVjdFVwZGF0ZWQ9e2hhbmRsZVByb2plY3RVcGRhdGVkfVxuICAgICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgICkpfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvQ2FyZENvbnRlbnQ+XG4gICAgICA8L0NhcmQ+XG5cbiAgICAgIHtwZW5kaW5nU3RhdHVzQ2hhbmdlICYmIChcbiAgICAgICAgPFN0YXR1c0NoYW5nZURpYWxvZ1xuICAgICAgICAgIHBlbmRpbmdTdGF0dXNDaGFuZ2U9e3BlbmRpbmdTdGF0dXNDaGFuZ2V9XG4gICAgICAgICAgc3RhdHVzQ29tbWVudD17c3RhdHVzQ29tbWVudH1cbiAgICAgICAgICBzdGF0dXNTdGFydERhdGU9e3N0YXR1c1N0YXJ0RGF0ZX1cbiAgICAgICAgICBzdGF0dXNEdXJhdGlvbkRheXM9e3N0YXR1c0R1cmF0aW9uRGF5c31cbiAgICAgICAgICB1cGRhdGluZ1N0YXR1cz17dXBkYXRpbmdTdGF0dXN9XG4gICAgICAgICAgb25Db21tZW50Q2hhbmdlPXtzZXRTdGF0dXNDb21tZW50fVxuICAgICAgICAgIG9uU3RhcnREYXRlQ2hhbmdlPXtzZXRTdGF0dXNTdGFydERhdGV9XG4gICAgICAgICAgb25EdXJhdGlvbkRheXNDaGFuZ2U9e3NldFN0YXR1c0R1cmF0aW9uRGF5c31cbiAgICAgICAgICBvbkNvbmZpcm09eygpID0+IHZvaWQgY29uZmlybVN0YXR1c0NoYW5nZSgpfVxuICAgICAgICAgIG9uQ2FuY2VsPXtjYW5jZWxTdGF0dXNDaGFuZ2V9XG4gICAgICAgIC8+XG4gICAgICApfVxuICAgIDwvZGl2PlxuICApO1xufTtcbiJdLCJmaWxlIjoiQTovd29ya3NwYWNlL25vdmEgYXR0L2RlcGxveS1wcm9qZWN0cy1hcHAvc3JjL2ZlYXR1cmVzL3Byb2plY3RzL3BhZ2VzL1Byb2pldG9zUGFnZS50c3gifQ==

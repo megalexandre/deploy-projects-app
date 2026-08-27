@@ -1,0 +1,266 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/clientes/components/CustomerListCard.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { PencilSimple, UploadSimple } from "/node_modules/.vite/deps/@phosphor-icons_react.js?v=725e42e2";
+import { Button } from "/src/shared/components/Button.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "/src/shared/components/Card.tsx";
+import { formatDocumento, formatTelefone } from "/src/features/clientes/hooks/useClientes.ts";
+export const CustomerListCard = ({ customers, onEdit, onOpenDocuments }) => /* @__PURE__ */ jsxDEV(Card, { children: [
+  /* @__PURE__ */ jsxDEV(CardHeader, { children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between gap-4", children: [
+    /* @__PURE__ */ jsxDEV(CardTitle, { children: [
+      "Clientes Cadastrados (",
+      customers.length,
+      ")"
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+      lineNumber: 18,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("span", { className: "text-sm text-slate-400", children: "Visualizacao resumida com contato e localizacao." }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+      lineNumber: 19,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+    lineNumber: 17,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+    lineNumber: 16,
+    columnNumber: 5
+  }, this),
+  /* @__PURE__ */ jsxDEV(CardContent, { className: "p-0", children: /* @__PURE__ */ jsxDEV("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxDEV("table", { className: "min-w-full divide-y divide-white/10", children: [
+    /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { className: "text-left text-xs uppercase tracking-wide text-slate-400", children: [
+      /* @__PURE__ */ jsxDEV("th", { className: "px-4 py-3", children: "Cliente" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+        lineNumber: 29,
+        columnNumber: 15
+      }, this),
+      /* @__PURE__ */ jsxDEV("th", { className: "px-4 py-3", children: "Contato" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+        lineNumber: 30,
+        columnNumber: 15
+      }, this),
+      /* @__PURE__ */ jsxDEV("th", { className: "px-4 py-3", children: "Localizacao" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+        lineNumber: 31,
+        columnNumber: 15
+      }, this),
+      /* @__PURE__ */ jsxDEV("th", { className: "px-4 py-3 text-right", children: "Ações" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+        lineNumber: 32,
+        columnNumber: 15
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+      lineNumber: 28,
+      columnNumber: 13
+    }, this) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+      lineNumber: 27,
+      columnNumber: 11
+    }, this),
+    /* @__PURE__ */ jsxDEV("tbody", { className: "divide-y divide-white/5", children: [
+      customers.map(
+        (cliente) => /* @__PURE__ */ jsxDEV("tr", { className: "text-sm text-slate-200", children: [
+          /* @__PURE__ */ jsxDEV("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: "flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-sm font-semibold text-cyan-200", children: cliente.nome.slice(0, 1).toUpperCase() }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+              lineNumber: 40,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("div", { className: "font-medium text-slate-100", children: cliente.nome }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+                lineNumber: 44,
+                columnNumber: 23
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "text-xs text-slate-400", children: formatDocumento(cliente.cpfCnpj) }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+                lineNumber: 45,
+                columnNumber: 23
+              }, this)
+            ] }, void 0, true, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+              lineNumber: 43,
+              columnNumber: 21
+            }, this)
+          ] }, void 0, true, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 39,
+            columnNumber: 19
+          }, this) }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 38,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxDEV("div", { className: "space-y-1", children: [
+            /* @__PURE__ */ jsxDEV("div", { children: formatTelefone(cliente.telefone) }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+              lineNumber: 53,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: "text-xs text-slate-400", children: cliente.email }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+              lineNumber: 54,
+              columnNumber: 21
+            }, this)
+          ] }, void 0, true, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 52,
+            columnNumber: 19
+          }, this) }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 51,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxDEV("div", { className: "space-y-1", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: "font-medium text-slate-100", children: cliente.endereco?.cidade ? `${cliente.endereco.cidade}/${cliente.endereco.estado}` : "-" }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+              lineNumber: 59,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: "max-w-xs text-xs text-slate-400", children: cliente.enderecoCompleto || [
+              cliente.endereco?.logradouro,
+              cliente.endereco?.numero,
+              cliente.endereco?.bairro
+            ].filter(Boolean).join(", ") || "-" }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+              lineNumber: 64,
+              columnNumber: 21
+            }, this)
+          ] }, void 0, true, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 58,
+            columnNumber: 19
+          }, this) }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 57,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ jsxDEV("div", { className: "flex justify-end gap-2", children: [
+            /* @__PURE__ */ jsxDEV(
+              Button,
+              {
+                type: "button",
+                variant: "outline",
+                size: "sm",
+                onClick: () => void onOpenDocuments(cliente),
+                children: [
+                  /* @__PURE__ */ jsxDEV(UploadSimple, { className: "mr-2 h-4 w-4" }, void 0, false, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+                    lineNumber: 85,
+                    columnNumber: 23
+                  }, this),
+                  "Documentos"
+                ]
+              },
+              void 0,
+              true,
+              {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+                lineNumber: 79,
+                columnNumber: 21
+              },
+              this
+            ),
+            /* @__PURE__ */ jsxDEV(
+              Button,
+              {
+                type: "button",
+                variant: "outline",
+                size: "sm",
+                onClick: () => onEdit(cliente),
+                children: [
+                  /* @__PURE__ */ jsxDEV(PencilSimple, { className: "mr-2 h-4 w-4" }, void 0, false, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+                    lineNumber: 94,
+                    columnNumber: 23
+                  }, this),
+                  "Editar"
+                ]
+              },
+              void 0,
+              true,
+              {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+                lineNumber: 88,
+                columnNumber: 21
+              },
+              this
+            )
+          ] }, void 0, true, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 78,
+            columnNumber: 19
+          }, this) }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+            lineNumber: 77,
+            columnNumber: 17
+          }, this)
+        ] }, cliente.id, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+          lineNumber: 37,
+          columnNumber: 11
+        }, this)
+      ),
+      customers.length === 0 && /* @__PURE__ */ jsxDEV("tr", { children: /* @__PURE__ */ jsxDEV("td", { className: "px-4 py-6 text-center text-sm text-slate-400", colSpan: 6, children: "Nenhum cliente encontrado." }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+        lineNumber: 103,
+        columnNumber: 17
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+        lineNumber: 102,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+      lineNumber: 35,
+      columnNumber: 11
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+    lineNumber: 26,
+    columnNumber: 9
+  }, this) }, void 0, false, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+    lineNumber: 25,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+    lineNumber: 24,
+    columnNumber: 5
+  }, this)
+] }, void 0, true, {
+  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx",
+  lineNumber: 15,
+  columnNumber: 1
+}, this);
+_c = CustomerListCard;
+var _c;
+$RefreshReg$(_c, "CustomerListCard");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/clientes/components/CustomerListCard.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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bEJGO0FBQUE7QUFBQTtBQUFBO0FBQUEsaUJBbUJBLEtBcEJGO0FBQUE7QUFBQTtBQUFBO0FBQUEsaUJBcUJBO0FBQUEsYUE3RE9BLFFBQVFpQixJQUFqQjtBQUFBO0FBQUE7QUFBQTtBQUFBLGVBOERBO0FBQUEsTUFDRDtBQUFBLE1BQ0F0QixVQUFVRyxXQUFXLEtBQ3BCLHVCQUFDLFFBQ0MsaUNBQUMsUUFBRyxXQUFVLGdEQUErQyxTQUFTLEdBQUUsMENBQXhFO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFFQSxLQUhGO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFJQTtBQUFBLFNBdkVKO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0F5RUE7QUFBQSxPQWxGRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBbUZBLEtBcEZGO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0FxRkEsS0F0RkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQXVGQTtBQUFBLEtBaEdGO0FBQUE7QUFBQTtBQUFBO0FBQUEsT0FpR0E7QUFDQW9CLEtBbkdXeEI7QUFBaUMsSUFBQXdCO0FBQUEsYUFBQUEsSUFBQSIsIm5hbWVzIjpbIlJlYWN0IiwiUGVuY2lsU2ltcGxlIiwiVXBsb2FkU2ltcGxlIiwiQnV0dG9uIiwiQ2FyZCIsIkNhcmRDb250ZW50IiwiQ2FyZEhlYWRlciIsIkNhcmRUaXRsZSIsImZvcm1hdERvY3VtZW50byIsImZvcm1hdFRlbGVmb25lIiwiQ3VzdG9tZXJMaXN0Q2FyZCIsImN1c3RvbWVycyIsIm9uRWRpdCIsIm9uT3BlbkRvY3VtZW50cyIsImxlbmd0aCIsIm1hcCIsImNsaWVudGUiLCJub21lIiwic2xpY2UiLCJ0b1VwcGVyQ2FzZSIsImNwZkNucGoiLCJ0ZWxlZm9uZSIsImVtYWlsIiwiZW5kZXJlY28iLCJjaWRhZGUiLCJlc3RhZG8iLCJlbmRlcmVjb0NvbXBsZXRvIiwibG9ncmFkb3VybyIsIm51bWVybyIsImJhaXJybyIsImZpbHRlciIsIkJvb2xlYW4iLCJqb2luIiwiaWQiLCJfYyJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJDdXN0b21lckxpc3RDYXJkLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnO1xuaW1wb3J0IHsgUGVuY2lsU2ltcGxlLCBVcGxvYWRTaW1wbGUgfSBmcm9tICdAcGhvc3Bob3ItaWNvbnMvcmVhY3QnO1xuaW1wb3J0IHsgQnV0dG9uIH0gZnJvbSAnQC9zaGFyZWQvY29tcG9uZW50cy9CdXR0b24nO1xuaW1wb3J0IHsgQ2FyZCwgQ2FyZENvbnRlbnQsIENhcmRIZWFkZXIsIENhcmRUaXRsZSB9IGZyb20gJ0Avc2hhcmVkL2NvbXBvbmVudHMvQ2FyZCc7XG5pbXBvcnQgdHlwZSB7IEN1c3RvbWVyIH0gZnJvbSAnQC9zZXJ2aWNlcyc7XG5pbXBvcnQgeyBmb3JtYXREb2N1bWVudG8sIGZvcm1hdFRlbGVmb25lIH0gZnJvbSAnLi4vaG9va3MvdXNlQ2xpZW50ZXMnO1xuXG50eXBlIFByb3BzID0ge1xuICBjdXN0b21lcnM6IEN1c3RvbWVyW107XG4gIG9uRWRpdDogKGN1c3RvbWVyOiBDdXN0b21lcikgPT4gdm9pZDtcbiAgb25PcGVuRG9jdW1lbnRzOiAoY3VzdG9tZXI6IEN1c3RvbWVyKSA9PiB2b2lkO1xufTtcblxuZXhwb3J0IGNvbnN0IEN1c3RvbWVyTGlzdENhcmQ6IFJlYWN0LkZDPFByb3BzPiA9ICh7IGN1c3RvbWVycywgb25FZGl0LCBvbk9wZW5Eb2N1bWVudHMgfSkgPT4gKFxuICA8Q2FyZD5cbiAgICA8Q2FyZEhlYWRlcj5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIGdhcC00XCI+XG4gICAgICAgIDxDYXJkVGl0bGU+Q2xpZW50ZXMgQ2FkYXN0cmFkb3MgKHtjdXN0b21lcnMubGVuZ3RofSk8L0NhcmRUaXRsZT5cbiAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LXNsYXRlLTQwMFwiPlxuICAgICAgICAgIFZpc3VhbGl6YWNhbyByZXN1bWlkYSBjb20gY29udGF0byBlIGxvY2FsaXphY2FvLlxuICAgICAgICA8L3NwYW4+XG4gICAgICA8L2Rpdj5cbiAgICA8L0NhcmRIZWFkZXI+XG4gICAgPENhcmRDb250ZW50IGNsYXNzTmFtZT1cInAtMFwiPlxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJvdmVyZmxvdy14LWF1dG9cIj5cbiAgICAgICAgPHRhYmxlIGNsYXNzTmFtZT1cIm1pbi13LWZ1bGwgZGl2aWRlLXkgZGl2aWRlLXdoaXRlLzEwXCI+XG4gICAgICAgICAgPHRoZWFkPlxuICAgICAgICAgICAgPHRyIGNsYXNzTmFtZT1cInRleHQtbGVmdCB0ZXh0LXhzIHVwcGVyY2FzZSB0cmFja2luZy13aWRlIHRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICAgIDx0aCBjbGFzc05hbWU9XCJweC00IHB5LTNcIj5DbGllbnRlPC90aD5cbiAgICAgICAgICAgICAgPHRoIGNsYXNzTmFtZT1cInB4LTQgcHktM1wiPkNvbnRhdG88L3RoPlxuICAgICAgICAgICAgICA8dGggY2xhc3NOYW1lPVwicHgtNCBweS0zXCI+TG9jYWxpemFjYW88L3RoPlxuICAgICAgICAgICAgICA8dGggY2xhc3NOYW1lPVwicHgtNCBweS0zIHRleHQtcmlnaHRcIj5Bw6fDtWVzPC90aD5cbiAgICAgICAgICAgIDwvdHI+XG4gICAgICAgICAgPC90aGVhZD5cbiAgICAgICAgICA8dGJvZHkgY2xhc3NOYW1lPVwiZGl2aWRlLXkgZGl2aWRlLXdoaXRlLzVcIj5cbiAgICAgICAgICAgIHtjdXN0b21lcnMubWFwKChjbGllbnRlKSA9PiAoXG4gICAgICAgICAgICAgIDx0ciBrZXk9e2NsaWVudGUuaWR9IGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1zbGF0ZS0yMDBcIj5cbiAgICAgICAgICAgICAgICA8dGQgY2xhc3NOYW1lPVwicHgtNCBweS0zXCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0zXCI+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBoLTEwIHctMTAgaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJvdW5kZWQtZnVsbCBib3JkZXIgYm9yZGVyLXdoaXRlLzEwIGJnLXNsYXRlLTkwMC82MCB0ZXh0LXNtIGZvbnQtc2VtaWJvbGQgdGV4dC1jeWFuLTIwMFwiPlxuICAgICAgICAgICAgICAgICAgICAgIHtjbGllbnRlLm5vbWUuc2xpY2UoMCwgMSkudG9VcHBlckNhc2UoKX1cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LXNsYXRlLTEwMFwiPntjbGllbnRlLm5vbWV9PC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICB7Zm9ybWF0RG9jdW1lbnRvKGNsaWVudGUuY3BmQ25wail9XG4gICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC90ZD5cbiAgICAgICAgICAgICAgICA8dGQgY2xhc3NOYW1lPVwicHgtNCBweS0zXCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMVwiPlxuICAgICAgICAgICAgICAgICAgICA8ZGl2Pntmb3JtYXRUZWxlZm9uZShjbGllbnRlLnRlbGVmb25lKX08L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtc2xhdGUtNDAwXCI+e2NsaWVudGUuZW1haWx9PC9kaXY+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8L3RkPlxuICAgICAgICAgICAgICAgIDx0ZCBjbGFzc05hbWU9XCJweC00IHB5LTNcIj5cbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0xXCI+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZm9udC1tZWRpdW0gdGV4dC1zbGF0ZS0xMDBcIj5cbiAgICAgICAgICAgICAgICAgICAgICB7Y2xpZW50ZS5lbmRlcmVjbz8uY2lkYWRlXG4gICAgICAgICAgICAgICAgICAgICAgICA/IGAke2NsaWVudGUuZW5kZXJlY28uY2lkYWRlfS8ke2NsaWVudGUuZW5kZXJlY28uZXN0YWRvfWBcbiAgICAgICAgICAgICAgICAgICAgICAgIDogJy0nfVxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJtYXgtdy14cyB0ZXh0LXhzIHRleHQtc2xhdGUtNDAwXCI+XG4gICAgICAgICAgICAgICAgICAgICAge2NsaWVudGUuZW5kZXJlY29Db21wbGV0byB8fFxuICAgICAgICAgICAgICAgICAgICAgICAgW1xuICAgICAgICAgICAgICAgICAgICAgICAgICBjbGllbnRlLmVuZGVyZWNvPy5sb2dyYWRvdXJvLFxuICAgICAgICAgICAgICAgICAgICAgICAgICBjbGllbnRlLmVuZGVyZWNvPy5udW1lcm8sXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNsaWVudGUuZW5kZXJlY28/LmJhaXJybyxcbiAgICAgICAgICAgICAgICAgICAgICAgIF1cbiAgICAgICAgICAgICAgICAgICAgICAgICAgLmZpbHRlcihCb29sZWFuKVxuICAgICAgICAgICAgICAgICAgICAgICAgICAuam9pbignLCAnKSB8fFxuICAgICAgICAgICAgICAgICAgICAgICAgJy0nfVxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDwvdGQ+XG4gICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT1cInB4LTQgcHktMyB0ZXh0LXJpZ2h0XCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXgganVzdGlmeS1lbmQgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgPEJ1dHRvblxuICAgICAgICAgICAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lXCJcbiAgICAgICAgICAgICAgICAgICAgICBzaXplPVwic21cIlxuICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHZvaWQgb25PcGVuRG9jdW1lbnRzKGNsaWVudGUpfVxuICAgICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgICAgPFVwbG9hZFNpbXBsZSBjbGFzc05hbWU9XCJtci0yIGgtNCB3LTRcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgIERvY3VtZW50b3NcbiAgICAgICAgICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgICAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcbiAgICAgICAgICAgICAgICAgICAgICB2YXJpYW50PVwib3V0bGluZVwiXG4gICAgICAgICAgICAgICAgICAgICAgc2l6ZT1cInNtXCJcbiAgICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBvbkVkaXQoY2xpZW50ZSl9XG4gICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICA8UGVuY2lsU2ltcGxlIGNsYXNzTmFtZT1cIm1yLTIgaC00IHctNFwiIC8+XG4gICAgICAgICAgICAgICAgICAgICAgRWRpdGFyXG4gICAgICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC90ZD5cbiAgICAgICAgICAgICAgPC90cj5cbiAgICAgICAgICAgICkpfVxuICAgICAgICAgICAge2N1c3RvbWVycy5sZW5ndGggPT09IDAgJiYgKFxuICAgICAgICAgICAgICA8dHI+XG4gICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT1cInB4LTQgcHktNiB0ZXh0LWNlbnRlciB0ZXh0LXNtIHRleHQtc2xhdGUtNDAwXCIgY29sU3Bhbj17Nn0+XG4gICAgICAgICAgICAgICAgICBOZW5odW0gY2xpZW50ZSBlbmNvbnRyYWRvLlxuICAgICAgICAgICAgICAgIDwvdGQ+XG4gICAgICAgICAgICAgIDwvdHI+XG4gICAgICAgICAgICApfVxuICAgICAgICAgIDwvdGJvZHk+XG4gICAgICAgIDwvdGFibGU+XG4gICAgICA8L2Rpdj5cbiAgICA8L0NhcmRDb250ZW50PlxuICA8L0NhcmQ+XG4pO1xuIl0sImZpbGUiOiJBOi93b3Jrc3BhY2Uvbm92YSBhdHQvZGVwbG95LXByb2plY3RzLWFwcC9zcmMvZmVhdHVyZXMvY2xpZW50ZXMvY29tcG9uZW50cy9DdXN0b21lckxpc3RDYXJkLnRzeCJ9

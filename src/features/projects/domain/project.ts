@@ -1,6 +1,7 @@
 import type { Endereco } from '@/core/entities/comum';
 import type { Projeto } from '@/core/entities/projeto';
 import type { Customer } from '@/features/clientes/domain/customer';
+import type { CustomerResponse } from './customer';
 import { toProjetoStatus } from '../services/projectNormalizer';
 
 //#TODO provavelmente vai dar pra excluir isso depois de refatorar
@@ -29,6 +30,7 @@ export interface CoordinatesResponse {
 export interface ProjectResponse {
   id: string;
   client_id: string;
+  client?: CustomerResponse | null;
   address_id: string;
   utility_company: string;
   utility_protocol: string;
@@ -74,60 +76,74 @@ export const toProjeto = (
   r: ProjectResponse,
   customer?: Customer,
   endereco?: Endereco,
-): Projeto => ({
-  id: r.id,
-  protocolo: r.utility_protocol,
-  protocoloConcessionaria: r.secondary_protocol ?? undefined,
-  relatedProjectId: r.related_project_id ?? undefined,
-  sequence: r.sequence,
-  subsequente: r.subsequence ? String(r.subsequence) : '',
+): Projeto => {
+  const embeddedCustomer: Customer | undefined = r.client
+    ? {
+        id: r.client.id,
+        nome: r.client.name,
+        email: r.client.email,
+        cpfCnpj: r.client.tax_id,
+        telefone: r.client.phone,
+        documentos: [],
+      }
+    : undefined;
+  const resolvedCustomer = customer ?? embeddedCustomer;
 
-  cliente: {
-    id: customer?.id ?? r.client_id,
-    nome: customer?.nome ?? '',
-    cpfCnpj: customer?.cpfCnpj ?? '',
-    telefone: customer?.telefone ?? '',
-    email: customer?.email ?? '',
-    endereco: customer?.endereco,
-  },
+  return {
+    id: r.id,
+    protocolo: r.utility_protocol,
+    protocoloConcessionaria: r.secondary_protocol ?? undefined,
+    relatedProjectId: r.related_project_id ?? undefined,
+    sequence: r.sequence,
+    subsequente: r.subsequence ? String(r.subsequence) : '',
 
-  endereco: endereco ?? EMPTY_ENDERECO,
+    cliente: {
+      id: resolvedCustomer?.id ?? r.client_id,
+      nome: resolvedCustomer?.nome ?? '',
+      cpfCnpj: resolvedCustomer?.cpfCnpj ?? '',
+      telefone: resolvedCustomer?.telefone ?? '',
+      email: resolvedCustomer?.email ?? '',
+      endereco: resolvedCustomer?.endereco,
+    },
 
-  dadosProjeto: {
-    concessionaria: r.utility_company,
-    classe: r.customer_class,
-    integrador: r.integrator_name ?? r.integrator ?? '',
-    integradorId: r.integrator ?? undefined,
-    modalidade: 'autoconsumo_local',
-    enquadramento: r.framework,
-    potenciaSistema: r.system_power,
-    protecaoCC: r.dc_protection,
-  },
-  dadosTecnicos: {
-    tensao: 0,
-    numeroFases: 0,
-    ramal: '',
-    disjuntor: '',
-    cargaInstalada: 0,
+    endereco: endereco ?? EMPTY_ENDERECO,
+
+    dadosProjeto: {
+      concessionaria: r.utility_company,
+      classe: r.customer_class,
+      integrador: r.integrator_name ?? r.integrator ?? '',
+      integradorId: r.integrator ?? undefined,
+      modalidade: 'autoconsumo_local',
+      enquadramento: r.framework,
+      potenciaSistema: r.system_power,
+      protecaoCC: r.dc_protection,
+    },
+    dadosTecnicos: {
+      tensao: 0,
+      numeroFases: 0,
+      ramal: '',
+      disjuntor: '',
+      cargaInstalada: 0,
+      modulos: [],
+      inversores: [],
+      divisaoCreditos: [],
+    },
     modulos: [],
     inversores: [],
     divisaoCreditos: [],
-  },
-  modulos: [],
-  inversores: [],
-  divisaoCreditos: [],
-  timeline: [],
-  documentos: [],
-  status: toProjetoStatus(r.status),
-  valor: Number(r.amount) || 0,
-  tipoProjeto: r.project_type,
-  servicos: r.services_names,
-  numeroUc: r.unit_control,
-  coordenadas: r.coordinates ?? undefined,
-  latitude: r.coordinates?.latitude,
-  longitude: r.coordinates?.longitude,
-  projetoFastTrack: r.fast_track ? 'sim' : 'nao',
-  observacoes: r.description,
-  dataCriacao: r.created_at,
-  dataAtualizacao: r.updated_at,
-});
+    timeline: [],
+    documentos: [],
+    status: toProjetoStatus(r.status),
+    valor: Number(r.amount) || 0,
+    tipoProjeto: r.project_type,
+    servicos: r.services_names,
+    numeroUc: r.unit_control,
+    coordenadas: r.coordinates ?? undefined,
+    latitude: r.coordinates?.latitude,
+    longitude: r.coordinates?.longitude,
+    projetoFastTrack: r.fast_track ? 'sim' : 'nao',
+    observacoes: r.description,
+    dataCriacao: r.created_at,
+    dataAtualizacao: r.updated_at,
+  };
+};

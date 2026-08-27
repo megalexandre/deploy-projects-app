@@ -1,0 +1,976 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/features/calendario/pages/CalendarioPage.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=725e42e2"; const Fragment = __vite__cjsImport0_react_jsxDevRuntime["Fragment"]; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=725e42e2"; const React = __vite__cjsImport1_react.__esModule ? __vite__cjsImport1_react.default : __vite__cjsImport1_react;
+import { Link } from "/node_modules/.vite/deps/react-router-dom.js?v=725e42e2";
+import {
+  Calendar as CalendarIcon,
+  Plus,
+  Clock,
+  MapPin,
+  Users,
+  CaretLeft,
+  CaretRight,
+  Folder,
+  PencilSimple,
+  Trash,
+  Wrench
+} from "/node_modules/.vite/deps/@phosphor-icons_react.js?v=725e42e2";
+import { Button } from "/src/shared/components/Button.tsx";
+import { Input } from "/src/shared/components/Input.tsx";
+import { Card, CardHeader, CardTitle, CardContent } from "/src/shared/components/Card.tsx";
+import {
+  formatDateBR,
+  formatMonthYear,
+  getDaysInMonth,
+  getOrigemLabel,
+  getTipoColor,
+  getTipoIcon
+} from "/src/features/calendario/domain/calendar.ts";
+import { useCalendario } from "/src/features/calendario/hooks/useCalendario.ts";
+export const CalendarioPage = () => {
+  _s();
+  const {
+    loadingProjetos,
+    erroProjetos,
+    selectedDate,
+    viewMode,
+    filtroAgenda,
+    selectedDayFilter,
+    isFormOpen,
+    novoEvento,
+    projetos,
+    editingEventId,
+    savingEvent,
+    agendaFiltradaOrdenada,
+    setViewMode,
+    setFiltroAgenda,
+    setSelectedDayFilter,
+    setIsFormOpen,
+    setNovoEvento,
+    navigateMonth,
+    getItensForDay,
+    formatDateFromDay,
+    resetNovoEvento,
+    openEventForEdit,
+    handleCreateEvento,
+    handleDeleteEvento
+  } = useCalendario();
+  const today = /* @__PURE__ */ new Date();
+  const defaultFocusDay = selectedDate.getMonth() === today.getMonth() && selectedDate.getFullYear() === today.getFullYear() ? today.getDate() : 1;
+  const focusDate = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDayFilter ?? defaultFocusDay
+  );
+  const weekStart = new Date(focusDate);
+  weekStart.setDate(focusDate.getDate() - focusDate.getDay());
+  const compactViewDates = viewMode === "dia" ? [focusDate] : Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + index);
+    return date;
+  });
+  return /* @__PURE__ */ jsxDEV("div", { className: "space-y-6 page-enter", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between", children: [
+      /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV("h1", { className: "text-2xl font-bold text-gray-100", children: "Calendario" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 85,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-gray-400 mt-1", children: "Agenda com eventos, projetos e serviços do mes atual." }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 86,
+          columnNumber: 11
+        }, this),
+        loadingProjetos && /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-gray-500 mt-1", children: "Carregando datas dos projetos..." }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 90,
+          columnNumber: 11
+        }, this),
+        erroProjetos && /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-red-400 mt-1", children: erroProjetos }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 92,
+          columnNumber: 28
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 84,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex gap-2 mt-4 sm:mt-0", children: [
+        /* @__PURE__ */ jsxDEV(
+          "select",
+          {
+            value: viewMode,
+            onChange: (event) => setViewMode(event.target.value),
+            className: "px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none",
+            children: [
+              /* @__PURE__ */ jsxDEV("option", { value: "dia", children: "Dia" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 100,
+                columnNumber: 13
+              }, this),
+              /* @__PURE__ */ jsxDEV("option", { value: "semana", children: "Semana" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 101,
+                columnNumber: 13
+              }, this),
+              /* @__PURE__ */ jsxDEV("option", { value: "mes", children: "Mes" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 102,
+                columnNumber: 13
+              }, this)
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 95,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            onClick: () => {
+              if (isFormOpen) {
+                setIsFormOpen(false);
+                resetNovoEvento();
+                return;
+              }
+              resetNovoEvento();
+              setIsFormOpen(true);
+            },
+            children: [
+              /* @__PURE__ */ jsxDEV(Plus, { className: "h-4 w-4 mr-2" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 115,
+                columnNumber: 13
+              }, this),
+              "Novo Evento"
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 104,
+            columnNumber: 11
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 94,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 83,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3 text-sm", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-700 text-blue-300 bg-blue-900/40", children: [
+          /* @__PURE__ */ jsxDEV(Folder, { className: "h-4 w-4" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 125,
+            columnNumber: 15
+          }, this),
+          " Projetos"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 124,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1 px-2 py-1 rounded border border-green-700 text-green-300 bg-green-900/40", children: [
+          /* @__PURE__ */ jsxDEV(Wrench, { className: "h-4 w-4" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 128,
+            columnNumber: 15
+          }, this),
+          " Serviços"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 127,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1 px-2 py-1 rounded border border-orange-700 text-orange-300 bg-orange-900/40", children: [
+          /* @__PURE__ */ jsxDEV(CalendarIcon, { className: "h-4 w-4" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 131,
+            columnNumber: 15
+          }, this),
+          " Eventos"
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 130,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 123,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxDEV(
+          "select",
+          {
+            value: filtroAgenda,
+            onChange: (event) => setFiltroAgenda(event.target.value),
+            className: "px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none",
+            children: [
+              /* @__PURE__ */ jsxDEV("option", { value: "todos", children: "Mostrar tudo" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 141,
+                columnNumber: 17
+              }, this),
+              /* @__PURE__ */ jsxDEV("option", { value: "evento", children: "So eventos" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 142,
+                columnNumber: 17
+              }, this),
+              /* @__PURE__ */ jsxDEV("option", { value: "projeto", children: "So projetos" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 143,
+                columnNumber: 17
+              }, this),
+              /* @__PURE__ */ jsxDEV("option", { value: "servico", children: "So serviços" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 144,
+                columnNumber: 17
+              }, this)
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 136,
+            columnNumber: 15
+          },
+          this
+        ),
+        selectedDayFilter !== null && /* @__PURE__ */ jsxDEV(Button, { variant: "outline", size: "sm", onClick: () => setSelectedDayFilter(null), children: "Limpar dia" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 147,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 135,
+        columnNumber: 13
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 134,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 122,
+      columnNumber: 9
+    }, this) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 121,
+      columnNumber: 7
+    }, this),
+    isFormOpen && /* @__PURE__ */ jsxDEV(Card, { children: [
+      /* @__PURE__ */ jsxDEV(CardHeader, { children: /* @__PURE__ */ jsxDEV(CardTitle, { children: "Cadastrar novo evento" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 159,
+        columnNumber: 13
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 158,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(CardContent, { children: /* @__PURE__ */ jsxDEV("form", { onSubmit: handleCreateEvento, className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "block text-sm text-gray-300 md:col-span-2", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "mb-1 block", children: "Projeto relacionado (opcional)" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 164,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "select",
+            {
+              value: novoEvento.projectId,
+              onChange: (event) => setNovoEvento((current) => ({ ...current, projectId: event.target.value })),
+              className: "w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:border-blue-500 focus:outline-none",
+              children: [
+                /* @__PURE__ */ jsxDEV("option", { value: "", children: "Sem projeto relacionado" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 172,
+                  columnNumber: 19
+                }, this),
+                projetos.map(
+                  (project) => /* @__PURE__ */ jsxDEV("option", { value: project.id, children: [
+                    project.sequence ? `ID ${project.sequence}${project.subsequente ? `/${project.subsequente}` : ""}` : project.protocolo,
+                    " ",
+                    "— ",
+                    project.cliente.nome
+                  ] }, project.id, true, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 174,
+                    columnNumber: 17
+                  }, this)
+                )
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 165,
+              columnNumber: 17
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 163,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          Input,
+          {
+            label: "Titulo",
+            placeholder: "Ex: Reuniao com cliente",
+            value: novoEvento.titulo,
+            onChange: (event) => setNovoEvento((current) => ({ ...current, titulo: event.target.value })),
+            required: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 183,
+            columnNumber: 15
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV("label", { className: "block text-sm text-gray-300", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "mb-1 block", children: "Tipo" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 193,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "select",
+            {
+              value: novoEvento.tipo,
+              onChange: (event) => setNovoEvento((current) => ({
+                ...current,
+                tipo: event.target.value
+              })),
+              className: "w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none",
+              children: [
+                /* @__PURE__ */ jsxDEV("option", { value: "instalacao", children: "Instalacao" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 204,
+                  columnNumber: 19
+                }, this),
+                /* @__PURE__ */ jsxDEV("option", { value: "manutencao", children: "Manutencao" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 205,
+                  columnNumber: 19
+                }, this),
+                /* @__PURE__ */ jsxDEV("option", { value: "reuniao", children: "Reuniao" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 206,
+                  columnNumber: 19
+                }, this),
+                /* @__PURE__ */ jsxDEV("option", { value: "vistoria", children: "Vistoria" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 207,
+                  columnNumber: 19
+                }, this)
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 194,
+              columnNumber: 17
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 192,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          Input,
+          {
+            label: "Data",
+            type: "date",
+            value: novoEvento.data,
+            onChange: (event) => setNovoEvento((current) => ({ ...current, data: event.target.value })),
+            required: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 210,
+            columnNumber: 15
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Input,
+          {
+            label: "Hora",
+            type: "time",
+            value: novoEvento.hora,
+            onChange: (event) => setNovoEvento((current) => ({ ...current, hora: event.target.value })),
+            required: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 219,
+            columnNumber: 15
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Input,
+          {
+            label: "Local",
+            placeholder: "Endereço",
+            value: novoEvento.local,
+            onChange: (event) => setNovoEvento((current) => ({ ...current, local: event.target.value })),
+            required: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 228,
+            columnNumber: 15
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Input,
+          {
+            label: "Participantes",
+            placeholder: "Nomes separados por virgula",
+            value: novoEvento.participantes,
+            onChange: (event) => setNovoEvento((current) => ({ ...current, participantes: event.target.value }))
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 237,
+            columnNumber: 15
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV("div", { className: "md:col-span-2", children: /* @__PURE__ */ jsxDEV(
+          Input,
+          {
+            label: "Descricao",
+            placeholder: "Resumo",
+            value: novoEvento.descricao,
+            onChange: (event) => setNovoEvento((current) => ({ ...current, descricao: event.target.value }))
+          },
+          void 0,
+          false,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 246,
+            columnNumber: 17
+          },
+          this
+        ) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 245,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "md:col-span-2 flex justify-end gap-2", children: [
+          /* @__PURE__ */ jsxDEV(
+            Button,
+            {
+              type: "button",
+              variant: "outline",
+              onClick: () => {
+                setIsFormOpen(false);
+                resetNovoEvento();
+              },
+              children: "Cancelar"
+            },
+            void 0,
+            false,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 256,
+              columnNumber: 17
+            },
+            this
+          ),
+          editingEventId && /* @__PURE__ */ jsxDEV(
+            Button,
+            {
+              type: "button",
+              variant: "outline",
+              disabled: savingEvent,
+              onClick: () => void handleDeleteEvento(editingEventId),
+              children: [
+                /* @__PURE__ */ jsxDEV(Trash, { className: "mr-2 h-4 w-4" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 273,
+                  columnNumber: 21
+                }, this),
+                "Excluir"
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 267,
+              columnNumber: 15
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(Button, { type: "submit", loading: savingEvent, children: editingEventId ? "Salvar alterações" : "Salvar evento" }, void 0, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 277,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 255,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 162,
+        columnNumber: 13
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 161,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 157,
+      columnNumber: 7
+    }, this),
+    viewMode === "mes" && /* @__PURE__ */ jsxDEV(Card, { children: /* @__PURE__ */ jsxDEV(CardContent, { className: "p-6", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between mb-6", children: [
+        /* @__PURE__ */ jsxDEV(Button, { variant: "outline", onClick: () => navigateMonth("prev"), children: /* @__PURE__ */ jsxDEV(CaretLeft, { className: "h-4 w-4" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 291,
+          columnNumber: 17
+        }, this) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 290,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("h2", { className: "text-xl font-semibold text-gray-100", children: formatMonthYear(selectedDate) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 293,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(Button, { variant: "outline", onClick: () => navigateMonth("next"), children: /* @__PURE__ */ jsxDEV(CaretRight, { className: "h-4 w-4" }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 297,
+          columnNumber: 17
+        }, this) }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 296,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 289,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "grid grid-cols-7 gap-1", children: [
+        ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"].map(
+          (day) => /* @__PURE__ */ jsxDEV("div", { className: "text-center py-2 text-sm font-medium text-gray-400", children: day }, day, false, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 303,
+            columnNumber: 13
+          }, this)
+        ),
+        getDaysInMonth(selectedDate).map((day, index) => {
+          const dayItems = day ? getItensForDay(day) : [];
+          const today2 = /* @__PURE__ */ new Date();
+          const isToday = day === today2.getDate() && selectedDate.getMonth() === today2.getMonth() && selectedDate.getFullYear() === today2.getFullYear();
+          return /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              className: [
+                "min-h-[90px] border border-gray-700 rounded-lg p-2",
+                day ? "hover:bg-gray-800 cursor-pointer" : "",
+                isToday ? "bg-blue-900/20 border-blue-600" : "",
+                day && selectedDayFilter === day ? "ring-2 ring-opj-blue bg-blue-900/30" : ""
+              ].join(" "),
+              onClick: () => {
+                if (!day) return;
+                setSelectedDayFilter(day);
+              },
+              children: day && /* @__PURE__ */ jsxDEV(Fragment, { children: [
+                /* @__PURE__ */ jsxDEV(
+                  "div",
+                  {
+                    className: `text-sm font-medium ${isToday ? "text-blue-400" : "text-gray-300"}`,
+                    children: day
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 332,
+                    columnNumber: 25
+                  },
+                  this
+                ),
+                /* @__PURE__ */ jsxDEV("div", { className: "mt-1 space-y-1", children: [
+                  dayItems.slice(0, 2).map(
+                    (item) => /* @__PURE__ */ jsxDEV(
+                      "div",
+                      {
+                        className: `text-xs px-1 py-0.5 rounded truncate ${getTipoColor(item)}`,
+                        title: item.titulo,
+                        children: [
+                          getTipoIcon(item),
+                          " ",
+                          item.titulo
+                        ]
+                      },
+                      item.id,
+                      true,
+                      {
+                        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                        lineNumber: 339,
+                        columnNumber: 23
+                      },
+                      this
+                    )
+                  ),
+                  dayItems.length > 2 && /* @__PURE__ */ jsxDEV("div", { className: "text-xs text-gray-400", children: [
+                    "+",
+                    dayItems.length - 2,
+                    " mais"
+                  ] }, void 0, true, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 348,
+                    columnNumber: 23
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 337,
+                  columnNumber: 25
+                }, this)
+              ] }, void 0, true, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 331,
+                columnNumber: 19
+              }, this)
+            },
+            String(index),
+            false,
+            {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 317,
+              columnNumber: 17
+            },
+            this
+          );
+        })
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 301,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 288,
+      columnNumber: 11
+    }, this) }, void 0, false, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 287,
+      columnNumber: 7
+    }, this),
+    viewMode !== "mes" && /* @__PURE__ */ jsxDEV(Card, { children: [
+      /* @__PURE__ */ jsxDEV(CardHeader, { children: /* @__PURE__ */ jsxDEV(CardTitle, { children: viewMode === "dia" ? "Agenda do dia" : "Agenda da semana" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 364,
+        columnNumber: 13
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 363,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(CardContent, { className: `grid gap-3 ${viewMode === "semana" ? "md:grid-cols-7" : ""}`, children: compactViewDates.map((date) => {
+        const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        const items = agendaFiltradaOrdenada.filter((item) => item.data === dateKey);
+        return /* @__PURE__ */ jsxDEV(
+          "div",
+          {
+            className: "rounded-xl border border-white/10 bg-slate-950/35 p-3",
+            children: [
+              /* @__PURE__ */ jsxDEV("div", { className: "text-sm font-semibold text-slate-200", children: date.toLocaleDateString("pt-BR", {
+                weekday: "short",
+                day: "2-digit",
+                month: "2-digit"
+              }) }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 375,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "mt-3 space-y-2", children: [
+                items.map(
+                  (item) => /* @__PURE__ */ jsxDEV(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => openEventForEdit(item),
+                      className: `w-full rounded-lg px-2 py-2 text-left text-xs ${getTipoColor(item)}`,
+                      children: /* @__PURE__ */ jsxDEV("div", { className: "font-semibold", children: [
+                        item.hora,
+                        " · ",
+                        item.titulo
+                      ] }, void 0, true, {
+                        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                        lineNumber: 390,
+                        columnNumber: 25
+                      }, this)
+                    },
+                    item.id,
+                    false,
+                    {
+                      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                      lineNumber: 384,
+                      columnNumber: 19
+                    },
+                    this
+                  )
+                ),
+                items.length === 0 && /* @__PURE__ */ jsxDEV("div", { className: "text-xs text-slate-500", children: "Sem itens" }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 395,
+                  columnNumber: 44
+                }, this)
+              ] }, void 0, true, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 382,
+                columnNumber: 19
+              }, this)
+            ]
+          },
+          dateKey,
+          true,
+          {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 371,
+            columnNumber: 15
+          },
+          this
+        );
+      }) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 366,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 362,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Card, { children: [
+      /* @__PURE__ */ jsxDEV(CardHeader, { children: /* @__PURE__ */ jsxDEV(CardTitle, { children: selectedDayFilter !== null ? `Agenda do dia ${formatDateFromDay(selectedDayFilter)}` : "Proximos Itens da Agenda" }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 406,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 405,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(CardContent, { children: /* @__PURE__ */ jsxDEV("div", { className: "space-y-4", children: [
+        agendaFiltradaOrdenada.slice(0, selectedDayFilter !== null ? 50 : 8).map(
+          (item) => /* @__PURE__ */ jsxDEV("div", { className: "flex items-start space-x-4 p-4 bg-gray-800 rounded-lg", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: `p-2 rounded-lg ${getTipoColor(item)}`, children: /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-semibold", children: getTipoIcon(item) }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 417,
+              columnNumber: 19
+            }, this) }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 416,
+              columnNumber: 17
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: "flex-1", children: [
+              /* @__PURE__ */ jsxDEV("h3", { className: "font-medium text-gray-100", children: item.titulo }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 420,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { className: "flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-400", children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-center", children: [
+                  /* @__PURE__ */ jsxDEV(CalendarIcon, { className: "h-4 w-4 mr-1" }, void 0, false, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 423,
+                    columnNumber: 23
+                  }, this),
+                  formatDateBR(item.data)
+                ] }, void 0, true, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 422,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-center", children: [
+                  /* @__PURE__ */ jsxDEV(Clock, { className: "h-4 w-4 mr-1" }, void 0, false, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 427,
+                    columnNumber: 23
+                  }, this),
+                  item.hora
+                ] }, void 0, true, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 426,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-center", children: [
+                  /* @__PURE__ */ jsxDEV(MapPin, { className: "h-4 w-4 mr-1" }, void 0, false, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 431,
+                    columnNumber: 23
+                  }, this),
+                  item.local
+                ] }, void 0, true, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 430,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-center", children: [
+                  /* @__PURE__ */ jsxDEV(Users, { className: "h-4 w-4 mr-1" }, void 0, false, {
+                    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                    lineNumber: 435,
+                    columnNumber: 23
+                  }, this),
+                  item.participantes.length,
+                  " participantes"
+                ] }, void 0, true, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 434,
+                  columnNumber: 21
+                }, this),
+                /* @__PURE__ */ jsxDEV("span", { className: "px-2 py-1 rounded-full text-xs border border-gray-600 text-gray-300", children: getOrigemLabel(item.origem) }, void 0, false, {
+                  fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                  lineNumber: 438,
+                  columnNumber: 21
+                }, this)
+              ] }, void 0, true, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 421,
+                columnNumber: 19
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { className: "mt-2 text-sm text-gray-300", children: item.descricao || "Sem descricao." }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 442,
+                columnNumber: 19
+              }, this)
+            ] }, void 0, true, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 419,
+              columnNumber: 17
+            }, this),
+            item.projectId ? /* @__PURE__ */ jsxDEV(Link, { to: `/projetos/${item.projectId}`, children: /* @__PURE__ */ jsxDEV(Button, { variant: "outline", size: "sm", children: "Ver projeto" }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 446,
+              columnNumber: 21
+            }, this) }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 445,
+              columnNumber: 15
+            }, this) : /* @__PURE__ */ jsxDEV(Button, { variant: "outline", size: "sm", disabled: true, children: "Evento" }, void 0, false, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 451,
+              columnNumber: 15
+            }, this),
+            item.origem === "evento" && item.subtipo !== "status_deadline" && /* @__PURE__ */ jsxDEV(Button, { variant: "outline", size: "sm", onClick: () => openEventForEdit(item), children: [
+              /* @__PURE__ */ jsxDEV(PencilSimple, { className: "mr-2 h-4 w-4" }, void 0, false, {
+                fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+                lineNumber: 457,
+                columnNumber: 21
+              }, this),
+              "Editar"
+            ] }, void 0, true, {
+              fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+              lineNumber: 456,
+              columnNumber: 15
+            }, this)
+          ] }, item.id, true, {
+            fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+            lineNumber: 415,
+            columnNumber: 13
+          }, this)
+        ),
+        agendaFiltradaOrdenada.length === 0 && /* @__PURE__ */ jsxDEV("div", { className: "p-4 bg-gray-800 rounded-lg text-gray-400", children: "Nenhum item encontrado para o filtro selecionado." }, void 0, false, {
+          fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+          lineNumber: 464,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 413,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+        lineNumber: 412,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+      lineNumber: 404,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx",
+    lineNumber: 82,
+    columnNumber: 5
+  }, this);
+};
+_s(CalendarioPage, "aNWaldtSLwAfI402v1X0vCPauuE=", false, function() {
+  return [useCalendario];
+});
+_c = CalendarioPage;
+var _c;
+$RefreshReg$(_c, "CalendarioPage");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "A:/workspace/nova att/deploy-projects-app/src/features/calendario/pages/CalendarioPage.tsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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O0FBQUE7QUFBQSxxQkFBc0M7QUFBQTtBQUFBLGlCQUR4QztBQUFBO0FBQUE7QUFBQTtBQUFBLG1CQUdBO0FBQUEsZUE1Q01BLEtBQUtsQixJQUFmO0FBQUE7QUFBQTtBQUFBO0FBQUEsaUJBOENBO0FBQUEsUUFDRDtBQUFBLFFBQ0FyQyx1QkFBdUIwQixXQUFXLEtBQ2pDLHVCQUFDLFNBQUksV0FBVSw0Q0FBMEMsaUVBQXpEO0FBQUE7QUFBQTtBQUFBO0FBQUEsZUFFQTtBQUFBLFdBckRKO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUF1REEsS0F4REY7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQXlEQTtBQUFBLFNBakVGO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FrRUE7QUFBQSxPQXBZRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBcVlBO0FBRUo7QUFBRXRDLEdBemJXRCxnQkFBd0I7QUFBQSxVQTBCL0JELGFBQWE7QUFBQTtBQUFBLEtBMUJOQztBQUF3QixJQUFBK0U7QUFBQSxhQUFBQSxJQUFBIiwibmFtZXMiOlsiUmVhY3QiLCJMaW5rIiwiQ2FsZW5kYXIiLCJDYWxlbmRhckljb24iLCJQbHVzIiwiQ2xvY2siLCJNYXBQaW4iLCJVc2VycyIsIkNhcmV0TGVmdCIsIkNhcmV0UmlnaHQiLCJGb2xkZXIiLCJQZW5jaWxTaW1wbGUiLCJUcmFzaCIsIldyZW5jaCIsIkJ1dHRvbiIsIklucHV0IiwiQ2FyZCIsIkNhcmRIZWFkZXIiLCJDYXJkVGl0bGUiLCJDYXJkQ29udGVudCIsImZvcm1hdERhdGVCUiIsImZvcm1hdE1vbnRoWWVhciIsImdldERheXNJbk1vbnRoIiwiZ2V0T3JpZ2VtTGFiZWwiLCJnZXRUaXBvQ29sb3IiLCJnZXRUaXBvSWNvbiIsInVzZUNhbGVuZGFyaW8iLCJDYWxlbmRhcmlvUGFnZSIsIl9zIiwibG9hZGluZ1Byb2pldG9zIiwiZXJyb1Byb2pldG9zIiwic2VsZWN0ZWREYXRlIiwidmlld01vZGUiLCJmaWx0cm9BZ2VuZGEiLCJzZWxlY3RlZERheUZpbHRlciIsImlzRm9ybU9wZW4iLCJub3ZvRXZlbnRvIiwicHJvamV0b3MiLCJlZGl0aW5nRXZlbnRJZCIsInNhdmluZ0V2ZW50IiwiYWdlbmRhRmlsdHJhZGFPcmRlbmFkYSIsInNldFZpZXdNb2RlIiwic2V0RmlsdHJvQWdlbmRhIiwic2V0U2VsZWN0ZWREYXlGaWx0ZXIiLCJzZXRJc0Zvcm1PcGVuIiwic2V0Tm92b0V2ZW50byIsIm5hdmlnYXRlTW9udGgiLCJnZXRJdGVuc0ZvckRheSIsImZvcm1hdERhdGVGcm9tRGF5IiwicmVzZXROb3ZvRXZlbnRvIiwib3BlbkV2ZW50Rm9yRWRpdCIsImhhbmRsZUNyZWF0ZUV2ZW50byIsImhhbmRsZURlbGV0ZUV2ZW50byIsInRvZGF5IiwiRGF0ZSIsImRlZmF1bHRGb2N1c0RheSIsImdldE1vbnRoIiwiZ2V0RnVsbFllYXIiLCJnZXREYXRlIiwiZm9jdXNEYXRlIiwid2Vla1N0YXJ0Iiwic2V0RGF0ZSIsImdldERheSIsImNvbXBhY3RWaWV3RGF0ZXMiLCJBcnJheSIsImZyb20iLCJsZW5ndGgiLCJfIiwiaW5kZXgiLCJkYXRlIiwiZXZlbnQiLCJ0YXJnZXQiLCJ2YWx1ZSIsInByb2plY3RJZCIsImN1cnJlbnQiLCJtYXAiLCJwcm9qZWN0IiwiaWQiLCJzZXF1ZW5jZSIsInN1YnNlcXVlbnRlIiwicHJvdG9jb2xvIiwiY2xpZW50ZSIsIm5vbWUiLCJ0aXR1bG8iLCJ0aXBvIiwiZGF0YSIsImhvcmEiLCJsb2NhbCIsInBhcnRpY2lwYW50ZXMiLCJkZXNjcmljYW8iLCJkYXkiLCJkYXlJdGVtcyIsImlzVG9kYXkiLCJqb2luIiwic2xpY2UiLCJpdGVtIiwiU3RyaW5nIiwiZGF0ZUtleSIsInBhZFN0YXJ0IiwiaXRlbXMiLCJmaWx0ZXIiLCJ0b0xvY2FsZURhdGVTdHJpbmciLCJ3ZWVrZGF5IiwibW9udGgiLCJvcmlnZW0iLCJzdWJ0aXBvIiwiX2MiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiQ2FsZW5kYXJpb1BhZ2UudHN4Il0sInNvdXJjZXNDb250ZW50IjpbIi8qKiBQYWdpbmEgJ0NhbGVuZGFyaW9QYWdlJzogcmVuZGVyaXphIGEgYWdlbmRhIHVzYW5kbyBob29rIGUgaGVscGVycyBkbyBkb21pbmlvIGRhIGZlYXR1cmUuICovXG5pbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnO1xuaW1wb3J0IHsgTGluayB9IGZyb20gJ3JlYWN0LXJvdXRlci1kb20nO1xuaW1wb3J0IHtcbiAgQ2FsZW5kYXIgYXMgQ2FsZW5kYXJJY29uLFxuICBQbHVzLFxuICBDbG9jayxcbiAgTWFwUGluLFxuICBVc2VycyxcbiAgQ2FyZXRMZWZ0LFxuICBDYXJldFJpZ2h0LFxuICBGb2xkZXIsXG4gIFBlbmNpbFNpbXBsZSxcbiAgVHJhc2gsXG4gIFdyZW5jaCxcbn0gZnJvbSAnQHBob3NwaG9yLWljb25zL3JlYWN0JztcbmltcG9ydCB7IEJ1dHRvbiB9IGZyb20gJ0Avc2hhcmVkL2NvbXBvbmVudHMvQnV0dG9uJztcbmltcG9ydCB7IElucHV0IH0gZnJvbSAnQC9zaGFyZWQvY29tcG9uZW50cy9JbnB1dCc7XG5pbXBvcnQgeyBDYXJkLCBDYXJkSGVhZGVyLCBDYXJkVGl0bGUsIENhcmRDb250ZW50IH0gZnJvbSAnQC9zaGFyZWQvY29tcG9uZW50cy9DYXJkJztcbmltcG9ydCB7XG4gIGZvcm1hdERhdGVCUixcbiAgZm9ybWF0TW9udGhZZWFyLFxuICBnZXREYXlzSW5Nb250aCxcbiAgZ2V0T3JpZ2VtTGFiZWwsXG4gIGdldFRpcG9Db2xvcixcbiAgZ2V0VGlwb0ljb24sXG4gIHR5cGUgRmlsdHJvQWdlbmRhLFxuICB0eXBlIFRpcG9FdmVudG9NYW51YWwsXG59IGZyb20gJy4uL2RvbWFpbi9jYWxlbmRhcic7XG5pbXBvcnQgeyB1c2VDYWxlbmRhcmlvIH0gZnJvbSAnLi4vaG9va3MvdXNlQ2FsZW5kYXJpbyc7XG5cbmV4cG9ydCBjb25zdCBDYWxlbmRhcmlvUGFnZTogUmVhY3QuRkMgPSAoKSA9PiB7XG4gIGNvbnN0IHtcbiAgICBsb2FkaW5nUHJvamV0b3MsXG4gICAgZXJyb1Byb2pldG9zLFxuICAgIHNlbGVjdGVkRGF0ZSxcbiAgICB2aWV3TW9kZSxcbiAgICBmaWx0cm9BZ2VuZGEsXG4gICAgc2VsZWN0ZWREYXlGaWx0ZXIsXG4gICAgaXNGb3JtT3BlbixcbiAgICBub3ZvRXZlbnRvLFxuICAgIHByb2pldG9zLFxuICAgIGVkaXRpbmdFdmVudElkLFxuICAgIHNhdmluZ0V2ZW50LFxuICAgIGFnZW5kYUZpbHRyYWRhT3JkZW5hZGEsXG4gICAgc2V0Vmlld01vZGUsXG4gICAgc2V0RmlsdHJvQWdlbmRhLFxuICAgIHNldFNlbGVjdGVkRGF5RmlsdGVyLFxuICAgIHNldElzRm9ybU9wZW4sXG4gICAgc2V0Tm92b0V2ZW50byxcbiAgICBuYXZpZ2F0ZU1vbnRoLFxuICAgIGdldEl0ZW5zRm9yRGF5LFxuICAgIGZvcm1hdERhdGVGcm9tRGF5LFxuICAgIHJlc2V0Tm92b0V2ZW50byxcbiAgICBvcGVuRXZlbnRGb3JFZGl0LFxuICAgIGhhbmRsZUNyZWF0ZUV2ZW50byxcbiAgICBoYW5kbGVEZWxldGVFdmVudG8sXG4gIH0gPSB1c2VDYWxlbmRhcmlvKCk7XG4gIGNvbnN0IHRvZGF5ID0gbmV3IERhdGUoKTtcbiAgY29uc3QgZGVmYXVsdEZvY3VzRGF5ID1cbiAgICBzZWxlY3RlZERhdGUuZ2V0TW9udGgoKSA9PT0gdG9kYXkuZ2V0TW9udGgoKSAmJlxuICAgIHNlbGVjdGVkRGF0ZS5nZXRGdWxsWWVhcigpID09PSB0b2RheS5nZXRGdWxsWWVhcigpXG4gICAgICA/IHRvZGF5LmdldERhdGUoKVxuICAgICAgOiAxO1xuICBjb25zdCBmb2N1c0RhdGUgPSBuZXcgRGF0ZShcbiAgICBzZWxlY3RlZERhdGUuZ2V0RnVsbFllYXIoKSxcbiAgICBzZWxlY3RlZERhdGUuZ2V0TW9udGgoKSxcbiAgICBzZWxlY3RlZERheUZpbHRlciA/PyBkZWZhdWx0Rm9jdXNEYXksXG4gICk7XG4gIGNvbnN0IHdlZWtTdGFydCA9IG5ldyBEYXRlKGZvY3VzRGF0ZSk7XG4gIHdlZWtTdGFydC5zZXREYXRlKGZvY3VzRGF0ZS5nZXREYXRlKCkgLSBmb2N1c0RhdGUuZ2V0RGF5KCkpO1xuICBjb25zdCBjb21wYWN0Vmlld0RhdGVzID1cbiAgICB2aWV3TW9kZSA9PT0gJ2RpYSdcbiAgICAgID8gW2ZvY3VzRGF0ZV1cbiAgICAgIDogQXJyYXkuZnJvbSh7IGxlbmd0aDogNyB9LCAoXywgaW5kZXgpID0+IHtcbiAgICAgICAgICBjb25zdCBkYXRlID0gbmV3IERhdGUod2Vla1N0YXJ0KTtcbiAgICAgICAgICBkYXRlLnNldERhdGUod2Vla1N0YXJ0LmdldERhdGUoKSArIGluZGV4KTtcbiAgICAgICAgICByZXR1cm4gZGF0ZTtcbiAgICAgICAgfSk7XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktNiBwYWdlLWVudGVyXCI+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC1jb2wgc206ZmxleC1yb3cgc206aXRlbXMtY2VudGVyIHNtOmp1c3RpZnktYmV0d2VlblwiPlxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxoMSBjbGFzc05hbWU9XCJ0ZXh0LTJ4bCBmb250LWJvbGQgdGV4dC1ncmF5LTEwMFwiPkNhbGVuZGFyaW88L2gxPlxuICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtZ3JheS00MDAgbXQtMVwiPlxuICAgICAgICAgICAgQWdlbmRhIGNvbSBldmVudG9zLCBwcm9qZXRvcyBlIHNlcnZpw6dvcyBkbyBtZXMgYXR1YWwuXG4gICAgICAgICAgPC9wPlxuICAgICAgICAgIHtsb2FkaW5nUHJvamV0b3MgJiYgKFxuICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LWdyYXktNTAwIG10LTFcIj5DYXJyZWdhbmRvIGRhdGFzIGRvcyBwcm9qZXRvcy4uLjwvcD5cbiAgICAgICAgICApfVxuICAgICAgICAgIHtlcnJvUHJvamV0b3MgJiYgPHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXJlZC00MDAgbXQtMVwiPntlcnJvUHJvamV0b3N9PC9wPn1cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBnYXAtMiBtdC00IHNtOm10LTBcIj5cbiAgICAgICAgICA8c2VsZWN0XG4gICAgICAgICAgICB2YWx1ZT17dmlld01vZGV9XG4gICAgICAgICAgICBvbkNoYW5nZT17KGV2ZW50KSA9PiBzZXRWaWV3TW9kZShldmVudC50YXJnZXQudmFsdWUgYXMgJ21lcycgfCAnc2VtYW5hJyB8ICdkaWEnKX1cbiAgICAgICAgICAgIGNsYXNzTmFtZT1cInB4LTQgcHktMiBiZy1ncmF5LTgwMCBib3JkZXIgYm9yZGVyLWdyYXktNjAwIHJvdW5kZWQtbGcgdGV4dC1ncmF5LTEwMCBmb2N1czpib3JkZXItYmx1ZS01MDAgZm9jdXM6b3V0bGluZS1ub25lXCJcbiAgICAgICAgICA+XG4gICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwiZGlhXCI+RGlhPC9vcHRpb24+XG4gICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwic2VtYW5hXCI+U2VtYW5hPC9vcHRpb24+XG4gICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwibWVzXCI+TWVzPC9vcHRpb24+XG4gICAgICAgICAgPC9zZWxlY3Q+XG4gICAgICAgICAgPEJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4ge1xuICAgICAgICAgICAgICBpZiAoaXNGb3JtT3Blbikge1xuICAgICAgICAgICAgICAgIHNldElzRm9ybU9wZW4oZmFsc2UpO1xuICAgICAgICAgICAgICAgIHJlc2V0Tm92b0V2ZW50bygpO1xuICAgICAgICAgICAgICAgIHJldHVybjtcbiAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICByZXNldE5vdm9FdmVudG8oKTtcbiAgICAgICAgICAgICAgc2V0SXNGb3JtT3Blbih0cnVlKTtcbiAgICAgICAgICAgIH19XG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFBsdXMgY2xhc3NOYW1lPVwiaC00IHctNCBtci0yXCIgLz5cbiAgICAgICAgICAgIE5vdm8gRXZlbnRvXG4gICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG5cbiAgICAgIDxDYXJkPlxuICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPVwicC02IGZsZXggZmxleC1jb2wgZ2FwLTQgbWQ6ZmxleC1yb3cgbWQ6aXRlbXMtY2VudGVyIG1kOmp1c3RpZnktYmV0d2VlblwiPlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTMgdGV4dC1zbVwiPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0xIHB4LTIgcHktMSByb3VuZGVkIGJvcmRlciBib3JkZXItYmx1ZS03MDAgdGV4dC1ibHVlLTMwMCBiZy1ibHVlLTkwMC80MFwiPlxuICAgICAgICAgICAgICA8Rm9sZGVyIGNsYXNzTmFtZT1cImgtNCB3LTRcIiAvPiBQcm9qZXRvc1xuICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0xIHB4LTIgcHktMSByb3VuZGVkIGJvcmRlciBib3JkZXItZ3JlZW4tNzAwIHRleHQtZ3JlZW4tMzAwIGJnLWdyZWVuLTkwMC80MFwiPlxuICAgICAgICAgICAgICA8V3JlbmNoIGNsYXNzTmFtZT1cImgtNCB3LTRcIiAvPiBTZXJ2acOnb3NcbiAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImlubGluZS1mbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSBweC0yIHB5LTEgcm91bmRlZCBib3JkZXIgYm9yZGVyLW9yYW5nZS03MDAgdGV4dC1vcmFuZ2UtMzAwIGJnLW9yYW5nZS05MDAvNDBcIj5cbiAgICAgICAgICAgICAgPENhbGVuZGFySWNvbiBjbGFzc05hbWU9XCJoLTQgdy00XCIgLz4gRXZlbnRvc1xuICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yXCI+XG4gICAgICAgICAgICAgIDxzZWxlY3RcbiAgICAgICAgICAgICAgICB2YWx1ZT17ZmlsdHJvQWdlbmRhfVxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+IHNldEZpbHRyb0FnZW5kYShldmVudC50YXJnZXQudmFsdWUgYXMgRmlsdHJvQWdlbmRhKX1cbiAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJweC00IHB5LTIgYmctZ3JheS04MDAgYm9yZGVyIGJvcmRlci1ncmF5LTYwMCByb3VuZGVkLWxnIHRleHQtZ3JheS0xMDAgZm9jdXM6Ym9yZGVyLWJsdWUtNTAwIGZvY3VzOm91dGxpbmUtbm9uZVwiXG4gICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwidG9kb3NcIj5Nb3N0cmFyIHR1ZG88L29wdGlvbj5cbiAgICAgICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwiZXZlbnRvXCI+U28gZXZlbnRvczwvb3B0aW9uPlxuICAgICAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJwcm9qZXRvXCI+U28gcHJvamV0b3M8L29wdGlvbj5cbiAgICAgICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwic2Vydmljb1wiPlNvIHNlcnZpw6dvczwvb3B0aW9uPlxuICAgICAgICAgICAgICA8L3NlbGVjdD5cbiAgICAgICAgICAgICAge3NlbGVjdGVkRGF5RmlsdGVyICE9PSBudWxsICYmIChcbiAgICAgICAgICAgICAgICA8QnV0dG9uIHZhcmlhbnQ9XCJvdXRsaW5lXCIgc2l6ZT1cInNtXCIgb25DbGljaz17KCkgPT4gc2V0U2VsZWN0ZWREYXlGaWx0ZXIobnVsbCl9PlxuICAgICAgICAgICAgICAgICAgTGltcGFyIGRpYVxuICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvQ2FyZENvbnRlbnQ+XG4gICAgICA8L0NhcmQ+XG5cbiAgICAgIHtpc0Zvcm1PcGVuICYmIChcbiAgICAgICAgPENhcmQ+XG4gICAgICAgICAgPENhcmRIZWFkZXI+XG4gICAgICAgICAgICA8Q2FyZFRpdGxlPkNhZGFzdHJhciBub3ZvIGV2ZW50bzwvQ2FyZFRpdGxlPlxuICAgICAgICAgIDwvQ2FyZEhlYWRlcj5cbiAgICAgICAgICA8Q2FyZENvbnRlbnQ+XG4gICAgICAgICAgICA8Zm9ybSBvblN1Ym1pdD17aGFuZGxlQ3JlYXRlRXZlbnRvfSBjbGFzc05hbWU9XCJncmlkIGdyaWQtY29scy0xIG1kOmdyaWQtY29scy0yIGdhcC00XCI+XG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJibG9jayB0ZXh0LXNtIHRleHQtZ3JheS0zMDAgbWQ6Y29sLXNwYW4tMlwiPlxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cIm1iLTEgYmxvY2tcIj5Qcm9qZXRvIHJlbGFjaW9uYWRvIChvcGNpb25hbCk8L3NwYW4+XG4gICAgICAgICAgICAgICAgPHNlbGVjdFxuICAgICAgICAgICAgICAgICAgdmFsdWU9e25vdm9FdmVudG8ucHJvamVjdElkfVxuICAgICAgICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT5cbiAgICAgICAgICAgICAgICAgICAgc2V0Tm92b0V2ZW50bygoY3VycmVudCkgPT4gKHsgLi4uY3VycmVudCwgcHJvamVjdElkOiBldmVudC50YXJnZXQudmFsdWUgfSkpXG4gICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgcm91bmRlZC1sZyBib3JkZXIgYm9yZGVyLWdyYXktNjAwIGJnLWdyYXktODAwIHB4LTMgcHktMiB0ZXh0LWdyYXktMTAwIGZvY3VzOmJvcmRlci1ibHVlLTUwMCBmb2N1czpvdXRsaW5lLW5vbmVcIlxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJcIj5TZW0gcHJvamV0byByZWxhY2lvbmFkbzwvb3B0aW9uPlxuICAgICAgICAgICAgICAgICAge3Byb2pldG9zLm1hcCgocHJvamVjdCkgPT4gKFxuICAgICAgICAgICAgICAgICAgICA8b3B0aW9uIGtleT17cHJvamVjdC5pZH0gdmFsdWU9e3Byb2plY3QuaWR9PlxuICAgICAgICAgICAgICAgICAgICAgIHtwcm9qZWN0LnNlcXVlbmNlXG4gICAgICAgICAgICAgICAgICAgICAgICA/IGBJRCAke3Byb2plY3Quc2VxdWVuY2V9JHtwcm9qZWN0LnN1YnNlcXVlbnRlID8gYC8ke3Byb2plY3Quc3Vic2VxdWVudGV9YCA6ICcnfWBcbiAgICAgICAgICAgICAgICAgICAgICAgIDogcHJvamVjdC5wcm90b2NvbG99eycgJ31cbiAgICAgICAgICAgICAgICAgICAgICDigJQge3Byb2plY3QuY2xpZW50ZS5ub21lfVxuICAgICAgICAgICAgICAgICAgICA8L29wdGlvbj5cbiAgICAgICAgICAgICAgICAgICkpfVxuICAgICAgICAgICAgICAgIDwvc2VsZWN0PlxuICAgICAgICAgICAgICA8L2xhYmVsPlxuICAgICAgICAgICAgICA8SW5wdXRcbiAgICAgICAgICAgICAgICBsYWJlbD1cIlRpdHVsb1wiXG4gICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCJFeDogUmV1bmlhbyBjb20gY2xpZW50ZVwiXG4gICAgICAgICAgICAgICAgdmFsdWU9e25vdm9FdmVudG8udGl0dWxvfVxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+XG4gICAgICAgICAgICAgICAgICBzZXROb3ZvRXZlbnRvKChjdXJyZW50KSA9PiAoeyAuLi5jdXJyZW50LCB0aXR1bG86IGV2ZW50LnRhcmdldC52YWx1ZSB9KSlcbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgcmVxdWlyZWRcbiAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cImJsb2NrIHRleHQtc20gdGV4dC1ncmF5LTMwMFwiPlxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cIm1iLTEgYmxvY2tcIj5UaXBvPC9zcGFuPlxuICAgICAgICAgICAgICAgIDxzZWxlY3RcbiAgICAgICAgICAgICAgICAgIHZhbHVlPXtub3ZvRXZlbnRvLnRpcG99XG4gICAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGV2ZW50KSA9PlxuICAgICAgICAgICAgICAgICAgICBzZXROb3ZvRXZlbnRvKChjdXJyZW50KSA9PiAoe1xuICAgICAgICAgICAgICAgICAgICAgIC4uLmN1cnJlbnQsXG4gICAgICAgICAgICAgICAgICAgICAgdGlwbzogZXZlbnQudGFyZ2V0LnZhbHVlIGFzIFRpcG9FdmVudG9NYW51YWwsXG4gICAgICAgICAgICAgICAgICAgIH0pKVxuICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHB4LTMgcHktMiBiZy1ncmF5LTgwMCBib3JkZXIgYm9yZGVyLWdyYXktNjAwIHJvdW5kZWQtbGcgdGV4dC1ncmF5LTEwMCBmb2N1czpib3JkZXItYmx1ZS01MDAgZm9jdXM6b3V0bGluZS1ub25lXCJcbiAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwiaW5zdGFsYWNhb1wiPkluc3RhbGFjYW88L29wdGlvbj5cbiAgICAgICAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJtYW51dGVuY2FvXCI+TWFudXRlbmNhbzwvb3B0aW9uPlxuICAgICAgICAgICAgICAgICAgPG9wdGlvbiB2YWx1ZT1cInJldW5pYW9cIj5SZXVuaWFvPC9vcHRpb24+XG4gICAgICAgICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwidmlzdG9yaWFcIj5WaXN0b3JpYTwvb3B0aW9uPlxuICAgICAgICAgICAgICAgIDwvc2VsZWN0PlxuICAgICAgICAgICAgICA8L2xhYmVsPlxuICAgICAgICAgICAgICA8SW5wdXRcbiAgICAgICAgICAgICAgICBsYWJlbD1cIkRhdGFcIlxuICAgICAgICAgICAgICAgIHR5cGU9XCJkYXRlXCJcbiAgICAgICAgICAgICAgICB2YWx1ZT17bm92b0V2ZW50by5kYXRhfVxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+XG4gICAgICAgICAgICAgICAgICBzZXROb3ZvRXZlbnRvKChjdXJyZW50KSA9PiAoeyAuLi5jdXJyZW50LCBkYXRhOiBldmVudC50YXJnZXQudmFsdWUgfSkpXG4gICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgIHJlcXVpcmVkXG4gICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgIDxJbnB1dFxuICAgICAgICAgICAgICAgIGxhYmVsPVwiSG9yYVwiXG4gICAgICAgICAgICAgICAgdHlwZT1cInRpbWVcIlxuICAgICAgICAgICAgICAgIHZhbHVlPXtub3ZvRXZlbnRvLmhvcmF9XG4gICAgICAgICAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT5cbiAgICAgICAgICAgICAgICAgIHNldE5vdm9FdmVudG8oKGN1cnJlbnQpID0+ICh7IC4uLmN1cnJlbnQsIGhvcmE6IGV2ZW50LnRhcmdldC52YWx1ZSB9KSlcbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgcmVxdWlyZWRcbiAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgPElucHV0XG4gICAgICAgICAgICAgICAgbGFiZWw9XCJMb2NhbFwiXG4gICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCJFbmRlcmXDp29cIlxuICAgICAgICAgICAgICAgIHZhbHVlPXtub3ZvRXZlbnRvLmxvY2FsfVxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+XG4gICAgICAgICAgICAgICAgICBzZXROb3ZvRXZlbnRvKChjdXJyZW50KSA9PiAoeyAuLi5jdXJyZW50LCBsb2NhbDogZXZlbnQudGFyZ2V0LnZhbHVlIH0pKVxuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICByZXF1aXJlZFxuICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICA8SW5wdXRcbiAgICAgICAgICAgICAgICBsYWJlbD1cIlBhcnRpY2lwYW50ZXNcIlxuICAgICAgICAgICAgICAgIHBsYWNlaG9sZGVyPVwiTm9tZXMgc2VwYXJhZG9zIHBvciB2aXJndWxhXCJcbiAgICAgICAgICAgICAgICB2YWx1ZT17bm92b0V2ZW50by5wYXJ0aWNpcGFudGVzfVxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+XG4gICAgICAgICAgICAgICAgICBzZXROb3ZvRXZlbnRvKChjdXJyZW50KSA9PiAoeyAuLi5jdXJyZW50LCBwYXJ0aWNpcGFudGVzOiBldmVudC50YXJnZXQudmFsdWUgfSkpXG4gICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm1kOmNvbC1zcGFuLTJcIj5cbiAgICAgICAgICAgICAgICA8SW5wdXRcbiAgICAgICAgICAgICAgICAgIGxhYmVsPVwiRGVzY3JpY2FvXCJcbiAgICAgICAgICAgICAgICAgIHBsYWNlaG9sZGVyPVwiUmVzdW1vXCJcbiAgICAgICAgICAgICAgICAgIHZhbHVlPXtub3ZvRXZlbnRvLmRlc2NyaWNhb31cbiAgICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZXZlbnQpID0+XG4gICAgICAgICAgICAgICAgICAgIHNldE5vdm9FdmVudG8oKGN1cnJlbnQpID0+ICh7IC4uLmN1cnJlbnQsIGRlc2NyaWNhbzogZXZlbnQudGFyZ2V0LnZhbHVlIH0pKVxuICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm1kOmNvbC1zcGFuLTIgZmxleCBqdXN0aWZ5LWVuZCBnYXAtMlwiPlxuICAgICAgICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICAgICAgICAgICAgdmFyaWFudD1cIm91dGxpbmVcIlxuICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4ge1xuICAgICAgICAgICAgICAgICAgICBzZXRJc0Zvcm1PcGVuKGZhbHNlKTtcbiAgICAgICAgICAgICAgICAgICAgcmVzZXROb3ZvRXZlbnRvKCk7XG4gICAgICAgICAgICAgICAgICB9fVxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIENhbmNlbGFyXG4gICAgICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgICAgICAge2VkaXRpbmdFdmVudElkICYmIChcbiAgICAgICAgICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lXCJcbiAgICAgICAgICAgICAgICAgICAgZGlzYWJsZWQ9e3NhdmluZ0V2ZW50fVxuICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiB2b2lkIGhhbmRsZURlbGV0ZUV2ZW50byhlZGl0aW5nRXZlbnRJZCl9XG4gICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgIDxUcmFzaCBjbGFzc05hbWU9XCJtci0yIGgtNCB3LTRcIiAvPlxuICAgICAgICAgICAgICAgICAgICBFeGNsdWlyXG4gICAgICAgICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICAgIDxCdXR0b24gdHlwZT1cInN1Ym1pdFwiIGxvYWRpbmc9e3NhdmluZ0V2ZW50fT5cbiAgICAgICAgICAgICAgICAgIHtlZGl0aW5nRXZlbnRJZCA/ICdTYWx2YXIgYWx0ZXJhw6fDtWVzJyA6ICdTYWx2YXIgZXZlbnRvJ31cbiAgICAgICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8L2Zvcm0+XG4gICAgICAgICAgPC9DYXJkQ29udGVudD5cbiAgICAgICAgPC9DYXJkPlxuICAgICAgKX1cblxuICAgICAge3ZpZXdNb2RlID09PSAnbWVzJyAmJiAoXG4gICAgICAgIDxDYXJkPlxuICAgICAgICAgIDxDYXJkQ29udGVudCBjbGFzc05hbWU9XCJwLTZcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIG1iLTZcIj5cbiAgICAgICAgICAgICAgPEJ1dHRvbiB2YXJpYW50PVwib3V0bGluZVwiIG9uQ2xpY2s9eygpID0+IG5hdmlnYXRlTW9udGgoJ3ByZXYnKX0+XG4gICAgICAgICAgICAgICAgPENhcmV0TGVmdCBjbGFzc05hbWU9XCJoLTQgdy00XCIgLz5cbiAgICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJ0ZXh0LXhsIGZvbnQtc2VtaWJvbGQgdGV4dC1ncmF5LTEwMFwiPlxuICAgICAgICAgICAgICAgIHtmb3JtYXRNb250aFllYXIoc2VsZWN0ZWREYXRlKX1cbiAgICAgICAgICAgICAgPC9oMj5cbiAgICAgICAgICAgICAgPEJ1dHRvbiB2YXJpYW50PVwib3V0bGluZVwiIG9uQ2xpY2s9eygpID0+IG5hdmlnYXRlTW9udGgoJ25leHQnKX0+XG4gICAgICAgICAgICAgICAgPENhcmV0UmlnaHQgY2xhc3NOYW1lPVwiaC00IHctNFwiIC8+XG4gICAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBncmlkLWNvbHMtNyBnYXAtMVwiPlxuICAgICAgICAgICAgICB7WydEb20nLCAnU2VnJywgJ1RlcicsICdRdWEnLCAnUXVpJywgJ1NleCcsICdTYWInXS5tYXAoKGRheSkgPT4gKFxuICAgICAgICAgICAgICAgIDxkaXYga2V5PXtkYXl9IGNsYXNzTmFtZT1cInRleHQtY2VudGVyIHB5LTIgdGV4dC1zbSBmb250LW1lZGl1bSB0ZXh0LWdyYXktNDAwXCI+XG4gICAgICAgICAgICAgICAgICB7ZGF5fVxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICApKX1cblxuICAgICAgICAgICAgICB7Z2V0RGF5c0luTW9udGgoc2VsZWN0ZWREYXRlKS5tYXAoKGRheSwgaW5kZXgpID0+IHtcbiAgICAgICAgICAgICAgICBjb25zdCBkYXlJdGVtcyA9IGRheSA/IGdldEl0ZW5zRm9yRGF5KGRheSkgOiBbXTtcbiAgICAgICAgICAgICAgICBjb25zdCB0b2RheSA9IG5ldyBEYXRlKCk7XG4gICAgICAgICAgICAgICAgY29uc3QgaXNUb2RheSA9XG4gICAgICAgICAgICAgICAgICBkYXkgPT09IHRvZGF5LmdldERhdGUoKSAmJlxuICAgICAgICAgICAgICAgICAgc2VsZWN0ZWREYXRlLmdldE1vbnRoKCkgPT09IHRvZGF5LmdldE1vbnRoKCkgJiZcbiAgICAgICAgICAgICAgICAgIHNlbGVjdGVkRGF0ZS5nZXRGdWxsWWVhcigpID09PSB0b2RheS5nZXRGdWxsWWVhcigpO1xuXG4gICAgICAgICAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgICAgICAga2V5PXtTdHJpbmcoaW5kZXgpfVxuICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9e1tcbiAgICAgICAgICAgICAgICAgICAgICAnbWluLWgtWzkwcHhdIGJvcmRlciBib3JkZXItZ3JheS03MDAgcm91bmRlZC1sZyBwLTInLFxuICAgICAgICAgICAgICAgICAgICAgIGRheSA/ICdob3ZlcjpiZy1ncmF5LTgwMCBjdXJzb3ItcG9pbnRlcicgOiAnJyxcbiAgICAgICAgICAgICAgICAgICAgICBpc1RvZGF5ID8gJ2JnLWJsdWUtOTAwLzIwIGJvcmRlci1ibHVlLTYwMCcgOiAnJyxcbiAgICAgICAgICAgICAgICAgICAgICBkYXkgJiYgc2VsZWN0ZWREYXlGaWx0ZXIgPT09IGRheSA/ICdyaW5nLTIgcmluZy1vcGotYmx1ZSBiZy1ibHVlLTkwMC8zMCcgOiAnJyxcbiAgICAgICAgICAgICAgICAgICAgXS5qb2luKCcgJyl9XG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHtcbiAgICAgICAgICAgICAgICAgICAgICBpZiAoIWRheSkgcmV0dXJuO1xuICAgICAgICAgICAgICAgICAgICAgIHNldFNlbGVjdGVkRGF5RmlsdGVyKGRheSk7XG4gICAgICAgICAgICAgICAgICAgIH19XG4gICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgIHtkYXkgJiYgKFxuICAgICAgICAgICAgICAgICAgICAgIDw+XG4gICAgICAgICAgICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YHRleHQtc20gZm9udC1tZWRpdW0gJHtpc1RvZGF5ID8gJ3RleHQtYmx1ZS00MDAnIDogJ3RleHQtZ3JheS0zMDAnfWB9XG4gICAgICAgICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgICAgICAgIHtkYXl9XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtMSBzcGFjZS15LTFcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAge2RheUl0ZW1zLnNsaWNlKDAsIDIpLm1hcCgoaXRlbSkgPT4gKFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGtleT17aXRlbS5pZH1cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YHRleHQteHMgcHgtMSBweS0wLjUgcm91bmRlZCB0cnVuY2F0ZSAke2dldFRpcG9Db2xvcihpdGVtKX1gfVxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdGl0bGU9e2l0ZW0udGl0dWxvfVxuICAgICAgICAgICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHtnZXRUaXBvSWNvbihpdGVtKX0ge2l0ZW0udGl0dWxvfVxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgICApKX1cbiAgICAgICAgICAgICAgICAgICAgICAgICAge2RheUl0ZW1zLmxlbmd0aCA+IDIgJiYgKFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LWdyYXktNDAwXCI+K3tkYXlJdGVtcy5sZW5ndGggLSAyfSBtYWlzPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICl9XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICA8Lz5cbiAgICAgICAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICk7XG4gICAgICAgICAgICAgIH0pfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9DYXJkQ29udGVudD5cbiAgICAgICAgPC9DYXJkPlxuICAgICAgKX1cblxuICAgICAge3ZpZXdNb2RlICE9PSAnbWVzJyAmJiAoXG4gICAgICAgIDxDYXJkPlxuICAgICAgICAgIDxDYXJkSGVhZGVyPlxuICAgICAgICAgICAgPENhcmRUaXRsZT57dmlld01vZGUgPT09ICdkaWEnID8gJ0FnZW5kYSBkbyBkaWEnIDogJ0FnZW5kYSBkYSBzZW1hbmEnfTwvQ2FyZFRpdGxlPlxuICAgICAgICAgIDwvQ2FyZEhlYWRlcj5cbiAgICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPXtgZ3JpZCBnYXAtMyAke3ZpZXdNb2RlID09PSAnc2VtYW5hJyA/ICdtZDpncmlkLWNvbHMtNycgOiAnJ31gfT5cbiAgICAgICAgICAgIHtjb21wYWN0Vmlld0RhdGVzLm1hcCgoZGF0ZSkgPT4ge1xuICAgICAgICAgICAgICBjb25zdCBkYXRlS2V5ID0gYCR7ZGF0ZS5nZXRGdWxsWWVhcigpfS0ke1N0cmluZyhkYXRlLmdldE1vbnRoKCkgKyAxKS5wYWRTdGFydCgyLCAnMCcpfS0ke1N0cmluZyhkYXRlLmdldERhdGUoKSkucGFkU3RhcnQoMiwgJzAnKX1gO1xuICAgICAgICAgICAgICBjb25zdCBpdGVtcyA9IGFnZW5kYUZpbHRyYWRhT3JkZW5hZGEuZmlsdGVyKChpdGVtKSA9PiBpdGVtLmRhdGEgPT09IGRhdGVLZXkpO1xuICAgICAgICAgICAgICByZXR1cm4gKFxuICAgICAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgICAgIGtleT17ZGF0ZUtleX1cbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInJvdW5kZWQteGwgYm9yZGVyIGJvcmRlci13aGl0ZS8xMCBiZy1zbGF0ZS05NTAvMzUgcC0zXCJcbiAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRleHQtc20gZm9udC1zZW1pYm9sZCB0ZXh0LXNsYXRlLTIwMFwiPlxuICAgICAgICAgICAgICAgICAgICB7ZGF0ZS50b0xvY2FsZURhdGVTdHJpbmcoJ3B0LUJSJywge1xuICAgICAgICAgICAgICAgICAgICAgIHdlZWtkYXk6ICdzaG9ydCcsXG4gICAgICAgICAgICAgICAgICAgICAgZGF5OiAnMi1kaWdpdCcsXG4gICAgICAgICAgICAgICAgICAgICAgbW9udGg6ICcyLWRpZ2l0JyxcbiAgICAgICAgICAgICAgICAgICAgfSl9XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtMyBzcGFjZS15LTJcIj5cbiAgICAgICAgICAgICAgICAgICAge2l0ZW1zLm1hcCgoaXRlbSkgPT4gKFxuICAgICAgICAgICAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgICAgICAgICAgIGtleT17aXRlbS5pZH1cbiAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb3BlbkV2ZW50Rm9yRWRpdChpdGVtKX1cbiAgICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YHctZnVsbCByb3VuZGVkLWxnIHB4LTIgcHktMiB0ZXh0LWxlZnQgdGV4dC14cyAke2dldFRpcG9Db2xvcihpdGVtKX1gfVxuICAgICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZm9udC1zZW1pYm9sZFwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgICB7aXRlbS5ob3JhfSDCtyB7aXRlbS50aXR1bG99XG4gICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICAgICAgKSl9XG4gICAgICAgICAgICAgICAgICAgIHtpdGVtcy5sZW5ndGggPT09IDAgJiYgPGRpdiBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtc2xhdGUtNTAwXCI+U2VtIGl0ZW5zPC9kaXY+fVxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICk7XG4gICAgICAgICAgICB9KX1cbiAgICAgICAgICA8L0NhcmRDb250ZW50PlxuICAgICAgICA8L0NhcmQ+XG4gICAgICApfVxuXG4gICAgICA8Q2FyZD5cbiAgICAgICAgPENhcmRIZWFkZXI+XG4gICAgICAgICAgPENhcmRUaXRsZT5cbiAgICAgICAgICAgIHtzZWxlY3RlZERheUZpbHRlciAhPT0gbnVsbFxuICAgICAgICAgICAgICA/IGBBZ2VuZGEgZG8gZGlhICR7Zm9ybWF0RGF0ZUZyb21EYXkoc2VsZWN0ZWREYXlGaWx0ZXIpfWBcbiAgICAgICAgICAgICAgOiAnUHJveGltb3MgSXRlbnMgZGEgQWdlbmRhJ31cbiAgICAgICAgICA8L0NhcmRUaXRsZT5cbiAgICAgICAgPC9DYXJkSGVhZGVyPlxuICAgICAgICA8Q2FyZENvbnRlbnQ+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTRcIj5cbiAgICAgICAgICAgIHthZ2VuZGFGaWx0cmFkYU9yZGVuYWRhLnNsaWNlKDAsIHNlbGVjdGVkRGF5RmlsdGVyICE9PSBudWxsID8gNTAgOiA4KS5tYXAoKGl0ZW0pID0+IChcbiAgICAgICAgICAgICAgPGRpdiBrZXk9e2l0ZW0uaWR9IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtc3RhcnQgc3BhY2UteC00IHAtNCBiZy1ncmF5LTgwMCByb3VuZGVkLWxnXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2BwLTIgcm91bmRlZC1sZyAke2dldFRpcG9Db2xvcihpdGVtKX1gfT5cbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQteHMgZm9udC1zZW1pYm9sZFwiPntnZXRUaXBvSWNvbihpdGVtKX08L3NwYW4+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4LTFcIj5cbiAgICAgICAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LWdyYXktMTAwXCI+e2l0ZW0udGl0dWxvfTwvaDM+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC13cmFwIGl0ZW1zLWNlbnRlciBnYXAtNCBtdC0yIHRleHQtc20gdGV4dC1ncmF5LTQwMFwiPlxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyXCI+XG4gICAgICAgICAgICAgICAgICAgICAgPENhbGVuZGFySWNvbiBjbGFzc05hbWU9XCJoLTQgdy00IG1yLTFcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgIHtmb3JtYXREYXRlQlIoaXRlbS5kYXRhKX1cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8Q2xvY2sgY2xhc3NOYW1lPVwiaC00IHctNCBtci0xXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICB7aXRlbS5ob3JhfVxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlclwiPlxuICAgICAgICAgICAgICAgICAgICAgIDxNYXBQaW4gY2xhc3NOYW1lPVwiaC00IHctNCBtci0xXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICB7aXRlbS5sb2NhbH1cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8VXNlcnMgY2xhc3NOYW1lPVwiaC00IHctNCBtci0xXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICB7aXRlbS5wYXJ0aWNpcGFudGVzLmxlbmd0aH0gcGFydGljaXBhbnRlc1xuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwicHgtMiBweS0xIHJvdW5kZWQtZnVsbCB0ZXh0LXhzIGJvcmRlciBib3JkZXItZ3JheS02MDAgdGV4dC1ncmF5LTMwMFwiPlxuICAgICAgICAgICAgICAgICAgICAgIHtnZXRPcmlnZW1MYWJlbChpdGVtLm9yaWdlbSl9XG4gICAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwibXQtMiB0ZXh0LXNtIHRleHQtZ3JheS0zMDBcIj57aXRlbS5kZXNjcmljYW8gfHwgJ1NlbSBkZXNjcmljYW8uJ308L3A+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAge2l0ZW0ucHJvamVjdElkID8gKFxuICAgICAgICAgICAgICAgICAgPExpbmsgdG89e2AvcHJvamV0b3MvJHtpdGVtLnByb2plY3RJZH1gfT5cbiAgICAgICAgICAgICAgICAgICAgPEJ1dHRvbiB2YXJpYW50PVwib3V0bGluZVwiIHNpemU9XCJzbVwiPlxuICAgICAgICAgICAgICAgICAgICAgIFZlciBwcm9qZXRvXG4gICAgICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgICAgICAgICAgPC9MaW5rPlxuICAgICAgICAgICAgICAgICkgOiAoXG4gICAgICAgICAgICAgICAgICA8QnV0dG9uIHZhcmlhbnQ9XCJvdXRsaW5lXCIgc2l6ZT1cInNtXCIgZGlzYWJsZWQ+XG4gICAgICAgICAgICAgICAgICAgIEV2ZW50b1xuICAgICAgICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgICAgICB7aXRlbS5vcmlnZW0gPT09ICdldmVudG8nICYmIGl0ZW0uc3VidGlwbyAhPT0gJ3N0YXR1c19kZWFkbGluZScgJiYgKFxuICAgICAgICAgICAgICAgICAgPEJ1dHRvbiB2YXJpYW50PVwib3V0bGluZVwiIHNpemU9XCJzbVwiIG9uQ2xpY2s9eygpID0+IG9wZW5FdmVudEZvckVkaXQoaXRlbSl9PlxuICAgICAgICAgICAgICAgICAgICA8UGVuY2lsU2ltcGxlIGNsYXNzTmFtZT1cIm1yLTIgaC00IHctNFwiIC8+XG4gICAgICAgICAgICAgICAgICAgIEVkaXRhclxuICAgICAgICAgICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApKX1cbiAgICAgICAgICAgIHthZ2VuZGFGaWx0cmFkYU9yZGVuYWRhLmxlbmd0aCA9PT0gMCAmJiAoXG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC00IGJnLWdyYXktODAwIHJvdW5kZWQtbGcgdGV4dC1ncmF5LTQwMFwiPlxuICAgICAgICAgICAgICAgIE5lbmh1bSBpdGVtIGVuY29udHJhZG8gcGFyYSBvIGZpbHRybyBzZWxlY2lvbmFkby5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApfVxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICA8L0NhcmRDb250ZW50PlxuICAgICAgPC9DYXJkPlxuICAgIDwvZGl2PlxuICApO1xufTtcbiJdLCJmaWxlIjoiQTovd29ya3NwYWNlL25vdmEgYXR0L2RlcGxveS1wcm9qZWN0cy1hcHAvc3JjL2ZlYXR1cmVzL2NhbGVuZGFyaW8vcGFnZXMvQ2FsZW5kYXJpb1BhZ2UudHN4In0=

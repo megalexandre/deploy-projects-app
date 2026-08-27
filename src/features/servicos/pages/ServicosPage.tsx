@@ -18,6 +18,7 @@ import type {
 import {
   getCuponsDescontoServicosAtivos,
   loadConfiguracoesSistema,
+  loadConfiguracoesSistemaFromApi,
 } from '@/utils/configuracoesSistema';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import {
@@ -225,7 +226,14 @@ export const ServicosPage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ServicoForm>(createEmptyForm());
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
-  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const [configuracoesSistema, setConfiguracoesSistema] = useState(() =>
+    loadConfiguracoesSistema(),
+  );
+  useEffect(() => {
+    void loadConfiguracoesSistemaFromApi()
+      .then(setConfiguracoesSistema)
+      .catch((error) => console.error('Erro ao carregar cupons de serviços:', error));
+  }, []);
   const cupons = useMemo(() => {
     if (!currentUser?.id) return [];
     return getCuponsDescontoServicosAtivos(configuracoesSistema).filter((cupom) =>

@@ -43,6 +43,7 @@ import {
   buildTabelaPrecoPadraoEntradaMap,
   getCuponsDescontoProjetosAtivos,
   loadConfiguracoesSistema,
+  loadConfiguracoesSistemaFromApi,
 } from '@/utils/configuracoesSistema';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { useEffect, useMemo, useState } from 'react';
@@ -377,7 +378,9 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
   const [divisaoCreditos, setDivisaoCreditos] = useState<DivisaoCreditosForm[]>([
     buildDivisaoCreditosVazia(),
   ]);
-  const [configuracoesSistema] = useState(() => loadConfiguracoesSistema());
+  const [configuracoesSistema, setConfiguracoesSistema] = useState(() =>
+    loadConfiguracoesSistema(),
+  );
   const [padraoEntradaItens, setPadraoEntradaItens] = useState<PadraoEntradaItemForm[]>(() =>
     buildPadraoEntradaLinhas(configuracoesSistema.tabelaPrecoPadraoEntrada),
   );
@@ -385,6 +388,15 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
   const [selectedCustomerDocumentIds, setSelectedCustomerDocumentIds] = useState<string[]>([]);
   const [valorProjeto, setValorProjeto] = useState('');
   const [valorProjetoEditado, setValorProjetoEditado] = useState(false);
+
+  useEffect(() => {
+    void loadConfiguracoesSistemaFromApi()
+      .then((config) => {
+        setConfiguracoesSistema(config);
+        setPadraoEntradaItens(buildPadraoEntradaLinhas(config.tabelaPrecoPadraoEntrada));
+      })
+      .catch((error) => console.error('Erro ao carregar tabelas de preço:', error));
+  }, []);
   const [usuariosIntegradores, setUsuariosIntegradores] = useState<User[]>([]);
   const [cupomProjetoId, setCupomProjetoId] = useState('');
 
@@ -674,6 +686,23 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
 
   useEffect(() => {
     const loadIntegradores = async () => {
+      if (currentUser && !currentUser.isAdmin) {
+        const currentIntegrator = {
+          id: currentUser.id,
+          name: currentUser.name.trim() || currentUser.email,
+        };
+
+        setIntegradores([currentIntegrator]);
+        setDadosBasicos((prev) => {
+          if (isEditing || prev.integrador.trim() !== '') {
+            return prev;
+          }
+
+          return { ...prev, integrador: currentIntegrator.id };
+        });
+        return;
+      }
+
       try {
         const users = await usersService.getAll();
         setUsuariosIntegradores(users);
@@ -689,10 +718,6 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
               return prev;
             }
 
-            if (!currentUser?.isAdmin && options.length === 1) {
-              return { ...prev, integrador: options[0].id };
-            }
-
             return prev;
           });
         }
@@ -702,7 +727,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
     };
 
     void loadIntegradores();
-  }, [currentUser?.isAdmin]);
+  }, [currentUser, isEditing]);
 
   useEffect(() => {
     if (modoCliente !== 'existente') return;
