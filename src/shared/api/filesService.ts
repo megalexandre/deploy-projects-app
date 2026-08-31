@@ -26,28 +26,6 @@ const normalizeUpload = (payload: BackendUploadResponse): UploadedFileResponse =
   createdAt: payload.created_at,
 });
 
-const buildUrl = (path: string) => {
-  const endpoint = path.startsWith('/') ? path : `/${path}`;
-  const baseUrl = apiClient.baseUrl;
-  if (/^https?:\/\//i.test(baseUrl)) {
-    return new URL(endpoint, `${baseUrl.replace(/\/+$/, '')}/`).toString();
-  }
-
-  return `${baseUrl.replace(/\/+$/, '')}${endpoint}`;
-};
-
-const buildHeaders = () => {
-  const headers = new Headers();
-  headers.set('Accept', 'application/json');
-
-  const token = apiClient.getToken();
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  return headers;
-};
-
 export const filesService = {
   async uploadFiles(itemId: string, files: File[]): Promise<UploadedFileResponse[]> {
     if (files.length === 0) {
@@ -59,23 +37,7 @@ export const filesService = {
     formData.append('item_id', itemId);
     files.forEach((file) => formData.append('files[]', file));
 
-    const response = await fetch(buildUrl(FILES_ENDPOINT), {
-      method: 'POST',
-      headers: buildHeaders(),
-      body: formData,
-    });
-
-    const contentType = response.headers.get('content-type');
-    const isJson = contentType?.includes('application/json');
-    const payload = isJson ? await response.json() : await response.text();
-
-    if (!response.ok) {
-      throw new ApiError(
-        resolveErrorMessage(payload, 'Erro ao enviar arquivos'),
-        response.status,
-        payload,
-      );
-    }
+    const payload = await apiClient.post<BackendUploadResponse[]>(FILES_ENDPOINT, formData);
 
     return Array.isArray(payload)
       ? payload.map((item) => normalizeUpload(item as BackendUploadResponse))
@@ -83,25 +45,9 @@ export const filesService = {
   },
 
   async listByItem(itemId: string): Promise<UploadedFileResponse[]> {
-    const response = await fetch(
-      buildUrl(`${FILES_ENDPOINT}?item_id=${encodeURIComponent(itemId)}`),
-      {
-        method: 'GET',
-        headers: buildHeaders(),
-      },
-    );
-
-    const contentType = response.headers.get('content-type');
-    const isJson = contentType?.includes('application/json');
-    const payload = isJson ? await response.json() : await response.text();
-
-    if (!response.ok) {
-      throw new ApiError(
-        resolveErrorMessage(payload, 'Erro ao carregar arquivos'),
-        response.status,
-        payload,
-      );
-    }
+    const payload = await apiClient.get<BackendUploadResponse[]>(FILES_ENDPOINT, {
+      query: { item_id: itemId },
+    });
 
     return Array.isArray(payload)
       ? payload.map((item) => normalizeUpload(item as BackendUploadResponse))
@@ -109,9 +55,14 @@ export const filesService = {
   },
 
   async downloadFile(fileId: string) {
-    const response = await fetch(buildUrl(`${FILES_ENDPOINT}/${fileId}/download`), {
+    const endpoint = `${FILES_ENDPOINT}/${fileId}/download`;
+    const baseUrl = apiClient.baseUrl.replace(/\/+$/, '');
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       method: 'GET',
-      headers: buildHeaders(),
+      headers: {
+        Accept: 'application/octet-stream',
+        ...(apiClient.getToken() ? { Authorization: `Bearer ${apiClient.getToken()}` } : {}),
+      },
     });
 
     if (!response.ok) {

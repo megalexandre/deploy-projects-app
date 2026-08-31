@@ -164,9 +164,10 @@ const request = async <T>(
 ): Promise<T> => {
   const token = getStoredToken();
   const headers = new Headers(options.headers);
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   headers.set('Accept', 'application/json');
 
-  if (options.body !== undefined) {
+  if (options.body !== undefined && !isFormData) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -178,7 +179,14 @@ const request = async <T>(
     ...options,
     method,
     headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    // O navegador precisa definir o boundary do multipart; por isso nao se deve
+    // informar Content-Type nem serializar FormData como JSON.
+    body:
+      options.body === undefined
+        ? undefined
+        : isFormData
+          ? (options.body as FormData)
+          : JSON.stringify(options.body),
   });
 
   const contentType = response.headers.get('content-type');

@@ -29,6 +29,7 @@ import {
   type LedgerKind,
   type TransacaoFinanceira,
 } from '../services/financeiroService';
+import { calculateProjectReceipts } from '../domain/projectFinance';
 
 type TransactionFormState = {
   descricao: string;
@@ -395,8 +396,13 @@ const buildProjectFinanceRows = (projetos: Projeto[], transacoes: TransacaoFinan
       const valorProjeto = Number(projeto.valor) || 0;
       const receipts = receiptsByProjectId.get(projeto.id) ?? [];
       const valorRecebido = receipts.reduce((sum, transacao) => sum + transacao.valor, 0);
-      const receitaPaga = valorProjeto > 0 && valorRecebido >= valorProjeto ? valorProjeto : 0;
-      const receitaPrevista = Math.max(valorProjeto - valorRecebido, 0);
+      // Todo recebimento registrado ja e um valor pago, mesmo quando ainda nao
+      // quita o projeto inteiro. Antes, pagamentos parciais eram zerados aqui e
+      // desapareciam do resumo financeiro do integrador.
+      const { paid: receitaPaga, remaining: receitaPrevista } = calculateProjectReceipts(
+        valorProjeto,
+        valorRecebido,
+      );
       const lastReceiptDate = receipts
         .map((transacao) => transacao.data)
         .sort((left, right) => right.localeCompare(left))[0];
@@ -627,13 +633,13 @@ const UsuarioFinanceiroPage: React.FC = () => {
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className={`${glassCardClass} flex items-center justify-between p-5`}>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Projetos pagos</p>
+            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Valores recebidos</p>
             <h3 className="text-2xl font-semibold text-emerald-300">
               {formatCurrencyBRL(userTotals.totalReceita)}
             </h3>
             <div className="mt-2 flex items-center gap-1 text-sm text-emerald-300">
               <ArrowUp className="h-4 w-4" />
-              <span>{userTotals.projetosPagos} projetos pagos</span>
+              <span>{userTotals.projetosPagos} projetos com recebimento</span>
             </div>
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300">
@@ -664,7 +670,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
           <div className="flex items-center gap-4 text-xs text-slate-400">
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-              Projeto pago
+              Valor recebido
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-cyan-300" />
@@ -702,7 +708,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
                     <div
                       className="w-5 rounded-t-sm bg-emerald-300 transition-all"
                       style={{ height: `${item.receitaHeight}%` }}
-                      title={`Projeto pago ${formatCurrencyBRL(item.receita)}`}
+                      title={`Valor recebido ${formatCurrencyBRL(item.receita)}`}
                     />
                     <div
                       className="w-5 rounded-t-sm bg-cyan-300/80 transition-all"
