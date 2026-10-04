@@ -18,6 +18,7 @@ export type {
   Projeto,
   DashboardStats,
   Servico,
+  StatusAprovacaoServico,
   Usuario,
   Transacao,
   Evento,

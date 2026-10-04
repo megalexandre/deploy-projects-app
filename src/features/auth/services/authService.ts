@@ -74,7 +74,7 @@ export const authService = {
     try {
       const currentUser = await authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error('Nao foi possivel carregar os dados do usuario autenticado.');
+        throw new Error('Não foi possível carregar os dados do usuário autenticado.');
       }
 
       setSessionUser(currentUser);

@@ -30,7 +30,7 @@ export const SistemaSettingsSection: React.FC<SistemaSettingsSectionProps> = ({
         >
           <option value="dark">Escuro</option>
           <option value="light">Claro</option>
-          <option value="auto">Automatico</option>
+          <option value="auto">Automático</option>
         </select>
       </div>
 
@@ -41,20 +41,20 @@ export const SistemaSettingsSection: React.FC<SistemaSettingsSectionProps> = ({
           onChange={(event) => onInputChange('idioma', event.target.value)}
           className={selectClassName}
         >
-          <option value="pt-BR">Portugues (Brasil)</option>
+          <option value="pt-BR">Português (Brasil)</option>
           <option value="en-US">English</option>
-          <option value="es-ES">Espanol</option>
+          <option value="es-ES">Español</option>
         </select>
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-300">Fuso Horario</label>
+        <label className="mb-2 block text-sm font-medium text-gray-300">Fuso Horário</label>
         <select
           value={formData.fusoHorario}
           onChange={(event) => onInputChange('fusoHorario', event.target.value)}
           className={selectClassName}
         >
-          <option value="America/Sao_Paulo">Brasilia (GMT-3)</option>
+          <option value="America/Sao_Paulo">Brasília (GMT-3)</option>
           <option value="America/New_York">Nova York (GMT-5)</option>
           <option value="Europe/London">Londres (GMT+0)</option>
         </select>

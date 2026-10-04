@@ -27,7 +27,7 @@ export const ProjetosFilter: React.FC<Props> = ({
     <CardContent className="p-6">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_240px_280px]">
         <Input
-          placeholder="Buscar por ID, protocolo, cliente ou concessionaria..."
+          placeholder="Buscar por ID, protocolo, cliente ou concessionária..."
           value={searchTerm}
           onChange={(event) => onSearchChange(event.target.value)}
           icon={<MagnifyingGlass />}
@@ -37,7 +37,7 @@ export const ProjetosFilter: React.FC<Props> = ({
           onChange={(event) => onUserChange(event.target.value)}
           className="h-[46px] w-full rounded-xl border border-white/20 bg-slate-900/50 px-3 text-sm text-slate-100 outline-none transition-colors duration-200 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/35"
         >
-          <option value="todos">Todos os usuarios</option>
+          <option value="todos">Todos os usuários</option>
           {userOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}

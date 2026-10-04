@@ -54,7 +54,7 @@ const formatEnderecoResumo = (projeto: ProjetoKanbanCard) => {
     .join('')
     .trim();
 
-  return endereco || 'Endereço nao informado';
+  return endereco || 'Endereço não informado';
 };
 
 export const ProjetoCard: React.FC<ProjetoCardProps> = ({
@@ -128,7 +128,7 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <Buildings className="h-4 w-4 text-[#43dde6]" />
-          <span>Concessionaria {projeto.dadosProjeto.concessionaria}</span>
+          <span>Concessionária {projeto.dadosProjeto.concessionaria}</span>
         </div>
 
         {isProjetoSolar ? (

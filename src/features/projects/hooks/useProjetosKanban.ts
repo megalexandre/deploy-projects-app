@@ -139,7 +139,7 @@ export const useProjetosKanban = () => {
         );
       } catch (loadError) {
         console.error('Erro ao carregar projetos:', loadError);
-        setError('Nao foi possivel carregar os projetos.');
+        setError('Não foi possível carregar os projetos.');
       } finally {
         setLoading(false);
       }
@@ -270,7 +270,7 @@ export const useProjetosKanban = () => {
     } catch (updateError) {
       console.error('Erro ao atualizar status do projeto:', updateError);
       setProjetos(previous);
-      setError('Nao foi possivel atualizar o status do projeto.');
+      setError('Não foi possível atualizar o status do projeto.');
     } finally {
       setUpdatingStatus(false);
     }

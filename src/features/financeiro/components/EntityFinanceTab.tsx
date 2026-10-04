@@ -21,6 +21,7 @@ import {
 
 type Props = EntityFinanceScope & {
   showExpenseDetails?: boolean;
+  canManageExpenses?: boolean;
 };
 
 type ExpenseFormState = {
@@ -69,6 +70,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
   amount,
   createdAt,
   showExpenseDetails = true,
+  canManageExpenses = true,
 }) => {
   const scope = useMemo(
     () => ({ entityType, entityId, entityLabel, amount, createdAt }),
@@ -96,7 +98,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Nao foi possivel carregar o financeiro deste item.',
+          : 'Não foi possível carregar o financeiro deste item.',
       );
     } finally {
       setLoading(false);
@@ -155,7 +157,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
       valor <= 0
     ) {
       setErrorMessage(
-        'Preencha os campos obrigatorios da despesa: descricao, categoria, data e valor.',
+        'Preencha os campos obrigatórios da despesa: descrição, categoria, data e valor.',
       );
       return;
     }
@@ -179,7 +181,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
     } catch (error) {
       console.error('Erro ao salvar despesa vinculada:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel salvar a despesa.',
+        error instanceof Error ? error.message : 'Não foi possível salvar a despesa.',
       );
     } finally {
       setLoading(false);
@@ -192,7 +194,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
 
     const valor = parseCurrencyBRL(receiptForm.valor);
     if (!receiptForm.data || Number.isNaN(valor) || valor <= 0) {
-      setErrorMessage('Preencha os campos obrigatorios do recebimento: data e valor.');
+      setErrorMessage('Preencha os campos obrigatórios do recebimento: data e valor.');
       return;
     }
 
@@ -213,7 +215,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
     } catch (error) {
       console.error('Erro ao salvar recebimento vinculado:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel salvar o recebimento.',
+        error instanceof Error ? error.message : 'Não foi possível salvar o recebimento.',
       );
     } finally {
       setLoading(false);
@@ -236,7 +238,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
     } catch (error) {
       console.error('Erro ao atualizar recebimento vinculado:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel atualizar o recebimento.',
+        error instanceof Error ? error.message : 'Não foi possível atualizar o recebimento.',
       );
     } finally {
       setLoading(false);
@@ -334,8 +336,8 @@ export const EntityFinanceTab: React.FC<Props> = ({
             <div>
               <CardTitle>Recebimento principal</CardTitle>
               <p className="mt-1 text-sm text-slate-400">
-                Lancamentos parciais ate atingir o valor final de{' '}
-                {entityType === 'projeto' ? 'projeto' : 'servico'}.
+                Lançamentos parciais até atingir o valor final de{' '}
+                {entityType === 'projeto' ? 'projeto' : 'serviço'}.
               </p>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
@@ -359,7 +361,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div>
-            <div className="text-sm text-slate-400">Referencia</div>
+            <div className="text-sm text-slate-400">Referência</div>
             <div className="mt-1 text-slate-100">{snapshot.payment.descricao}</div>
           </div>
           <div>
@@ -516,7 +518,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
         </CardContent>
       </Card>
 
-      {showExpenseDetails && formOpen && (
+      {showExpenseDetails && canManageExpenses && formOpen && (
         <Card>
           <CardHeader>
             <CardTitle>{editingExpense ? 'Editar despesa' : 'Nova despesa'}</CardTitle>
@@ -531,7 +533,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 }
                 error={
                   expenseSubmitAttempted && !form.descricao.trim()
-                    ? 'Informe a descricao.'
+                    ? 'Informe a descrição.'
                     : undefined
                 }
                 required
@@ -618,13 +620,15 @@ export const EntityFinanceTab: React.FC<Props> = ({
               <div>
                 <CardTitle>Despesas vinculadas</CardTitle>
                 <p className="mt-1 text-sm text-slate-400">
-                  Lancamentos operacionais associados a {entityLabel}.
+                  Lançamentos operacionais associados a {entityLabel}.
                 </p>
               </div>
-              <Button type="button" onClick={openCreateForm}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Lancar despesa
-              </Button>
+              {canManageExpenses && (
+                <Button type="button" onClick={openCreateForm}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Lancar despesa
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -652,9 +656,11 @@ export const EntityFinanceTab: React.FC<Props> = ({
                       <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
-                        Ações
-                      </th>
+                      {canManageExpenses && (
+                        <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                          Ações
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
@@ -675,17 +681,19 @@ export const EntityFinanceTab: React.FC<Props> = ({
                             {expense.status === 'pago' ? 'Pago' : 'Pendente'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-300">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditForm(expense)}
-                          >
-                            <PencilSimple className="mr-2 h-4 w-4" />
-                            Editar
-                          </Button>
-                        </td>
+                        {canManageExpenses && (
+                          <td className="px-4 py-3 text-sm text-slate-300">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditForm(expense)}
+                            >
+                              <PencilSimple className="mr-2 h-4 w-4" />
+                              Editar
+                            </Button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

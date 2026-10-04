@@ -32,7 +32,7 @@ export const RecebimentosPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao carregar recebimentos:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel carregar os recebimentos.',
+        error instanceof Error ? error.message : 'Não foi possível carregar os recebimentos.',
       );
     } finally {
       setLoading(false);
@@ -53,7 +53,7 @@ export const RecebimentosPage: React.FC = () => {
 
     const valor = parseCurrencyBRL(form.valor);
     if (!form.descricao.trim() || !form.data || Number.isNaN(valor) || valor <= 0) {
-      setErrorMessage('Preencha os campos obrigatorios do recebimento: descricao, data e valor.');
+      setErrorMessage('Preencha os campos obrigatórios do recebimento: descrição, data e valor.');
       return;
     }
 
@@ -74,7 +74,7 @@ export const RecebimentosPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao registrar recebimento:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel registrar o recebimento.',
+        error instanceof Error ? error.message : 'Não foi possível registrar o recebimento.',
       );
     } finally {
       setLoading(false);
@@ -122,14 +122,14 @@ export const RecebimentosPage: React.FC = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input
-                label="Descricao"
+                label="Descrição"
                 placeholder="Ex: Entrada projeto comercial"
                 value={form.descricao}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, descricao: event.target.value }))
                 }
                 error={
-                  submitAttempted && !form.descricao.trim() ? 'Informe a descricao.' : undefined
+                  submitAttempted && !form.descricao.trim() ? 'Informe a descrição.' : undefined
                 }
                 required
               />
@@ -182,7 +182,7 @@ export const RecebimentosPage: React.FC = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Lancamentos</p>
+              <p className="text-sm text-gray-400">Lançamentos</p>
               <p className="text-2xl font-bold text-green-400">{recebimentos.length}</p>
             </div>
             <TrendUp className="h-8 w-8 text-green-400" />
@@ -205,7 +205,7 @@ export const RecebimentosPage: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Descricao</th>
+                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Descrição</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Data</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Valor</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Status</th>

@@ -2,6 +2,7 @@ import { asString, isRecord } from '@/core/utils/normalize';
 import { customersService } from '@/features/clientes/services/customersService';
 import { addressService, type Address } from '@/shared/api/addressService';
 import { apiClient } from '@/shared/api/apiClient';
+import { createRequestCache } from '@/shared/api/requestCache';
 import { filesService, type UploadedFileResponse } from '@/shared/api/filesService';
 import type { DashboardStats, Documento, Projeto, StatusProjeto } from '@/types';
 import {
@@ -17,6 +18,11 @@ export { projectStatusFlow } from './projectNormalizer';
 export type { CreateProjectData, Project, UpdateProjectData } from './projectTypes';
 
 const PROJECTS_ENDPOINT = '/projects';
+const projectsBaseCache = createRequestCache<Project[]>(30_000);
+
+type ProjectListOptions = {
+  includeProjectAddresses?: boolean;
+};
 
 export const projectsResouces = {};
 
@@ -256,6 +262,7 @@ export const projectsService = {
       `${PROJECTS_ENDPOINT}/${projectId}/statuses/${statusId}/comments`,
       { body },
     );
+    projectsBaseCache.invalidate();
 
     return projectsService.getById(projectId);
   },
@@ -264,6 +271,7 @@ export const projectsService = {
     const response = await createRaw(projectData);
     const normalized = normalizeProjeto(response);
     saveProjectEnhancement(normalized.id, buildFrontendEnhancement(projectData));
+    projectsBaseCache.invalidate();
     const technicalDetail = await technicalDetailsService.save(normalized.id, projectData);
     return technicalDetailsService.apply(mergeProjectEnhancement(normalized), technicalDetail);
   },
@@ -279,12 +287,15 @@ export const projectsService = {
     );
   },
 
-  async getAll(): Promise<Project[]> {
-    const response = await apiClient.get<unknown[]>(PROJECTS_ENDPOINT);
-    const projects = extractDataFromList(response)
-      .map(normalizeProjeto)
-      .map(mergeProjectEnhancement);
-    const projectsWithAddresses = await enrichProjectsWithProjectAddresses(projects);
+  async getAll(options: ProjectListOptions = {}): Promise<Project[]> {
+    const projects = await projectsBaseCache.get(async () => {
+      const response = await apiClient.get<unknown[]>(PROJECTS_ENDPOINT);
+      return extractDataFromList(response).map(normalizeProjeto).map(mergeProjectEnhancement);
+    });
+    const projectsWithAddresses =
+      options.includeProjectAddresses !== false
+        ? await enrichProjectsWithProjectAddresses(projects)
+        : projects;
     return enrichProjectsWithCustomers(projectsWithAddresses);
   },
 
@@ -394,6 +405,7 @@ export const projectsService = {
         }
       : { id };
     const response = await apiClient.put<unknown>(`${PROJECTS_ENDPOINT}/${id}`, payloadWithId);
+    projectsBaseCache.invalidate();
     if (isRecord(projectData)) {
       saveProjectEnhancement(id, {
         coordenadas: isRecord(projectData.coordinates)
@@ -422,13 +434,15 @@ export const projectsService = {
     if (comment) payload.comment = comment;
 
     await apiClient.post<unknown>(`${PROJECTS_ENDPOINT}/${id}/statuses`, payload);
+    projectsBaseCache.invalidate();
     const normalized = normalizeProjeto(await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`));
 
     return mergeProjectEnhancement(normalized);
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete<void>(`${PROJECTS_ENDPOINT}/${id}`);
+    await apiClient.delete<void>(`${PROJECTS_ENDPOINT}/${id}`);
+    projectsBaseCache.invalidate();
   },
 
   async cancel(id: string, reason: string): Promise<Project> {
@@ -436,16 +450,18 @@ export const projectsService = {
       name: 'projeto_cancelado',
       comment: reason,
     });
+    projectsBaseCache.invalidate();
     const response = await apiClient.get<unknown>(`${PROJECTS_ENDPOINT}/${id}`);
     return mergeProjectEnhancement(normalizeProjeto(response));
   },
 
   async inactivate(id: string): Promise<void> {
     await apiClient.patch<void>(`${PROJECTS_ENDPOINT}/${id}/inactivate`);
+    projectsBaseCache.invalidate();
   },
 
-  async getProjetos(): Promise<Projeto[]> {
-    return projectsService.getAll();
+  async getProjetos(options: ProjectListOptions = {}): Promise<Projeto[]> {
+    return projectsService.getAll(options);
   },
 
   async getProjetoById(id: string): Promise<Projeto | null> {
@@ -456,8 +472,8 @@ export const projectsService = {
     }
   },
 
-  async getDashboardStats(): Promise<DashboardStats> {
-    const projetos = await projectsService.getProjetos();
+  async getDashboardStats(projects?: Projeto[]): Promise<DashboardStats> {
+    const projetos = projects ?? (await projectsService.getProjetos());
     const statusPendente = new Set<StatusProjeto>(['em_analise_documentacao']);
     const statusFinalizado = new Set<StatusProjeto>(['projeto_encerrado', 'projeto_cancelado']);
 

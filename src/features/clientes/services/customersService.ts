@@ -3,6 +3,7 @@ import type { Documento } from '@/types';
 import { asNumber, asString, isRecord } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
 import { apiClient } from '@/shared/api/apiClient';
+import { createKeyedRequestCache, createRequestCache } from '@/shared/api/requestCache';
 import type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
 export type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
 
@@ -113,6 +114,13 @@ const normalizeCustomer = (raw: unknown): Customer => {
 };
 
 const CUSTOMERS_ENDPOINT = '/customers';
+const customersListCache = createRequestCache<Customer[]>(30_000);
+const customerByIdCache = createKeyedRequestCache<Customer>(30_000);
+
+const invalidateCustomerCache = (customerId?: string) => {
+  customersListCache.invalidate();
+  customerByIdCache.invalidate(customerId);
+};
 
 const buildCustomerPayload = (customerData: CreateCustomerData | UpdateCustomerData) => {
   const payload: Record<string, unknown> = {};
@@ -150,32 +158,41 @@ export const customersService = {
       ...current,
       documentos,
     }));
+    invalidateCustomerCache(customerId);
   },
 
   async getAll(): Promise<Customer[]> {
-    const response = await apiClient.get<unknown[] | { data?: unknown[] }>(CUSTOMERS_ENDPOINT);
-    if (Array.isArray(response)) {
-      return response.map(normalizeCustomer).map(mergeCustomerEnhancement);
-    }
+    return customersListCache.get(async () => {
+      const response = await apiClient.get<unknown[] | { data?: unknown[] }>(CUSTOMERS_ENDPOINT);
+      if (Array.isArray(response)) {
+        return response.map(normalizeCustomer).map(mergeCustomerEnhancement);
+      }
 
-    const data = isRecord(response) && Array.isArray(response.data) ? response.data : [];
-    return data.map(normalizeCustomer).map(mergeCustomerEnhancement);
+      const data = isRecord(response) && Array.isArray(response.data) ? response.data : [];
+      return data.map(normalizeCustomer).map(mergeCustomerEnhancement);
+    });
   },
 
   async create(customerData: CreateCustomerData): Promise<Customer> {
     const payload = buildCustomerPayload(customerData);
     const response = await apiClient.post<unknown>(CUSTOMERS_ENDPOINT, payload);
-    return mergeCustomerEnhancement(normalizeCustomer(response));
+    const customer = mergeCustomerEnhancement(normalizeCustomer(response));
+    invalidateCustomerCache(customer.id);
+    return customer;
   },
 
   async getById(id: string): Promise<Customer> {
-    const response = await apiClient.get<unknown>(`${CUSTOMERS_ENDPOINT}/${id}`);
-    return mergeCustomerEnhancement(normalizeCustomer(response));
+    return customerByIdCache.get(id, async () => {
+      const response = await apiClient.get<unknown>(`${CUSTOMERS_ENDPOINT}/${id}`);
+      return mergeCustomerEnhancement(normalizeCustomer(response));
+    });
   },
 
   async update(id: string, customerData: UpdateCustomerData): Promise<Customer> {
     const payload = { id, ...buildCustomerPayload(customerData) };
     const response = await apiClient.put<unknown>(`${CUSTOMERS_ENDPOINT}/${id}`, payload);
-    return mergeCustomerEnhancement(normalizeCustomer(response));
+    const customer = mergeCustomerEnhancement(normalizeCustomer(response));
+    invalidateCustomerCache(id);
+    return customer;
   },
 };

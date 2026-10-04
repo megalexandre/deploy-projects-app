@@ -444,7 +444,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
       try {
         const [nextTransacoes, nextProjetos] = await Promise.all([
           financeiroService.listTransacoes(),
-          projectsService.getAll().catch(() => []),
+          projectsService.getAll({ includeProjectAddresses: false }).catch(() => []),
         ]);
 
         setTransacoes(nextTransacoes);
@@ -452,7 +452,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
       } catch (error) {
         console.error('Erro ao carregar financeiro do usuario:', error);
         setErrorMessage(
-          error instanceof Error ? error.message : 'Nao foi possivel carregar seu financeiro.',
+          error instanceof Error ? error.message : 'Não foi possível carregar seu financeiro.',
         );
       } finally {
         setLoading(false);
@@ -494,15 +494,49 @@ const UsuarioFinanceiroPage: React.FC = () => {
     });
   }, [customFrom, customTo, projectRows, searchTerm, selectedPeriod]);
 
-  const userTotals = useMemo(
-    () => ({
-      totalReceita: filteredProjectRows.reduce((sum, row) => sum + row.receitaPaga, 0),
+  const visibleExpenses = useMemo(() => {
+    const projectsById = new Map(visibleProjects.map((projeto) => [projeto.id, projeto]));
+    const query = normalizeSearchText(searchTerm);
+
+    return transacoes
+      .filter(
+        (transacao) =>
+          transacao.tipo === 'despesa' &&
+          Boolean(transacao.projectId) &&
+          projectsById.has(transacao.projectId as string),
+      )
+      .map((transacao) => ({
+        transacao,
+        projeto: projectsById.get(transacao.projectId as string) as Projeto,
+      }))
+      .filter(({ transacao, projeto }) => {
+        if (!isInsidePeriod(transacao.data, selectedPeriod, customFrom, customTo)) return false;
+        if (!query) return true;
+
+        return [
+          transacao.descricao,
+          projeto.protocolo,
+          projeto.protocoloConcessionaria,
+          projeto.cliente.nome,
+          projeto.dadosProjeto.concessionaria,
+        ].some((value) => normalizeSearchText(value).includes(query));
+      })
+      .sort((left, right) => right.transacao.data.localeCompare(left.transacao.data));
+  }, [customFrom, customTo, searchTerm, selectedPeriod, transacoes, visibleProjects]);
+
+  const userTotals = useMemo(() => {
+    const totalReceita = filteredProjectRows.reduce((sum, row) => sum + row.receitaPaga, 0);
+    const totalDespesas = visibleExpenses.reduce((sum, item) => sum + item.transacao.valor, 0);
+
+    return {
+      totalReceita,
+      totalDespesas,
+      saldo: totalReceita - totalDespesas,
       receitaPrevista: filteredProjectRows.reduce((sum, row) => sum + row.receitaPrevista, 0),
       projetosPagos: filteredProjectRows.filter((row) => row.receitaPaga > 0).length,
       projetosAbertos: filteredProjectRows.filter((row) => row.receitaPrevista > 0).length,
-    }),
-    [filteredProjectRows],
-  );
+    };
+  }, [filteredProjectRows, visibleExpenses]);
 
   const dailyChartData = useMemo(() => {
     const labels = getDailyChartLabels(filteredProjectRows);
@@ -548,7 +582,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-cyan-200">Meu Financeiro</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Receitas de projetos pagos e previsao dos projetos em aberto
+            Receitas, despesas e previsão dos projetos atribuídos a você
           </p>
           {loading && <p className="mt-2 text-xs text-slate-500">Sincronizando com a API...</p>}
           {errorMessage && <p className="mt-2 text-xs text-red-300">{errorMessage}</p>}
@@ -565,9 +599,9 @@ const UsuarioFinanceiroPage: React.FC = () => {
         <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/55 p-2">
           <div className="flex flex-wrap items-center gap-2">
             {[
-              { value: 'todos', label: 'Todo Periodo' },
-              { value: '30', label: 'Ultimos 30 Dias' },
-              { value: 'mes', label: 'Este Mes' },
+              { value: 'todos', label: 'Todo Período' },
+              { value: '30', label: 'Últimos 30 Dias' },
+              { value: 'mes', label: 'Este Mês' },
               { value: 'ano', label: 'Este Ano' },
               { value: 'personalizado', label: 'Personalizado' },
             ].map((item) => (
@@ -617,7 +651,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
                 className="py-2 text-xs"
                 aria-label="Data inicial"
               />
-              <span className="text-xs text-slate-500">ate</span>
+              <span className="text-xs text-slate-500">até</span>
               <Input
                 type="date"
                 value={customTo}
@@ -630,7 +664,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className={`${glassCardClass} flex items-center justify-between p-5`}>
           <div>
             <p className="mb-2 text-xs font-bold uppercase text-slate-400">Valores recebidos</p>
@@ -660,6 +694,39 @@ const UsuarioFinanceiroPage: React.FC = () => {
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-200">
             <CalendarBlank className="h-7 w-7" />
+          </div>
+        </div>
+
+        <div className={`${glassCardClass} flex items-center justify-between p-5`}>
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Despesas</p>
+            <h3 className="text-2xl font-semibold text-rose-300">
+              {formatCurrencyBRL(userTotals.totalDespesas)}
+            </h3>
+            <div className="mt-2 flex items-center gap-1 text-sm text-rose-300">
+              <ArrowDown className="h-4 w-4" />
+              <span>{visibleExpenses.length} lançamentos</span>
+            </div>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-rose-400/10 text-rose-300">
+            <ArrowDown className="h-7 w-7" />
+          </div>
+        </div>
+
+        <div className={`${glassCardClass} flex items-center justify-between p-5`}>
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Saldo realizado</p>
+            <h3
+              className={`text-2xl font-semibold ${
+                userTotals.saldo >= 0 ? 'text-cyan-200' : 'text-rose-300'
+              }`}
+            >
+              {formatCurrencyBRL(userTotals.saldo)}
+            </h3>
+            <p className="mt-2 text-sm text-slate-400">Recebido menos despesas</p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-200">
+            <ChartLineUp className="h-7 w-7" />
           </div>
         </div>
       </section>
@@ -730,6 +797,53 @@ const UsuarioFinanceiroPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <section className={`${glassCardClass} overflow-hidden`}>
+        <div className="border-b border-white/10 p-5">
+          <h3 className="text-lg font-semibold text-slate-100">Despesas dos meus projetos</h3>
+          <p className="mt-1 text-sm text-slate-400">
+            Lançamentos devolvidos pela API para os projetos atribuídos a você.
+          </p>
+        </div>
+
+        {visibleExpenses.length === 0 ? (
+          <div className="p-6 text-sm text-amber-200">
+            Nenhuma despesa foi retornada pela API. Se o projeto possui lançamentos, verifique a
+            permissão financeira do integrador.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-white/10">
+              <thead className="bg-slate-950/30">
+                <tr>
+                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">
+                    Descrição
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Projeto</th>
+                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Data</th>
+                  <th className="px-5 py-3 text-right text-xs uppercase text-slate-400">Valor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {visibleExpenses.map(({ transacao, projeto }) => (
+                  <tr key={transacao.id}>
+                    <td className="px-5 py-4 text-sm text-slate-100">{transacao.descricao}</td>
+                    <td className="px-5 py-4 text-sm text-slate-300">
+                      {formatProjectIdentifier(projeto)} · {projeto.cliente.nome}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-300">
+                      {formatDateBR(transacao.data)}
+                    </td>
+                    <td className="px-5 py-4 text-right text-sm font-semibold text-rose-200">
+                      {formatCurrencyBRL(transacao.valor)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 };
@@ -764,8 +878,8 @@ const AdminFinanceiroPage: React.FC = () => {
     try {
       const [nextTransacoes, nextProjetos, nextServicos, nextUsers] = await Promise.all([
         financeiroService.listTransacoes(),
-        projectsService.getAll().catch(() => []),
-        servicosService.list().catch(() => []),
+        projectsService.getAll({ includeProjectAddresses: false }).catch(() => []),
+        servicosService.list({ includeAddresses: false }).catch(() => []),
         usersService.getAll().catch(() => []),
       ]);
 
@@ -781,7 +895,7 @@ const AdminFinanceiroPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao carregar dados financeiros:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel carregar os dados financeiros.',
+        error instanceof Error ? error.message : 'Não foi possível carregar os dados financeiros.',
       );
     } finally {
       setLoading(false);
@@ -873,7 +987,7 @@ const AdminFinanceiroPage: React.FC = () => {
             .map((projeto) => ({
               id: `projeto:${projeto.projeto.id}`,
               origem: 'projeto' as const,
-              descricao: `Previsao pendente do projeto ${formatProjectIdentifier(
+              descricao: `Previsão pendente do projeto ${formatProjectIdentifier(
                 projeto.projeto,
               )} - ${projeto.projeto.cliente.nome}`,
               valor: projeto.remaining,
@@ -896,7 +1010,7 @@ const AdminFinanceiroPage: React.FC = () => {
             .map((servico) => ({
               id: `servico:${servico.servico.id}`,
               origem: 'servico' as const,
-              descricao: `Previsao pendente do servico ${servico.servico.protocolo}`,
+              descricao: `Previsão pendente do serviço ${servico.servico.protocolo}`,
               valor: servico.remaining,
               data:
                 toDateOnly(servico.servico.dataAbertura || servico.servico.dataCriacao) ||
@@ -1125,7 +1239,7 @@ const AdminFinanceiroPage: React.FC = () => {
     ].filter(Boolean);
 
     if (missingFields.length > 0) {
-      setErrorMessage('Preencha os campos obrigatorios do lancamento: descricao, data e valor.');
+      setErrorMessage('Preencha os campos obrigatórios do lançamento: descrição, data e valor.');
       return;
     }
 
@@ -1152,7 +1266,7 @@ const AdminFinanceiroPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao salvar lancamento financeiro:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel salvar o lancamento financeiro.',
+        error instanceof Error ? error.message : 'Não foi possível salvar o lançamento financeiro.',
       );
     } finally {
       setLoading(false);
@@ -1174,7 +1288,7 @@ const AdminFinanceiroPage: React.FC = () => {
   const tabs: Array<{ id: FinanceTab; label: string }> = [
     { id: 'geral', label: 'Geral' },
     { id: 'projetos', label: 'Projetos' },
-    { id: 'servicos', label: 'Servicos' },
+    { id: 'servicos', label: 'Serviços' },
   ];
   const selectedUserLabel =
     userOptions.find((option) => option.value === userFilter)?.label ?? userFilter;
@@ -1208,7 +1322,7 @@ const AdminFinanceiroPage: React.FC = () => {
     setSuccessMessage(null);
 
     if (financeRows.length === 0) {
-      setErrorMessage('Nao ha registros para gerar relatorio com os filtros atuais.');
+      setErrorMessage('Não há registros para gerar relatório com os filtros atuais.');
       return;
     }
 
@@ -1240,7 +1354,7 @@ const AdminFinanceiroPage: React.FC = () => {
         const categoria = isForecast
           ? row.previsao.origem === 'projeto'
             ? 'Projeto'
-            : 'Servico'
+            : 'Serviço'
           : row.transacao.categoria;
         const tipo = isForecast ? 'receita' : row.transacao.tipo;
         const valor = isForecast ? row.previsao.valor : row.transacao.valor;
@@ -1255,12 +1369,12 @@ const AdminFinanceiroPage: React.FC = () => {
           : undefined;
 
         return {
-          Descricao: descricao,
+          Descrição: descricao,
           Categoria: categoria,
-          Tipo: tipo === 'receita' ? 'Entrada' : 'Saida',
+          Tipo: tipo === 'receita' ? 'Entrada' : 'Saída',
           Valor: valor,
           Data: formatDateBR(data),
-          Status: isForecast ? 'Previsto' : 'Concluido',
+          Status: isForecast ? 'Previsto' : 'Concluído',
           Origem: isForecast
             ? row.previsao.origem
             : row.transacao.projectId
@@ -1269,7 +1383,7 @@ const AdminFinanceiroPage: React.FC = () => {
                 ? 'servico'
                 : 'geral',
           'Protocolo interno': reportProject?.protocolo ?? '-',
-          'Protocolo concessionaria': reportProject?.protocoloConcessionaria ?? '-',
+          'Protocolo concessionária': reportProject?.protocoloConcessionaria ?? '-',
         };
       });
 
@@ -1288,7 +1402,7 @@ const AdminFinanceiroPage: React.FC = () => {
         { Indicador: 'Saldo total', Valor: saldoAtual },
         { Indicador: 'Receita prevista', Valor: totalPrevisto },
         { Indicador: 'Fluxo de caixa projetado', Valor: saldoProjetado },
-        { Indicador: 'Sobrou apos despesas', Valor: saldoAtual },
+        { Indicador: 'Sobrou após despesas', Valor: saldoAtual },
       ];
 
       const flowByDate = new Map<
@@ -1335,11 +1449,11 @@ const AdminFinanceiroPage: React.FC = () => {
 
       const filtersRows = [
         { Filtro: 'Aba', Valor: tabs.find((tab) => tab.id === activeTab)?.label ?? activeTab },
-        { Filtro: 'Periodo', Valor: selectedPeriod },
+        { Filtro: 'Período', Valor: selectedPeriod },
         { Filtro: 'Data inicial', Valor: customFrom || '-' },
         { Filtro: 'Data final', Valor: customTo || '-' },
         { Filtro: 'Tipo', Valor: typeFilter },
-        { Filtro: 'Usuario', Valor: userFilter === 'todos' ? 'Todos' : selectedUserLabel },
+        { Filtro: 'Usuário', Valor: userFilter === 'todos' ? 'Todos' : selectedUserLabel },
         { Filtro: 'Busca', Valor: searchTerm || '-' },
         { Filtro: 'Registros', Valor: financeRows.length },
       ];
@@ -1382,11 +1496,11 @@ const AdminFinanceiroPage: React.FC = () => {
       XLSX.utils.book_append_sheet(workbook, fluxoSheet, 'Fluxo de Caixa');
       XLSX.utils.book_append_sheet(workbook, filtersSheet, 'Filtros');
       XLSX.writeFile(workbook, formatReportFileName());
-      setSuccessMessage(`Relatorio gerado com ${financeRows.length} registro(s) filtrado(s).`);
+      setSuccessMessage(`Relatório gerado com ${financeRows.length} registro(s) filtrado(s).`);
     } catch (error) {
       console.error('Erro ao gerar relatorio financeiro:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel gerar o relatorio financeiro.',
+        error instanceof Error ? error.message : 'Não foi possível gerar o relatório financeiro.',
       );
     }
   };
@@ -1410,11 +1524,11 @@ const AdminFinanceiroPage: React.FC = () => {
             disabled={loading || financeRows.length === 0}
           >
             <DownloadSimple className="mr-2 h-4 w-4" />
-            Gerar Relatorio
+            Gerar Relatório
           </Button>
           <Button type="button" onClick={openCreateForm}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Novo Lancamento
+            Novo Lançamento
           </Button>
         </div>
       </header>
@@ -1445,7 +1559,7 @@ const AdminFinanceiroPage: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle>
-                  {editingTransactionId ? 'Editar lancamento' : 'Cadastrar lancamento'}
+                  {editingTransactionId ? 'Editar lançamento' : 'Cadastrar lançamento'}
                 </CardTitle>
                 <button
                   type="button"
@@ -1471,7 +1585,7 @@ const AdminFinanceiroPage: React.FC = () => {
                   }
                   error={
                     submitAttempted && !novaTransacao.descricao.trim()
-                      ? 'Informe a descricao.'
+                      ? 'Informe a descrição.'
                       : undefined
                   }
                   required
@@ -1538,7 +1652,7 @@ const AdminFinanceiroPage: React.FC = () => {
 
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Visao Geral</h2>
+          <h2 className="text-2xl font-semibold text-slate-100">Visão Geral</h2>
           <p className="mt-1 text-sm text-slate-400">
             {financeRows.length} de {scopedTransacoes.length + forecastReceivables.length} registros
             no filtro atual
@@ -1547,9 +1661,9 @@ const AdminFinanceiroPage: React.FC = () => {
         <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/55 p-2">
           <div className="flex flex-wrap items-center gap-2">
             {[
-              { value: 'todos', label: 'Todo Periodo' },
-              { value: '30', label: 'Ultimos 30 Dias' },
-              { value: 'mes', label: 'Este Mes' },
+              { value: 'todos', label: 'Todo Período' },
+              { value: '30', label: 'Últimos 30 Dias' },
+              { value: 'mes', label: 'Este Mês' },
               { value: 'ano', label: 'Este Ano' },
               { value: 'personalizado', label: 'Personalizado' },
             ].map((item) => (
@@ -1581,7 +1695,7 @@ const AdminFinanceiroPage: React.FC = () => {
               onChange={(event) => setUserFilter(event.target.value)}
               className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-xs font-semibold text-slate-200 focus:border-cyan-300 focus:outline-none"
             >
-              <option value="todos">Todos os usuarios</option>
+              <option value="todos">Todos os usuários</option>
               {userOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -1598,7 +1712,7 @@ const AdminFinanceiroPage: React.FC = () => {
                 className="py-2 text-xs"
                 aria-label="Data inicial"
               />
-              <span className="text-xs text-slate-500">ate</span>
+              <span className="text-xs text-slate-500">até</span>
               <Input
                 type="date"
                 value={customTo}
@@ -1753,7 +1867,7 @@ const AdminFinanceiroPage: React.FC = () => {
 
         <div className={`${glassCardClass} flex min-h-[320px] flex-col p-5`}>
           <div className="mb-6 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold text-slate-100">Evolucao do Saldo</h3>
+            <h3 className="text-lg font-semibold text-slate-100">Evolução do Saldo</h3>
             <ChartLineUp className="h-5 w-5 text-cyan-200" />
           </div>
           <div className="grid flex-1 grid-cols-[72px_1fr] gap-3">
@@ -1876,7 +1990,7 @@ const AdminFinanceiroPage: React.FC = () => {
                 const categoria = isForecast
                   ? row.previsao.origem === 'projeto'
                     ? 'Projeto'
-                    : 'Servico'
+                    : 'Serviço'
                   : row.transacao.categoria;
                 const tipo = isForecast ? 'receita' : row.transacao.tipo;
                 const valor = isForecast ? row.previsao.valor : row.transacao.valor;
@@ -1898,7 +2012,7 @@ const AdminFinanceiroPage: React.FC = () => {
                             : 'bg-rose-300/10 text-rose-300',
                         ].join(' ')}
                       >
-                        {tipo === 'receita' ? 'Entrada' : 'Saida'}
+                        {tipo === 'receita' ? 'Entrada' : 'Saída'}
                       </span>
                     </td>
                     <td
@@ -1923,7 +2037,7 @@ const AdminFinanceiroPage: React.FC = () => {
                             isForecast ? 'bg-cyan-200' : 'bg-emerald-300',
                           ].join(' ')}
                         />
-                        <span className="text-xs">{isForecast ? 'Previsto' : 'Concluido'}</span>
+                        <span className="text-xs">{isForecast ? 'Previsto' : 'Concluído'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -1932,7 +2046,7 @@ const AdminFinanceiroPage: React.FC = () => {
                           type="button"
                           onClick={() => handleEditTransacao(row.transacao)}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-slate-900/50 text-slate-400 transition hover:border-cyan-300/45 hover:bg-slate-800/80 hover:text-cyan-200"
-                          aria-label="Editar lancamento"
+                          aria-label="Editar lançamento"
                         >
                           <PencilSimple className="h-4 w-4" />
                         </button>
@@ -1965,7 +2079,7 @@ const AdminFinanceiroPage: React.FC = () => {
             <button
               type="button"
               className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-slate-900/50 transition hover:border-cyan-300/45 hover:bg-slate-800/80 hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Pagina anterior"
+              aria-label="Página anterior"
               disabled={safeCurrentPage === 1}
               onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
             >
@@ -1977,7 +2091,7 @@ const AdminFinanceiroPage: React.FC = () => {
             <button
               type="button"
               className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-slate-900/50 transition hover:border-cyan-300/45 hover:bg-slate-800/80 hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Proxima pagina"
+              aria-label="Próxima página"
               disabled={safeCurrentPage === totalPages}
               onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
             >

@@ -32,6 +32,8 @@ export const StatusServico = {
 
 export type StatusServico = (typeof StatusServico)[keyof typeof StatusServico];
 
+export type StatusAprovacaoServico = 'pending' | 'approved' | 'rejected' | 'not_required';
+
 export interface Servico {
   id: string;
   protocolo: string;
@@ -59,6 +61,7 @@ export interface Servico {
   enderecoGeradora?: Endereco;
   padraoEntradaItens?: PadraoEntradaItem[];
   rateios?: DivisaoCreditos[];
+  approvalStatus?: StatusAprovacaoServico;
   precisaAprovacao?: boolean;
   documentos: Documento[];
   timeline: TimelineItem[];

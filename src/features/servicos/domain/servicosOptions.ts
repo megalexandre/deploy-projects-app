@@ -9,33 +9,33 @@ export const tipoServicoOptions: Array<{
 }> = [
   {
     value: 'ligacao_nova',
-    label: 'Ligacao Nova',
-    description: 'Endereço da obra, tensao, coordenadas, padrão e uploads.',
+    label: 'Ligação Nova',
+    description: 'Endereço da obra, tensão, coordenadas, padrão e uploads.',
   },
   {
     value: 'aumento_carga',
     label: 'Aumento de Carga',
-    description: 'Mesmo fluxo tecnico de ligacao nova, com anexos da unidade atual.',
+    description: 'Mesmo fluxo técnico de ligação nova, com anexos da unidade atual.',
   },
   {
     value: 'troca_titularidade',
     label: 'Troca de Titularidade',
-    description: 'Usa o mesmo fluxo tecnico e os mesmos campos de aumento de carga.',
+    description: 'Usa o mesmo fluxo técnico e os mesmos campos de aumento de carga.',
   },
   {
     value: 'alteracao_compartilhamento_credito',
-    label: 'Alteracao Compartilhamento de Credito',
-    description: 'UC geradora, endereço e rateio das beneficiarias.',
+    label: 'Alteração no Compartilhamento de Crédito',
+    description: 'UC geradora, endereço e rateio das beneficiárias.',
   },
 ];
 
-export const tipoLigacaoOptions = ['Monofasico', 'Bifasico', 'Trifasico'];
+export const tipoLigacaoOptions = ['Monofásico', 'Bifásico', 'Trifásico'];
 export const classificacaoOptions = [
   'Residencial',
   'Comercial',
   'Industrial',
   'Rural',
-  'Condominio',
+  'Condomínio',
 ];
 
 export const statusColumnStyles: Record<StatusServico, string> = {

@@ -116,7 +116,7 @@ export const useClientes = () => {
       setClientes(detailedCustomers);
     } catch (loadError) {
       console.error('Erro ao carregar clientes:', loadError);
-      setError('Nao foi possivel carregar os clientes cadastrados.');
+      setError('Não foi possível carregar os clientes cadastrados.');
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ export const useClientes = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!isFormValid()) {
-      setError('Preencha todos os campos obrigatorios do cliente e endereço.');
+      setError('Preencha todos os campos obrigatórios do cliente e endereço.');
       return;
     }
 
@@ -227,15 +227,15 @@ export const useClientes = () => {
           extractApiErrorMessage(
             saveError.payload,
             editingCustomerId
-              ? 'Nao foi possivel atualizar o cliente.'
-              : 'Nao foi possivel cadastrar o cliente.',
+              ? 'Não foi possível atualizar o cliente.'
+              : 'Não foi possível cadastrar o cliente.',
           ),
         );
       } else {
         setError(
           editingCustomerId
-            ? 'Nao foi possivel atualizar o cliente.'
-            : 'Nao foi possivel cadastrar o cliente.',
+            ? 'Não foi possível atualizar o cliente.'
+            : 'Não foi possível cadastrar o cliente.',
         );
       }
     } finally {
@@ -255,7 +255,7 @@ export const useClientes = () => {
       setIsCustomerModalOpen(true);
     } catch (loadError) {
       console.error('Erro ao carregar cliente para edicao:', loadError);
-      setError('Nao foi possivel carregar os dados completos do cliente.');
+      setError('Não foi possível carregar os dados completos do cliente.');
     }
   };
 
@@ -288,7 +288,7 @@ export const useClientes = () => {
       );
     } catch (loadError) {
       console.error('Erro ao carregar documentos do cliente:', loadError);
-      setError('Nao foi possivel carregar os documentos do cliente.');
+      setError('Não foi possível carregar os documentos do cliente.');
     }
   };
 
@@ -305,7 +305,7 @@ export const useClientes = () => {
       await filesService.downloadFile(fileId);
     } catch (downloadError) {
       console.error('Erro ao baixar documento do cliente:', downloadError);
-      setError('Nao foi possivel baixar o documento do cliente.');
+      setError('Não foi possível baixar o documento do cliente.');
     }
   };
 
@@ -343,7 +343,7 @@ export const useClientes = () => {
       await loadClientes();
     } catch (uploadError) {
       console.error('Erro ao enviar documentos do cliente:', uploadError);
-      setError('Nao foi possivel enviar os documentos do cliente.');
+      setError('Não foi possível enviar os documentos do cliente.');
     } finally {
       setUploadingDocuments(false);
     }

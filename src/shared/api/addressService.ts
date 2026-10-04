@@ -1,5 +1,6 @@
 import { asString, isRecord } from '@/core/utils/normalize';
 import { apiClient } from './apiClient';
+import { createKeyedRequestCache } from './requestCache';
 
 export interface Address {
   id: string;
@@ -31,6 +32,7 @@ export interface UpdateAddressData extends CreateAddressData {
 }
 
 const ADDRESS_ENDPOINT = '/addresses';
+const addressCache = createKeyedRequestCache<Address>(5 * 60_000);
 
 const normalizeAddress = (raw: unknown): Address => {
   const address = isRecord(raw) ? raw : {};
@@ -95,7 +97,9 @@ export const addressService = {
       ADDRESS_ENDPOINT,
       buildAddressPayload(addressData),
     );
-    return normalizeAddress(response);
+    const address = normalizeAddress(response);
+    addressCache.invalidate(address.id);
+    return address;
   },
 
   async update(addressData: UpdateAddressData): Promise<Address> {
@@ -103,11 +107,15 @@ export const addressService = {
       `${ADDRESS_ENDPOINT}/${addressData.id}`,
       buildAddressPayload(addressData),
     );
-    return normalizeAddress(response);
+    const address = normalizeAddress(response);
+    addressCache.invalidate(addressData.id);
+    return address;
   },
 
   async getById(id: string): Promise<Address> {
-    const response = await apiClient.get<unknown>(`${ADDRESS_ENDPOINT}/${id}`);
-    return normalizeAddress(response);
+    return addressCache.get(id, async () => {
+      const response = await apiClient.get<unknown>(`${ADDRESS_ENDPOINT}/${id}`);
+      return normalizeAddress(response);
+    });
   },
 };

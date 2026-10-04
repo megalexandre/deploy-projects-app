@@ -32,7 +32,7 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
     <div>
       <h3 className="mb-2 text-lg font-medium text-gray-100">Tabelas de Valores</h3>
       <p className="text-sm text-gray-400">
-        Edite aqui os valores usados no calculo automatico dos novos projetos.
+        Edite aqui os valores usados no cálculo automático dos novos projetos.
       </p>
     </div>
 
@@ -124,9 +124,9 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h4 className="text-base font-semibold text-gray-100">Padrao de Entrada / EMUC</h4>
+          <h4 className="text-base font-semibold text-gray-100">Padrão de Entrada / EMUC</h4>
           <p className="text-sm text-gray-400">
-            Valor unitario usado em cada combinacao de classificação e ligacao.
+            Valor unitário usado em cada combinação de classificação e ligação.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={onAdicionarPrecoPadraoEntrada}>
@@ -171,7 +171,7 @@ export const PrecosSettingsSection: React.FC<PrecosSettingsSectionProps> = ({
                     onChange={(event) =>
                       onPrecoPadraoEntradaChange(item.id, 'tipoLigacao', event.target.value)
                     }
-                    placeholder="Ex: Monofasico"
+                    placeholder="Ex: Monofásico"
                     className={inputClassName}
                   />
                 </td>

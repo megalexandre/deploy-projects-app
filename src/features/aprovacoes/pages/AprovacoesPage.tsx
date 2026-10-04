@@ -62,8 +62,8 @@ export const AprovacoesPage: React.FC = () => {
       setLoading(true);
 
       const [projetos, servicos] = await Promise.all([
-        projectsService.getProjetos().catch(() => []),
-        servicosService.list().catch(() => []),
+        projectsService.getProjetos({ includeProjectAddresses: false }).catch(() => []),
+        servicosService.list({ includeAddresses: false }).catch(() => []),
       ]);
 
       const projectRequests: ApprovalRequest[] = (projetos as Projeto[])
@@ -82,7 +82,12 @@ export const AprovacoesPage: React.FC = () => {
         }));
 
       const serviceRequests: ApprovalRequest[] = (servicos as Servico[])
-        .filter((servico) => servico.status === 'aguardando_aprovacao')
+        .filter(
+          (servico) =>
+            servico.approvalStatus === 'pending' ||
+            servico.approvalStatus === 'approved' ||
+            servico.approvalStatus === 'rejected',
+        )
         .map((servico) => ({
           id: `servico-${servico.id}`,
           entityType: 'servico',
@@ -93,7 +98,12 @@ export const AprovacoesPage: React.FC = () => {
           createdByUserId: 'backend',
           createdByName: 'API',
           createdByRole: 'backend',
-          status: 'pendente',
+          status:
+            servico.approvalStatus === 'approved'
+              ? 'aprovado'
+              : servico.approvalStatus === 'rejected'
+                ? 'rejeitado'
+                : 'pendente',
         }));
 
       const approvalRequests = [...projectRequests, ...serviceRequests].sort(
@@ -158,10 +168,12 @@ export const AprovacoesPage: React.FC = () => {
           'Solicitacao rejeitada na tela de aprovacoes.',
         );
       }
-    } else if (status === 'aprovado') {
-      await servicosService.approvePending(request.entityId);
     } else {
-      await servicosService.updateStatus(request.entityId, 'servico_encerrado');
+      if (status === 'aprovado') {
+        await servicosService.approvePending(request.entityId);
+      } else {
+        await servicosService.rejectPending(request.entityId);
+      }
     }
 
     setRequests((current) =>

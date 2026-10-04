@@ -80,7 +80,7 @@ export const getLocalProjeto = (projeto: Projeto) => {
     return projeto.endereco.logradouro;
   }
 
-  return 'Local nao informado';
+  return 'Local não informado';
 };
 
 export const getLocalServico = (servico: Servico) => {
@@ -266,6 +266,6 @@ export const getTipoIcon = (item: AgendaItem) => {
 
 export const getOrigemLabel = (origem: OrigemAgenda) => {
   if (origem === 'projeto') return 'Projeto';
-  if (origem === 'servico') return 'Servico';
+  if (origem === 'servico') return 'Serviço';
   return 'Evento';
 };

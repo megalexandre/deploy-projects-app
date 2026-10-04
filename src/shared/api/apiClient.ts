@@ -1,4 +1,5 @@
 import { ENV } from '@/shared/config/env';
+import { clearAllRequestCaches } from './requestCache';
 
 /** Metodos HTTP suportados pelo cliente interno. */
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -70,6 +71,7 @@ let unauthorizedHandler: ((error: ApiError) => void | Promise<void>) | null = nu
 let handlingUnauthorized = false;
 
 const notifyAuthStateChanged = () => {
+  clearAllRequestCaches();
   window.dispatchEvent(new Event(AUTH_STATE_CHANGED_EVENT));
 };
 

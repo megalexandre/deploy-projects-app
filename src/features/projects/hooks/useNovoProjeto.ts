@@ -61,15 +61,15 @@ export const getInitialProjectStatus = (isEditing: boolean, isAdmin: boolean) =>
 
 export const tiposProjeto = [
   { value: 'fotovoltaico' as const, label: 'Projeto fotovoltaico' },
-  { value: 'orcamento_conexao' as const, label: 'Orcamento de conexao' },
+  { value: 'orcamento_conexao' as const, label: 'Orçamento de conexão' },
   { value: 'padrao_entrada' as const, label: 'Padrão de entrada' },
 ];
 export const servicosDisponiveis = [
   'Ligação Nova',
   'Aumento de Carga',
   'Troca de Titularidade',
-  'Alteração no Compartilhamento de Creditos',
-  'Projeto Eletrico',
+  'Alteração no Compartilhamento de Créditos',
+  'Projeto Elétrico',
 ];
 
 export const mapProjectServiceToServiceType = (serviceName: string): TipoServico | null => {
@@ -91,37 +91,37 @@ export const mapProjectServiceToServiceType = (serviceName: string): TipoServico
 
 export const documentosFotovoltaico: DocumentoCategoria[] = [
   { key: 'fatura_energia', label: 'Fatura de Energia' },
-  { key: 'procuracao', label: 'Procuracao' },
+  { key: 'procuracao', label: 'Procuração' },
   { key: 'documento_titular', label: 'Documento Titular' },
   { key: 'foto_padrao_entrada', label: 'Foto Padrão de Entrada' },
   { key: 'foto_disjuntor_geral', label: 'Foto Disjuntor Geral' },
-  { key: 'foto_interconexao', label: 'Foto Interconexao' },
-  { key: 'numero_poste_tr', label: 'Numero do Poste / TR' },
+  { key: 'foto_interconexao', label: 'Foto Interconexão' },
+  { key: 'numero_poste_tr', label: 'Número do Poste / TR' },
   { key: 'outros', label: 'Outros', maxFiles: 10 },
 ];
 
 export const documentosEmucPessoaFisica: DocumentoCategoria[] = [
   { key: 'carta_prefeitura', label: 'Carta da prefeitura / habite-se' },
-  { key: 'matricula_imovel', label: 'Matricula do Imovel' },
-  { key: 'projeto_edificacao', label: 'Projeto da edificacao', maxFiles: 3 },
+  { key: 'matricula_imovel', label: 'Matrícula do Imóvel' },
+  { key: 'projeto_edificacao', label: 'Projeto da edificação', maxFiles: 3 },
   { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
   { key: 'foto_numero_poste', label: 'Foto do poste / transformador', maxFiles: 3 },
   { key: 'documento_cnh', label: 'CNH' },
-  { key: 'documento_procuracao', label: 'Procuracao' },
+  { key: 'documento_procuracao', label: 'Procuração' },
   { key: 'conta_luz_terreno', label: 'Conta de luz do terreno' },
   { key: 'outros', label: 'Outros', maxFiles: 10 },
 ];
 
 export const documentosEmucPessoaJuridica: DocumentoCategoria[] = [
   { key: 'carta_prefeitura', label: 'Carta da prefeitura / habite-se' },
-  { key: 'matricula_imovel', label: 'Matricula do Imovel' },
-  { key: 'projeto_edificacao', label: 'Projeto da edificacao', maxFiles: 3 },
+  { key: 'matricula_imovel', label: 'Matrícula do Imóvel' },
+  { key: 'projeto_edificacao', label: 'Projeto da edificação', maxFiles: 3 },
   { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
   { key: 'foto_numero_poste', label: 'Foto do poste / transformador', maxFiles: 3 },
   { key: 'contrato_social', label: 'Contrato Social' },
-  { key: 'cartao_cnpj', label: 'Cartao CNPJ' },
-  { key: 'documentacao_socios', label: 'Documentacao dos socios', maxFiles: 5 },
-  { key: 'documento_procuracao', label: 'Procuracao' },
+  { key: 'cartao_cnpj', label: 'Cartão CNPJ' },
+  { key: 'documentacao_socios', label: 'Documentação dos sócios', maxFiles: 5 },
+  { key: 'documento_procuracao', label: 'Procuração' },
   { key: 'conta_luz_terreno', label: 'Conta de luz do terreno' },
   { key: 'outros', label: 'Outros', maxFiles: 10 },
 ];
@@ -129,15 +129,15 @@ export const documentosEmucPessoaJuridica: DocumentoCategoria[] = [
 export const padraoEntradaLinhasBase: Array<
   Pick<PadraoEntradaItemForm, 'tipoLigacao' | 'classificacao'>
 > = [
-  { tipoLigacao: 'Monofasico', classificacao: 'Residencial' },
-  { tipoLigacao: 'Bifasico', classificacao: 'Residencial' },
-  { tipoLigacao: 'Trifasico', classificacao: 'Residencial' },
-  { tipoLigacao: 'Monofasico', classificacao: 'Comercial / Industrial' },
-  { tipoLigacao: 'Bifasico', classificacao: 'Comercial / Industrial' },
-  { tipoLigacao: 'Trifasico', classificacao: 'Comercial / Industrial' },
-  { tipoLigacao: 'Monofasico', classificacao: 'Condominio' },
-  { tipoLigacao: 'Bifasico', classificacao: 'Condominio' },
-  { tipoLigacao: 'Trifasico', classificacao: 'Condominio' },
+  { tipoLigacao: 'Monofásico', classificacao: 'Residencial' },
+  { tipoLigacao: 'Bifásico', classificacao: 'Residencial' },
+  { tipoLigacao: 'Trifásico', classificacao: 'Residencial' },
+  { tipoLigacao: 'Monofásico', classificacao: 'Comercial / Industrial' },
+  { tipoLigacao: 'Bifásico', classificacao: 'Comercial / Industrial' },
+  { tipoLigacao: 'Trifásico', classificacao: 'Comercial / Industrial' },
+  { tipoLigacao: 'Monofásico', classificacao: 'Condomínio' },
+  { tipoLigacao: 'Bifásico', classificacao: 'Condomínio' },
+  { tipoLigacao: 'Trifásico', classificacao: 'Condomínio' },
 ];
 
 export const formatDocumento = (value: string) => maskCpfOrCnpj(value);
@@ -492,7 +492,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         setValorProjetoEditado(true);
       } catch (loadError) {
         console.error('Erro ao carregar projeto para edicao:', loadError);
-        setErro('Nao foi possivel carregar o projeto para edicao.');
+        setErro('Não foi possível carregar o projeto para edição.');
       } finally {
         setCarregandoProjeto(false);
       }
@@ -676,7 +676,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         setConcessionarias(await concessionairesService.getAll());
       } catch (loadError) {
         console.error('Erro ao carregar concessionárias:', loadError);
-        setErro('Nao foi possivel carregar as concessionárias disponiveis.');
+        setErro('Não foi possível carregar as concessionárias disponíveis.');
       } finally {
         setConcessionariasLoading(false);
       }
@@ -737,7 +737,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         setClientes(await customersService.getAll());
       } catch (loadError) {
         console.error('Erro ao carregar clientes:', loadError);
-        setErro('Nao foi possivel carregar os clientes cadastrados.');
+        setErro('Não foi possível carregar os clientes cadastrados.');
       } finally {
         setClientesLoading(false);
       }
@@ -755,7 +755,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         setClienteSelecionadoDetalhe(await customersService.getById(clienteSelecionadoId));
       } catch (loadError) {
         console.error('Erro ao carregar detalhes do cliente selecionado:', loadError);
-        setErro('Nao foi possivel carregar o endereco do cliente selecionado.');
+        setErro('Não foi possível carregar o endereço do cliente selecionado.');
       }
     };
     void loadClienteDetalhe();
@@ -1005,7 +1005,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
           concessionaria: projectData.utilityCompany,
           dataAbertura: projectData.dataAbertura ?? dataAtualIso,
           valor: valorServico,
-          observacoes: [observacoesBase, `Servico marcado no projeto: ${nome}.`]
+          observacoes: [observacoesBase, `Serviço marcado no projeto: ${nome}.`]
             .filter(Boolean)
             .join('\n\n'),
           tensaoFornecimento: isTecnico ? tensaoServico : undefined,
@@ -1023,19 +1023,19 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
 
   const handleCriarProjeto = async () => {
     if (!validarPasso1()) {
-      setErro('Preencha todos os campos obrigatorios do Passo 1 antes de criar o projeto.');
+      setErro('Preencha todos os campos obrigatórios do Passo 1 antes de criar o projeto.');
       setPassoAtual(1);
       return;
     }
 
     if (!validarPasso2()) {
-      setErro('Preencha os campos obrigatorios do Passo 2 antes de criar o projeto.');
+      setErro('Preencha os campos obrigatórios do Passo 2 antes de criar o projeto.');
       setPassoAtual(2);
       return;
     }
 
     if (!modoCliente) {
-      setErro('Selecione se o cliente e novo ou ja cadastrado no Passo 1.');
+      setErro('Selecione se o cliente é novo ou já cadastrado no Passo 1.');
       setPassoAtual(1);
       return;
     }
@@ -1053,9 +1053,9 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
       setErro(
         projetoFotovoltaico
           ? exigeDivisaoCreditos
-            ? 'Preencha latitude, longitude, modulos, inversores e a divisao de creditos com soma de 100%.'
-            : 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, alem de modulos e inversores, para calcular corretamente a potência do sistema.'
-          : 'Preencha tensao, latitude entre -90 e 90, longitude entre -180 e 180 e ao menos uma linha do quadro de padrão de entrada.',
+            ? 'Preencha latitude, longitude, módulos, inversores e a divisão de créditos com soma de 100%.'
+            : 'Preencha latitude entre -90 e 90, longitude entre -180 e 180, além de módulos e inversores, para calcular corretamente a potência do sistema.'
+          : 'Preencha tensão, latitude entre -90 e 90, longitude entre -180 e 180 e ao menos uma linha do quadro de padrão de entrada.',
       );
       setPassoAtual(3);
       return;
@@ -1126,7 +1126,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
 
       if (modoEnderecoProjeto === 'cliente' && !enderecoProjetoId) {
         setErro(
-          'O cliente selecionado nao possui endereco vinculado. Cadastre um novo endereco para o projeto.',
+          'O cliente selecionado não possui endereço vinculado. Cadastre um novo endereço para o projeto.',
         );
         setPassoAtual(2);
         return;
@@ -1155,7 +1155,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
       const longitudeNumero = parseCoordinate(longitudeFormatada);
 
       if (latitudeNumero === null || longitudeNumero === null) {
-        setErro('Latitude ou longitude informada em formato invalido.');
+        setErro('Latitude ou longitude informada em formato inválido.');
         setPassoAtual(3);
         return;
       }
@@ -1308,7 +1308,7 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
           servicosSelecionados,
         });
         setErro(
-          'Projeto criado, mas nao foi possivel criar automaticamente os servicos marcados. Verifique o cadastro de servicos.',
+          'Projeto criado, mas não foi possível criar automaticamente os serviços marcados. Verifique o cadastro de serviços.',
         );
         navigate(`/projetos/${projetoSalvo.id}`);
         return;
@@ -1321,19 +1321,19 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
         console.error('Detalhes do erro:', creationError.payload);
         if (creationError.status === 401 || creationError.status === 403) {
           setErro(
-            `Sua sessao nao esta autorizada para ${isEditing ? 'editar' : 'criar'} projetos. Faca login novamente e tente de novo.`,
+            `Sua sessão não está autorizada para ${isEditing ? 'editar' : 'criar'} projetos. Faça login novamente e tente de novo.`,
           );
         } else if (typeof creationError.payload === 'string' && creationError.payload.trim()) {
           setErro(creationError.payload);
         } else {
           setErro(
             creationError.message ||
-              `Nao foi possivel ${isEditing ? 'editar' : 'criar'} o projeto agora. Tente novamente.`,
+              `Não foi possível ${isEditing ? 'editar' : 'criar'} o projeto agora. Tente novamente.`,
           );
         }
       } else {
         setErro(
-          `Nao foi possivel ${isEditing ? 'editar' : 'criar'} o projeto agora. Tente novamente.`,
+          `Não foi possível ${isEditing ? 'editar' : 'criar'} o projeto agora. Tente novamente.`,
         );
       }
     } finally {

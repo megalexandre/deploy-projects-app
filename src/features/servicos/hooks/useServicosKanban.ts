@@ -45,7 +45,7 @@ export const useServicosKanban = () => {
         setConcessionarias(concessionariasData);
       } catch (loadError) {
         console.error('Erro ao carregar serviços:', loadError);
-        setError('Nao foi possivel carregar os serviços.');
+        setError('Não foi possível carregar os serviços.');
       } finally {
         setLoading(false);
       }
@@ -121,7 +121,7 @@ export const useServicosKanban = () => {
     } catch (updateError) {
       console.error('Erro ao atualizar status do serviço:', updateError);
       setServicos(previous);
-      setError('Nao foi possivel atualizar o status do serviço.');
+      setError('Não foi possível atualizar o status do serviço.');
     }
   };
 

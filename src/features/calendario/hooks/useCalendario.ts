@@ -63,7 +63,7 @@ export const useCalendario = () => {
         setErroProjetos(null);
       } catch (error) {
         console.error('Erro ao carregar agenda para o calendario:', error);
-        setErroProjetos('Nao foi possivel carregar projetos e serviços.');
+        setErroProjetos('Não foi possível carregar projetos e serviços.');
       } finally {
         setLoadingProjetos(false);
       }

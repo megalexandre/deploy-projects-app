@@ -6,6 +6,7 @@ import type {
   PadraoEntradaItem,
   Servico,
   StatusServico,
+  StatusAprovacaoServico,
   TimelineItem,
   TipoServico,
 } from '@/types';
@@ -14,6 +15,7 @@ import { asNumber, asString, isRecord } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
 import { addressService } from '@/shared/api/addressService';
 import { apiClient } from '@/shared/api/apiClient';
+import { createRequestCache } from '@/shared/api/requestCache';
 import { filesService } from '@/shared/api/filesService';
 import { concessionairesService } from '@/features/concessionaries/services/concessionairesService';
 import { customersService } from '@/features/clientes/services/customersService';
@@ -47,6 +49,10 @@ export interface UpdateServicoPayload extends Partial<CreateServicoPayload> {
 
 type RawServiceRecord = Record<string, unknown>;
 
+export interface ServiceListOptions {
+  includeAddresses?: boolean;
+}
+
 type ServiceEnhancement = {
   protocolo?: string;
   status?: StatusServico;
@@ -58,22 +64,45 @@ type ServiceEnhancement = {
   precisaAprovacao?: boolean;
 };
 
+type DocumentCategories = Record<string, string>;
+
 const serviceEnhancementStorage = createRecordStorage<ServiceEnhancement>(
   'opj_frontend_service_enhancements',
 );
+const fullServicesListCache = createRequestCache<Servico[]>(30_000);
+const lightweightServicesListCache = createRequestCache<Servico[]>(30_000);
+
+const invalidateServicesListCaches = () => {
+  fullServicesListCache.invalidate();
+  lightweightServicesListCache.invalidate();
+};
+
+const parseJson = <T>(value: unknown, fallback: T): T => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
+};
+
+const serializeJson = (value: unknown) => JSON.stringify(value);
 
 const SERVICE_STATUS_FLOW: Array<{ status: StatusServico; etapa: string }> = [
-  { status: 'aguardando_aprovacao', etapa: 'Aguardando Aprovacao' },
+  { status: 'aguardando_aprovacao', etapa: 'Aguardando Aprovação' },
   { status: 'abertura_servico', etapa: 'Abertura do Serviço' },
-  { status: 'elaboracao_documentacao', etapa: 'Elaboracao da Documentacao' },
+  { status: 'elaboracao_documentacao', etapa: 'Elaboração da Documentação' },
   { status: 'aguardando_assinatura_cliente', etapa: 'Aguardando Assinatura do Cliente' },
   {
     status: 'aguardando_protocolo_concessionaria',
-    etapa: 'Aguardando Protocolo da Concessionaria',
+    etapa: 'Aguardando Protocolo da Concessionária',
   },
-  { status: 'em_analise_concessionaria', etapa: 'Em Analise na Concessionaria' },
+  { status: 'em_analise_concessionaria', etapa: 'Em Análise na Concessionária' },
   { status: 'ressalvas', etapa: 'Ressalvas' },
-  { status: 'obras_concessionaria', etapa: 'Obras Concessionaria' },
+  { status: 'obras_concessionaria', etapa: 'Obras da Concessionária' },
   { status: 'servico_aprovado', etapa: 'Serviço Aprovado' },
   { status: 'vistoria_solicitada', etapa: 'Vistoria Solicitada' },
   { status: 'vistoria_reprovada', etapa: 'Vistoria Reprovada' },
@@ -81,10 +110,10 @@ const SERVICE_STATUS_FLOW: Array<{ status: StatusServico; etapa: string }> = [
 ];
 
 const SERVICE_TYPE_LABELS: Record<TipoServico, string> = {
-  ligacao_nova: 'Ligacao Nova',
+  ligacao_nova: 'Ligação Nova',
   aumento_carga: 'Aumento de Carga',
   troca_titularidade: 'Troca de Titularidade',
-  alteracao_compartilhamento_credito: 'Alteracao Compartilhamento de Credito',
+  alteracao_compartilhamento_credito: 'Alteração no Compartilhamento de Crédito',
 };
 
 const normalizeText = (value?: string) => value?.trim() ?? '';
@@ -242,6 +271,74 @@ const normalizeTimeline = (
     : normalizedTimeline;
 };
 
+const deserializeTimeline = (
+  serviceId: string,
+  status: StatusServico,
+  dataAbertura: string,
+  dataAtualizacao: string,
+  rawTimeline: unknown,
+  rawComments: unknown,
+  fallback?: TimelineItem[],
+) => {
+  const timeline = parseJson<TimelineItem[] | null>(rawTimeline, null);
+  if (!Array.isArray(timeline)) {
+    return normalizeTimeline(serviceId, status, dataAbertura, dataAtualizacao, fallback);
+  }
+
+  const comments = parseJson<Record<string, TimelineItem['comentarios']>>(rawComments, {});
+
+  return normalizeTimeline(
+    serviceId,
+    status,
+    dataAbertura,
+    dataAtualizacao,
+    timeline.map((item) => ({
+      ...item,
+      comentarios: comments[item.id] ?? item.comentarios ?? [],
+    })),
+  );
+};
+
+const serializeTimeline = (timeline: TimelineItem[]) => ({
+  timeline: serializeJson(
+    timeline.map((item) => ({
+      id: item.id,
+      etapa: item.etapa,
+      data: item.data,
+      status: item.status,
+      descricao: item.descricao,
+    })),
+  ),
+  timeline_comments: serializeJson(
+    Object.fromEntries(
+      timeline
+        .filter((item) => item.comentarios?.length)
+        .map((item) => [item.id, item.comentarios]),
+    ),
+  ),
+});
+
+const normalizeApprovalStatus = (
+  value: unknown,
+  fallback: StatusAprovacaoServico = 'not_required',
+): StatusAprovacaoServico => {
+  const normalized = asString(value).toLowerCase();
+  if (['pending', 'pendente', 'aguardando_aprovacao'].includes(normalized)) return 'pending';
+  if (['approved', 'aprovado'].includes(normalized)) return 'approved';
+  if (['rejected', 'rejeitado'].includes(normalized)) return 'rejected';
+  if (normalized === 'not_required') return 'not_required';
+  return fallback;
+};
+
+const serializeDocumentMetadata = (documentos: Documento[], reusedDocumentIds: string[]) => ({
+  document_category: serializeJson(
+    Object.fromEntries(
+      documentos.map((documento) => [documento.fileId || documento.id, documento.tipo]),
+    ),
+  ),
+  reused_documents: serializeJson(reusedDocumentIds),
+});
+
 const buildTimelineFromStatus = (
   serviceId: string,
   status: StatusServico,
@@ -261,38 +358,6 @@ const normalizeCoordinates = (value: unknown): Servico['coordenadas'] | undefine
   }
 
   return { latitude, longitude };
-};
-
-const mergeServiceEnhancement = (service: Servico): Servico => {
-  const enhancement = serviceEnhancementStorage.read()[service.id];
-  if (!enhancement) {
-    return service;
-  }
-
-  const status = normalizeStatus(enhancement.status ?? service.status);
-  const timeline = enhancement.timeline?.length
-    ? normalizeTimeline(
-        service.id,
-        status,
-        service.dataAbertura,
-        service.dataAtualizacao,
-        enhancement.timeline,
-      )
-    : service.timeline;
-
-  return {
-    ...service,
-    protocolo: enhancement.protocolo || service.protocolo,
-    status,
-    timeline,
-    documentos: enhancement.documentos?.length
-      ? normalizeDocumentos(enhancement.documentos)
-      : service.documentos,
-    pontoReferencia: enhancement.pontoReferencia || service.pontoReferencia,
-    cliente: enhancement.clienteNome || service.cliente,
-    concessionaria: enhancement.concessionariaNome || service.concessionaria,
-    precisaAprovacao: enhancement.precisaAprovacao ?? service.precisaAprovacao,
-  };
 };
 
 const updateServiceEnhancement = (
@@ -341,16 +406,22 @@ const normalizeServiceFromApi = (
   const dataCriacao = asString(service.created_at) || new Date().toISOString();
   const dataAtualizacao = asString(service.updated_at) || dataCriacao;
   const enhancement = serviceEnhancementStorage.read()[id];
-  const status = normalizeStatus(enhancement?.status);
+  const status = normalizeStatus(asString(service.status) || enhancement?.status);
   const dataAbertura = asString(service.opening_date) || dataCriacao.slice(0, 10);
   const valor = asNumber(service.amount);
   const cupomDescontoPct = asNumber(service.discount_coupon_percentage);
   const valorFinal = Math.max(valor - valor * (cupomDescontoPct / 100), 0);
   const customerId = asString(service.customer_id) || undefined;
   const concessionariaId = asString(service.concessionaire_id) || undefined;
-  const protocolo = enhancement?.protocolo || buildStableProtocol(id, dataCriacao);
-  const documentos =
-    refs.documentsByServiceId?.get(id) ?? normalizeDocumentos(enhancement?.documentos);
+  const protocolo =
+    asString(service.protocol) || enhancement?.protocolo || buildStableProtocol(id, dataCriacao);
+  const documentCategories = parseJson<DocumentCategories>(service.document_category, {});
+  const documentos = (
+    refs.documentsByServiceId?.get(id) ?? normalizeDocumentos(enhancement?.documentos)
+  ).map((documento) => ({
+    ...documento,
+    tipo: documentCategories[documento.fileId || documento.id] || documento.tipo,
+  }));
 
   return {
     id,
@@ -362,11 +433,11 @@ const normalizeServiceFromApi = (
     cliente:
       enhancement?.clienteNome ||
       refs.customerNamesById.get(customerId ?? '') ||
-      'Cliente nao informado',
+      'Cliente não informado',
     concessionaria:
       enhancement?.concessionariaNome ||
       refs.concessionaireNamesById.get(concessionariaId ?? '') ||
-      'Concessionaria nao informada',
+      'Concessionária não informada',
     status,
     dataAbertura,
     valor,
@@ -376,7 +447,7 @@ const normalizeServiceFromApi = (
     tensaoFornecimento:
       (asString(service.supply_voltage) as Servico['tensaoFornecimento']) || undefined,
     coordenadas: normalizeCoordinates(service.coordinates),
-    pontoReferencia: enhancement?.pontoReferencia || undefined,
+    pontoReferencia: asString(service.reference_point) || enhancement?.pontoReferencia || undefined,
     padraoMaisDe30m:
       service.pole_distance_over_30m === true
         ? 'sim'
@@ -416,8 +487,24 @@ const normalizeServiceFromApi = (
         : [],
     ),
     documentos,
-    timeline: normalizeTimeline(id, status, dataAbertura, dataAtualizacao, enhancement?.timeline),
-    precisaAprovacao: enhancement?.precisaAprovacao ?? false,
+    timeline: deserializeTimeline(
+      id,
+      status,
+      dataAbertura,
+      dataAtualizacao,
+      service.timeline,
+      service.timeline_comments,
+      enhancement?.timeline,
+    ),
+    approvalStatus: normalizeApprovalStatus(
+      service.approval_status,
+      enhancement?.precisaAprovacao ? 'pending' : 'not_required',
+    ),
+    precisaAprovacao:
+      normalizeApprovalStatus(
+        service.approval_status,
+        enhancement?.precisaAprovacao ? 'pending' : 'not_required',
+      ) === 'pending',
     createdBy: asString(service.created_by) || undefined,
     updatedBy: asString(service.updated_by) || undefined,
     dataCriacao,
@@ -463,22 +550,25 @@ const toAddressPayload = (endereco?: Endereco) => {
   };
 };
 
-const loadReferenceData = async (records: RawServiceRecord[]) => {
+const loadReferenceData = async (records: RawServiceRecord[], options: ServiceListOptions = {}) => {
   const [customers, concessionarias] = await Promise.all([
     customersService.getAll().catch(() => []),
     concessionairesService.getAll().catch(() => []),
   ]);
 
-  const addressIds = Array.from(
-    new Set(
-      records
-        .flatMap((record) => [
-          asString(record.construction_address_id),
-          asString(record.generating_address_id),
-        ])
-        .filter(Boolean),
-    ),
-  );
+  const addressIds =
+    options.includeAddresses === false
+      ? []
+      : Array.from(
+          new Set(
+            records
+              .flatMap((record) => [
+                asString(record.construction_address_id),
+                asString(record.generating_address_id),
+              ])
+              .filter(Boolean),
+          ),
+        );
 
   const addresses = await Promise.all(
     addressIds.map(async (addressId) => {
@@ -541,7 +631,7 @@ const resolveConcessionaireId = async (concessionaria: string) => {
   );
 
   if (!matched) {
-    throw new Error('Selecione uma concessionaria valida para salvar o serviço na API.');
+    throw new Error('Selecione uma concessionária válida para salvar o serviço na API.');
   }
 
   return matched.id;
@@ -568,6 +658,7 @@ const persistAddress = async (currentAddressId: string | undefined, endereco?: E
 const buildApiPayload = async (
   payload: CreateServicoPayload | UpdateServicoPayload,
   current?: RawServiceRecord,
+  trackingFields: Record<string, unknown> = {},
 ) => {
   const customerId =
     payload.clienteId !== undefined || payload.cliente !== undefined
@@ -636,6 +727,7 @@ const buildApiPayload = async (
         : Array.isArray(current?.service_entry_items)
           ? undefined
           : [],
+    ...trackingFields,
   };
 };
 
@@ -649,6 +741,19 @@ export const servicosService = {
   typeLabels: SERVICE_TYPE_LABELS,
 
   async saveDocuments(id: string, documentos: Documento[]): Promise<Servico> {
+    const directUploads = await filesService.listByItem(id);
+    const directUploadIds = new Set(directUploads.map((documento) => documento.id));
+    const reusedDocumentIds = documentos
+      .map((documento) => documento.fileId || documento.id)
+      .filter((documentId) => !directUploadIds.has(documentId));
+
+    await apiClient.put<unknown>(
+      `/services/${id}`,
+      serializeDocumentMetadata(normalizeDocumentos(documentos), reusedDocumentIds),
+    );
+    invalidateServicesListCaches();
+
+    // Compatibilidade temporaria com servicos criados antes dos novos campos da API.
     updateServiceEnhancement(id, (current) => ({
       ...current,
       documentos: normalizeDocumentos(documentos),
@@ -657,46 +762,67 @@ export const servicosService = {
     return servicosService.getById(id);
   },
 
-  async list(): Promise<Servico[]> {
-    const response = await apiClient.get<unknown[]>('/services');
-    const records = Array.isArray(response)
-      ? response.map((item) => (isRecord(item) ? item : {}))
-      : [];
-    const refs = await loadReferenceData(records);
+  async list(options: ServiceListOptions = {}): Promise<Servico[]> {
+    const cache =
+      options.includeAddresses === false ? lightweightServicesListCache : fullServicesListCache;
 
-    return sortByDate(
-      records.map((record) => mergeServiceEnhancement(normalizeServiceFromApi(record, refs))),
-    );
+    return cache.get(async () => {
+      const response = await apiClient.get<unknown[]>('/services');
+      const records = Array.isArray(response)
+        ? response.map((item) => (isRecord(item) ? item : {}))
+        : [];
+      const refs = await loadReferenceData(records, options);
+
+      return sortByDate(records.map((record) => normalizeServiceFromApi(record, refs)));
+    });
   },
 
   async getById(id: string): Promise<Servico> {
     const raw = await getServiceRaw(id);
-    const [refs, uploads] = await Promise.all([
+    const customerId = asString(raw.customer_id);
+    const reusedDocumentIds = parseJson<string[]>(raw.reused_documents, []);
+    const [refs, uploads, customerUploads] = await Promise.all([
       loadReferenceData([raw]),
       filesService.listByItem(id).catch(() => []),
+      customerId && reusedDocumentIds.length > 0
+        ? filesService.listByItem(customerId).catch(() => [])
+        : Promise.resolve([]),
     ]);
     const currentDocuments = serviceEnhancementStorage.read()[id]?.documentos ?? [];
-    const documentsByServiceId = new Map<string, Documento[]>([
-      [
-        id,
-        uploads.map((item) =>
-          buildBackendDocument(
-            item,
-            currentDocuments.find((documento) => (documento.fileId || documento.id) === item.id),
-          ),
-        ),
-      ],
-    ]);
+    const reusedDocumentIdSet = new Set(reusedDocumentIds);
+    const backendDocuments = [
+      ...uploads,
+      ...customerUploads.filter((item) => reusedDocumentIdSet.has(item.id)),
+    ];
+    const documents =
+      backendDocuments.length > 0
+        ? backendDocuments.map((item) =>
+            buildBackendDocument(
+              item,
+              currentDocuments.find((documento) => (documento.fileId || documento.id) === item.id),
+            ),
+          )
+        : normalizeDocumentos(currentDocuments);
+    const documentsByServiceId = new Map<string, Documento[]>([[id, documents]]);
 
-    return mergeServiceEnhancement(normalizeServiceFromApi(raw, { ...refs, documentsByServiceId }));
+    return normalizeServiceFromApi(raw, { ...refs, documentsByServiceId });
   },
 
   async create(payload: CreateServicoPayload): Promise<Servico> {
-    const apiPayload = await buildApiPayload(payload);
+    const temporaryId = crypto.randomUUID();
+    const enhancement = buildServiceEnhancement(payload, temporaryId);
+    const apiPayload = await buildApiPayload(payload, undefined, {
+      protocol: enhancement.protocolo,
+      status: enhancement.status,
+      ...serializeTimeline(enhancement.timeline ?? []),
+      reference_point: enhancement.pontoReferencia,
+      approval_status: enhancement.precisaAprovacao ? 'pending' : 'not_required',
+      ...serializeDocumentMetadata(enhancement.documentos ?? [], []),
+    });
     const response = await apiClient.post<unknown>('/services', apiPayload);
+    invalidateServicesListCaches();
     const raw = isRecord(response) ? response : {};
     const serviceId = asString(raw.id) || crypto.randomUUID();
-    const enhancement = buildServiceEnhancement(payload, serviceId);
 
     updateServiceEnhancement(serviceId, (current) => ({
       ...current,
@@ -716,16 +842,56 @@ export const servicosService = {
     nextStatus: StatusServico = 'abertura_servico',
   ): Promise<Servico> {
     const currentService = await servicosService.getById(id);
+    const nextTimeline = appendTimelineEntryForServiceStatus(
+      currentService,
+      currentService.timeline,
+      nextStatus,
+      'Serviço aprovado no frontend e liberado para o fluxo operacional.',
+    );
+
+    await apiClient.put<unknown>(`/services/${id}`, {
+      protocol: currentService.protocolo,
+      status: nextStatus,
+      approval_status: 'approved',
+      reference_point: currentService.pontoReferencia,
+      ...serializeTimeline(nextTimeline),
+    });
+    invalidateServicesListCaches();
 
     updateServiceEnhancement(id, (current) => ({
       ...current,
       status: nextStatus,
-      timeline: appendTimelineEntryForServiceStatus(
-        currentService,
-        current?.timeline ?? currentService.timeline,
-        nextStatus,
-        'Serviço aprovado no frontend e liberado para o fluxo operacional.',
-      ),
+      timeline: nextTimeline,
+      precisaAprovacao: false,
+    }));
+
+    return servicosService.getById(id);
+  },
+
+  async rejectPending(id: string): Promise<Servico> {
+    const currentService = await servicosService.getById(id);
+    const nextStatus: StatusServico = 'servico_encerrado';
+    const nextTimeline = appendTimelineEntryForServiceStatus(
+      currentService,
+      currentService.timeline,
+      nextStatus,
+      'Solicitação rejeitada na tela de aprovações.',
+    );
+
+    await apiClient.put<unknown>(`/services/${id}`, {
+      protocol: currentService.protocolo,
+      status: nextStatus,
+      approval_status: 'rejected',
+      reference_point: currentService.pontoReferencia,
+      ...serializeTimeline(nextTimeline),
+    });
+    invalidateServicesListCaches();
+
+    updateServiceEnhancement(id, (current) => ({
+      ...current,
+      status: nextStatus,
+      timeline: nextTimeline,
+      precisaAprovacao: false,
     }));
 
     return servicosService.getById(id);
@@ -736,21 +902,36 @@ export const servicosService = {
     const currentService = await servicosService.getById(id);
     const nextStatus = payload.status ?? currentService.status;
     const nextUpdatedAt = new Date().toISOString();
+    const nextTimeline =
+      payload.timeline ??
+      (payload.status && payload.status !== currentService.status
+        ? appendTimelineEntryForServiceStatus(
+            currentService,
+            currentService.timeline,
+            nextStatus,
+            payload.observacoes,
+          )
+        : currentService.timeline.length > 0
+          ? currentService.timeline
+          : buildTimeline(id, nextStatus, currentService.dataAbertura, nextUpdatedAt));
+
+    const apiPayload = await buildApiPayload(payload, currentRaw, {
+      protocol: currentService.protocolo,
+      status: nextStatus,
+      approval_status: currentService.approvalStatus,
+      ...serializeTimeline(nextTimeline),
+      reference_point:
+        payload.pontoReferencia !== undefined
+          ? normalizeText(payload.pontoReferencia) || null
+          : currentRaw.reference_point,
+    });
+    await apiClient.put<unknown>(`/services/${id}`, apiPayload);
+    invalidateServicesListCaches();
 
     updateServiceEnhancement(id, (current) => ({
       ...current,
       status: nextStatus,
-      timeline:
-        payload.timeline ??
-        (payload.status && payload.status !== currentService.status
-          ? appendTimelineEntryForServiceStatus(
-              currentService,
-              current?.timeline ?? currentService.timeline,
-              nextStatus,
-              payload.observacoes,
-            )
-          : (current?.timeline ??
-            buildTimeline(id, nextStatus, currentService.dataAbertura, nextUpdatedAt))),
+      timeline: nextTimeline,
       documentos: payload.documentos
         ? normalizeDocumentos(payload.documentos)
         : current?.documentos,
@@ -768,21 +949,30 @@ export const servicosService = {
           : current?.concessionariaNome,
     }));
 
-    const apiPayload = await buildApiPayload(payload, currentRaw);
-    await apiClient.put<unknown>(`/services/${id}`, apiPayload);
     return servicosService.getById(id);
   },
 
   async updateStatus(id: string, status: StatusServico): Promise<Servico> {
     const currentService = await servicosService.getById(id);
+    const nextTimeline = appendTimelineEntryForServiceStatus(
+      currentService,
+      currentService.timeline,
+      status,
+    );
+
+    await apiClient.put<unknown>(`/services/${id}`, {
+      protocol: currentService.protocolo,
+      status,
+      approval_status: currentService.approvalStatus,
+      reference_point: currentService.pontoReferencia,
+      ...serializeTimeline(nextTimeline),
+    });
+    invalidateServicesListCaches();
+
     updateServiceEnhancement(id, (current) => ({
       ...current,
       status,
-      timeline: appendTimelineEntryForServiceStatus(
-        currentService,
-        current?.timeline ?? currentService.timeline,
-        status,
-      ),
+      timeline: nextTimeline,
     }));
 
     return servicosService.getById(id);

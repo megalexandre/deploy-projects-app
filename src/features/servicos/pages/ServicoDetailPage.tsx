@@ -150,7 +150,7 @@ export const ServicoDetailPage: React.FC = () => {
         setForm(buildForm(serviceData));
       } catch (loadError) {
         console.error('Erro ao carregar serviço:', loadError);
-        setError('Nao foi possivel carregar o serviço.');
+        setError('Não foi possível carregar o serviço.');
       } finally {
         setLoading(false);
       }
@@ -185,7 +185,7 @@ export const ServicoDetailPage: React.FC = () => {
   }
 
   if (!servico || !form) {
-    return <div className="py-12 text-center text-slate-400">Serviço nao encontrado.</div>;
+    return <div className="py-12 text-center text-slate-400">Serviço não encontrado.</div>;
   }
 
   const handleSave = async (event: React.FormEvent) => {
@@ -219,7 +219,7 @@ export const ServicoDetailPage: React.FC = () => {
       setSearchParams({ tab: 'dados' });
     } catch (saveError) {
       console.error('Erro ao salvar serviço:', saveError);
-      setError('Nao foi possivel salvar o serviço.');
+      setError('Não foi possível salvar o serviço.');
     } finally {
       setSaving(false);
     }
@@ -273,7 +273,7 @@ export const ServicoDetailPage: React.FC = () => {
       setSelectedCustomerDocumentIds([]);
     } catch (saveError) {
       console.error('Erro ao salvar documentos do serviço:', saveError);
-      setError('Nao foi possivel salvar os documentos do serviço.');
+      setError('Não foi possível salvar os documentos do serviço.');
     } finally {
       setSavingDocuments(false);
     }
@@ -339,7 +339,7 @@ export const ServicoDetailPage: React.FC = () => {
                 <p className="text-gray-100">{servico.cliente}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-400">Concessionaria</label>
+                <label className="text-sm font-medium text-gray-400">Concessionária</label>
                 <p className="text-gray-100">{servico.concessionaria || '-'}</p>
               </div>
               <div>
@@ -364,7 +364,7 @@ export const ServicoDetailPage: React.FC = () => {
               {isTechnicalType(servico.tipo) && (
                 <>
                   <div>
-                    <label className="text-sm font-medium text-gray-400">Tensao</label>
+                    <label className="text-sm font-medium text-gray-400">Tensão</label>
                     <p className="text-gray-100">{servico.tensaoFornecimento || '-'}</p>
                   </div>
                   <div>
@@ -376,7 +376,7 @@ export const ServicoDetailPage: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-400">Ponto de Referencia</label>
+                    <label className="text-sm font-medium text-gray-400">Ponto de Referência</label>
                     <p className="text-gray-100">{servico.pontoReferencia || '-'}</p>
                   </div>
                 </>
@@ -388,7 +388,7 @@ export const ServicoDetailPage: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="text-sm font-medium text-gray-400">Ultima Atualizacao</label>
+                <label className="text-sm font-medium text-gray-400">Última Atualização</label>
                 <p className="text-gray-100">{formatDate(servico.dataAtualizacao)}</p>
               </div>
             </CardContent>
@@ -459,7 +459,7 @@ export const ServicoDetailPage: React.FC = () => {
                     </h4>
                     <p className="mt-1 text-xs text-slate-400">
                       {selectedCustomer.nome} possui {selectedCustomer.documentos.length}{' '}
-                      documento(s) disponivel(is).
+                      documento(s) disponível(is).
                     </p>
                   </div>
                   <Button
@@ -592,7 +592,7 @@ export const ServicoDetailPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">Concessionaria</label>
+                  <label className="mb-2 block text-sm text-slate-300">Concessionária</label>
                   <select
                     value={form.concessionaria}
                     onChange={(event) =>
@@ -732,7 +732,7 @@ export const ServicoDetailPage: React.FC = () => {
                         prev ? { ...prev, pontoReferencia: event.target.value } : prev,
                       )
                     }
-                    placeholder="Ponto de referencia"
+                    placeholder="Ponto de referência"
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
                   />
                 </div>

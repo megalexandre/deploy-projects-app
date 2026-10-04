@@ -59,7 +59,7 @@ export const UsuariosPage: React.FC = () => {
         </div>
         <Button className="mt-4 sm:mt-0" onClick={handleOpenCreateForm}>
           <Plus className="mr-2 h-4 w-4" />
-          Novo Usuario
+          Novo Usuário
         </Button>
       </div>
 

@@ -58,7 +58,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
           </div>
           <Button type="button" onClick={handleOpenCreateModal}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nova concessionaria
+            Nova concessionária
           </Button>
         </div>
       )}
@@ -67,7 +67,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
         <div className="flex justify-end">
           <Button type="button" onClick={handleOpenCreateModal}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nova concessionaria
+            Nova concessionária
           </Button>
         </div>
       )}
@@ -77,7 +77,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
       <Card>
         <CardContent className="p-6">
           <Input
-            placeholder="Buscar por nome, sigla ou codigo..."
+            placeholder="Buscar por nome, sigla ou código..."
             value={searchTerm}
             onChange={(event) => {
               setCurrentPage(1);
@@ -93,7 +93,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
           <div className="flex items-center justify-between gap-4">
             <CardTitle>Concessionárias Cadastradas ({filteredItems.length})</CardTitle>
             <span className="text-xs text-slate-400">
-              Pagina {safeCurrentPage} de {totalPages}
+              Página {safeCurrentPage} de {totalPages}
             </span>
           </div>
         </CardHeader>
@@ -104,7 +104,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
                   <th className="px-4 py-3">Nome</th>
                   <th className="px-4 py-3">Sigla</th>
-                  <th className="px-4 py-3">Codigo</th>
+                  <th className="px-4 py-3">Código</th>
                   <th className="px-4 py-3">Regiao</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Logo</th>
@@ -143,7 +143,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
                 {paginatedItems.length === 0 && (
                   <tr>
                     <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={7}>
-                      Nenhuma concessionaria encontrada.
+                      Nenhuma concessionária encontrada.
                     </td>
                   </tr>
                 )}
@@ -174,7 +174,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
                   onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                   disabled={safeCurrentPage === totalPages}
                 >
-                  Proxima
+                  Próxima
                 </Button>
               </div>
             </div>

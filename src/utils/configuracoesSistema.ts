@@ -18,15 +18,15 @@ const defaultTabelaPrecoFotovoltaico = [
 ];
 
 const defaultTabelaPrecoPadraoEntrada: PrecoPadraoEntrada[] = [
-  { id: 'emuc-1', classificacao: 'Residencial', tipoLigacao: 'Monofasico', valor: 150 },
-  { id: 'emuc-2', classificacao: 'Residencial', tipoLigacao: 'Bifasico', valor: 250 },
-  { id: 'emuc-3', classificacao: 'Residencial', tipoLigacao: 'Trifasico', valor: 300 },
-  { id: 'emuc-4', classificacao: 'Comercial / Industrial', tipoLigacao: 'Monofasico', valor: 250 },
-  { id: 'emuc-5', classificacao: 'Comercial / Industrial', tipoLigacao: 'Bifasico', valor: 300 },
-  { id: 'emuc-6', classificacao: 'Comercial / Industrial', tipoLigacao: 'Trifasico', valor: 350 },
-  { id: 'emuc-7', classificacao: 'Condominio', tipoLigacao: 'Monofasico', valor: 150 },
-  { id: 'emuc-8', classificacao: 'Condominio', tipoLigacao: 'Bifasico', valor: 200 },
-  { id: 'emuc-9', classificacao: 'Condominio', tipoLigacao: 'Trifasico', valor: 300 },
+  { id: 'emuc-1', classificacao: 'Residencial', tipoLigacao: 'Monofásico', valor: 150 },
+  { id: 'emuc-2', classificacao: 'Residencial', tipoLigacao: 'Bifásico', valor: 250 },
+  { id: 'emuc-3', classificacao: 'Residencial', tipoLigacao: 'Trifásico', valor: 300 },
+  { id: 'emuc-4', classificacao: 'Comercial / Industrial', tipoLigacao: 'Monofásico', valor: 250 },
+  { id: 'emuc-5', classificacao: 'Comercial / Industrial', tipoLigacao: 'Bifásico', valor: 300 },
+  { id: 'emuc-6', classificacao: 'Comercial / Industrial', tipoLigacao: 'Trifásico', valor: 350 },
+  { id: 'emuc-7', classificacao: 'Condomínio', tipoLigacao: 'Monofásico', valor: 150 },
+  { id: 'emuc-8', classificacao: 'Condomínio', tipoLigacao: 'Bifásico', valor: 200 },
+  { id: 'emuc-9', classificacao: 'Condomínio', tipoLigacao: 'Trifásico', valor: 300 },
 ];
 
 const defaultCuponsDesconto: CupomDesconto[] = [
@@ -38,7 +38,7 @@ export const getDefaultConfiguracoesSistema = (): ConfiguracoesSistema => ({
   cnpj: '12.345.678/0001-99',
   telefone: '(11) 3456-7890',
   email: 'contato@opjengenharia.com.br',
-  endereco: 'Rua das Industrias, 1234 - Sao Paulo/SP',
+  endereco: 'Rua das Indústrias, 1234 - São Paulo/SP',
   emailNotificacoes: true,
   smsNotificacoes: false,
   notificacoesProjetos: true,

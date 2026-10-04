@@ -46,7 +46,7 @@ export const ConcessionaireFormModal: React.FC<ConcessionaireFormModalProps> = (
         <Card className="w-full max-w-3xl">
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
-              <CardTitle>{editingId ? 'Editar Concessionaria' : 'Nova Concessionaria'}</CardTitle>
+              <CardTitle>{editingId ? 'Editar Concessionária' : 'Nova Concessionária'}</CardTitle>
               <button
                 type="button"
                 onClick={onClose}
@@ -74,7 +74,7 @@ export const ConcessionaireFormModal: React.FC<ConcessionaireFormModalProps> = (
                   onChange={(e) => setField('acronym', e.target.value)}
                 />
                 <Input
-                  label="Codigo"
+                  label="Código"
                   value={form.code}
                   onChange={(e) => setField('code', e.target.value)}
                 />
@@ -104,7 +104,7 @@ export const ConcessionaireFormModal: React.FC<ConcessionaireFormModalProps> = (
                     className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-cyan-500 focus:ring-cyan-500"
                   />
                   <label htmlFor="active" className="text-sm text-slate-300">
-                    Concessionaria ativa
+                    Concessionária ativa
                   </label>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export const ConcessionaireFormModal: React.FC<ConcessionaireFormModalProps> = (
                   ) : (
                     <>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Cadastrar Concessionaria
+                      Cadastrar Concessionária
                     </>
                   )}
                 </Button>

@@ -100,7 +100,7 @@ export const approvalsService = {
       clientName: input.clientName,
       createdAt: input.createdAt || new Date().toISOString(),
       createdByUserId: input.createdByUserId || 'desconhecido',
-      createdByName: input.createdByName || 'Usuario do sistema',
+      createdByName: input.createdByName || 'Usuário do sistema',
       createdByRole: input.createdByRole || 'user',
       status: 'pendente',
     };

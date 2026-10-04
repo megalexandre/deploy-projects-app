@@ -1,5 +1,6 @@
 /** Camada de acesso ao financeiro baseada no contrato /ledgers da API Rails. */
 import { apiClient } from '@/shared/api/apiClient';
+import { createKeyedRequestCache } from '@/shared/api/requestCache';
 
 export type LedgerKind = 'receita' | 'despesa';
 
@@ -70,6 +71,14 @@ export interface ResumoFinanceiro {
 const toQueryRecord = (params?: LedgerListParams) =>
   params as Record<string, string | number | boolean | undefined | null> | undefined;
 
+const ledgerListCache = createKeyedRequestCache<Ledger[]>(15_000);
+const ledgerPageCache = createKeyedRequestCache<LedgerPage>(15_000);
+const getCacheKey = (params?: LedgerListParams) => JSON.stringify(params ?? {});
+const invalidateLedgerCaches = () => {
+  ledgerListCache.invalidate();
+  ledgerPageCache.invalidate();
+};
+
 const normalizeReason = (reason?: string | null): LedgerKind => {
   const value = reason?.trim().toLowerCase() ?? '';
   if (value === 'despesa') return 'despesa';
@@ -112,7 +121,7 @@ export const ledgerToTransacao = (ledger: Ledger): TransacaoFinanceira => {
 
   return {
     id: ledger.id,
-    descricao: ledger.description?.trim() || 'Lancamento financeiro',
+    descricao: ledger.description?.trim() || 'Lançamento financeiro',
     tipo,
     valor: Math.abs(rawValor),
     data: toDateOnly(ledger.paid_at || ledger.created_at),
@@ -126,10 +135,14 @@ export const ledgerToTransacao = (ledger: Ledger): TransacaoFinanceira => {
 
 export const financeiroService = {
   listLedgers: (params?: LedgerListParams) =>
-    apiClient.get<Ledger[]>('/ledgers', { query: toQueryRecord(params) }),
+    ledgerListCache.get(getCacheKey(params), () =>
+      apiClient.get<Ledger[]>('/ledgers', { query: toQueryRecord(params) }),
+    ),
 
   paginateLedgers: (params?: LedgerListParams) =>
-    apiClient.get<LedgerPage>('/ledgers/paginate', { query: toQueryRecord(params) }),
+    ledgerPageCache.get(getCacheKey(params), () =>
+      apiClient.get<LedgerPage>('/ledgers/paginate', { query: toQueryRecord(params) }),
+    ),
 
   async listFilteredLedgers(params?: Omit<LedgerListParams, 'page'>) {
     const first = await financeiroService.paginateLedgers({ ...params, page: 1, items: 100 });
@@ -145,13 +158,21 @@ export const financeiroService = {
 
   getLedgerById: (id: string) => apiClient.get<Ledger>(`/ledgers/${id}`),
 
-  createLedger: (payload: LedgerPayload) => apiClient.post<Ledger>('/ledgers', payload),
+  async createLedger(payload: LedgerPayload) {
+    const ledger = await apiClient.post<Ledger>('/ledgers', payload);
+    invalidateLedgerCaches();
+    return ledger;
+  },
 
-  updateLedger: (id: string, payload: Partial<LedgerPayload>) =>
-    apiClient.patch<Ledger>(`/ledgers/${id}`, payload),
+  async updateLedger(id: string, payload: Partial<LedgerPayload>) {
+    const ledger = await apiClient.patch<Ledger>(`/ledgers/${id}`, payload);
+    invalidateLedgerCaches();
+    return ledger;
+  },
 
   removeLedger: async (id: string) => {
     await apiClient.delete(`/ledgers/${id}`);
+    invalidateLedgerCaches();
   },
 
   async listTransacoes(params?: LedgerListParams) {

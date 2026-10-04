@@ -94,28 +94,28 @@ interface ServicoForm {
 const tipoServicoOptions: Array<{ value: TipoServico; label: string; description: string }> = [
   {
     value: 'ligacao_nova',
-    label: 'Ligacao Nova',
-    description: 'Endereço da obra, tensao, coordenadas, padrão e uploads.',
+    label: 'Ligação Nova',
+    description: 'Endereço da obra, tensão, coordenadas, padrão e uploads.',
   },
   {
     value: 'aumento_carga',
     label: 'Aumento de Carga',
-    description: 'Mesmo fluxo tecnico de ligacao nova, com anexos da unidade atual.',
+    description: 'Mesmo fluxo técnico de ligação nova, com anexos da unidade atual.',
   },
   {
     value: 'troca_titularidade',
     label: 'Troca de Titularidade',
-    description: 'Usa o mesmo fluxo tecnico e os mesmos campos de aumento de carga.',
+    description: 'Usa o mesmo fluxo técnico e os mesmos campos de aumento de carga.',
   },
   {
     value: 'alteracao_compartilhamento_credito',
-    label: 'Alteracao Compartilhamento de Credito',
-    description: 'UC geradora, endereço e rateio das beneficiarias.',
+    label: 'Alteração no Compartilhamento de Crédito',
+    description: 'UC geradora, endereço e rateio das beneficiárias.',
   },
 ];
 
-const tipoLigacaoOptions = ['Monofasico', 'Bifasico', 'Trifasico'];
-const classificacaoOptions = ['Residencial', 'Comercial', 'Industrial', 'Rural', 'Condominio'];
+const tipoLigacaoOptions = ['Monofásico', 'Bifásico', 'Trifásico'];
+const classificacaoOptions = ['Residencial', 'Comercial', 'Industrial', 'Rural', 'Condomínio'];
 
 const emptyAddress = (): AddressForm => ({
   cep: '',
@@ -128,7 +128,7 @@ const emptyAddress = (): AddressForm => ({
 });
 const buildPadraoItem = (): PadraoEntradaItemForm => ({
   id: crypto.randomUUID(),
-  tipoLigacao: 'Monofasico',
+  tipoLigacao: 'Monofásico',
   classificacao: 'Residencial',
   quantidade: '',
   disjuntor: '',
@@ -165,19 +165,19 @@ const createEmptyForm = (): ServicoForm => ({
 const personDocuments: Record<PersonType, DocumentoCategoria[]> = {
   cpf: [
     { key: 'cnh', label: 'CNH' },
-    { key: 'procuracao_pf', label: 'Procuracao' },
+    { key: 'procuracao_pf', label: 'Procuração' },
   ],
   cnpj: [
     { key: 'contrato_social', label: 'Contrato Social' },
-    { key: 'cartao_cnpj', label: 'Cartao CNPJ' },
-    { key: 'documentacao_socios', label: 'Documentacao do(s) Socio(s)' },
-    { key: 'procuracao_pj', label: 'Procuracao' },
+    { key: 'cartao_cnpj', label: 'Cartão CNPJ' },
+    { key: 'documentacao_socios', label: 'Documentação do(s) Sócio(s)' },
+    { key: 'procuracao_pj', label: 'Procuração' },
   ],
 };
 
 const documentCategoriesByType: Record<TipoServico, DocumentoCategoria[]> = {
   ligacao_nova: [
-    { key: 'matricula_imovel', label: 'Matricula do Imovel' },
+    { key: 'matricula_imovel', label: 'Matrícula do Imóvel' },
     { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
@@ -193,7 +193,7 @@ const documentCategoriesByType: Record<TipoServico, DocumentoCategoria[]> = {
   ],
   alteracao_compartilhamento_credito: [
     { key: 'conta_geradora', label: 'Conta de Energia da Geradora' },
-    { key: 'contas_beneficiarias', label: 'Conta de Energia da(s) Beneficiarias', maxFiles: 5 },
+    { key: 'contas_beneficiarias', label: 'Conta de Energia da(s) Beneficiárias', maxFiles: 5 },
     { key: 'foto_padrao_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
@@ -292,7 +292,7 @@ export const NovoServicoPage: React.FC = () => {
         setConcessionarias(concessionariasData);
       } catch (loadError) {
         console.error('Erro ao carregar dados do novo serviço:', loadError);
-        setError('Nao foi possivel carregar os dados para criar o serviço.');
+        setError('Não foi possível carregar os dados para criar o serviço.');
       } finally {
         setLoading(false);
       }
@@ -402,24 +402,24 @@ export const NovoServicoPage: React.FC = () => {
     const clienteValido = form.clienteId !== '' || form.clienteNomeManual.trim().length >= 2;
 
     if (!clienteValido) missing.push('cliente');
-    if (!form.concessionaria.trim()) missing.push('concessionaria');
+    if (!form.concessionaria.trim()) missing.push('concessionária');
     if (!form.dataAbertura.trim()) missing.push('data de abertura');
-    if (valor <= 0) missing.push('valor do servico');
+    if (valor <= 0) missing.push('valor do serviço');
 
     if (isTechnicalType(form.tipo)) {
-      if (!isAddressValid(form.enderecoObra)) missing.push('endereco da obra completo');
-      if (parseCoordinate(form.latitude) === null) missing.push('latitude valida');
-      if (parseCoordinate(form.longitude) === null) missing.push('longitude valida');
+      if (!isAddressValid(form.enderecoObra)) missing.push('endereço da obra completo');
+      if (parseCoordinate(form.latitude) === null) missing.push('latitude válida');
+      if (parseCoordinate(form.longitude) === null) missing.push('longitude válida');
     }
 
     if (canUseRateioType(form.tipo)) {
-      if (!isAddressValid(form.enderecoGeradora)) missing.push('endereco da geradora completo');
+      if (!isAddressValid(form.enderecoGeradora)) missing.push('endereço da geradora completo');
       if (
         !form.rateios.some(
           (item) => item.uc.trim() && item.endereco.trim() && Number(item.percentual) > 0,
         )
       ) {
-        missing.push('ao menos um rateio valido');
+        missing.push('ao menos um rateio válido');
       }
     }
 
@@ -449,7 +449,7 @@ export const NovoServicoPage: React.FC = () => {
     setSubmitAttempted(true);
     const missingFields = getMissingFields();
     if (missingFields.length > 0 || !validateForm()) {
-      setError(`Preencha os campos obrigatorios: ${missingFields.join(', ')}.`);
+      setError(`Preencha os campos obrigatórios: ${missingFields.join(', ')}.`);
       return;
     }
 
@@ -534,7 +534,7 @@ export const NovoServicoPage: React.FC = () => {
       navigate('/servicos');
     } catch (saveError) {
       console.error('Erro ao criar serviço:', saveError);
-      setError('Nao foi possivel criar o serviço.');
+      setError('Não foi possível criar o serviço.');
     } finally {
       setSaving(false);
     }
@@ -557,7 +557,7 @@ export const NovoServicoPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-100">Novo Serviço</h1>
             <p className="mt-1 text-gray-400">
-              Fluxo dedicado de criacao, separado da listagem, no mesmo padrão de projetos.
+              Fluxo dedicado de criação, separado da listagem, no mesmo padrão de projetos.
             </p>
           </div>
         </div>
@@ -571,7 +571,7 @@ export const NovoServicoPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Etapa 1 • Dados Basicos</CardTitle>
+          <CardTitle>Etapa 1 • Dados Básicos</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div>
@@ -742,7 +742,7 @@ export const NovoServicoPage: React.FC = () => {
                         enderecoObra: { ...prev.enderecoObra, numero: event.target.value },
                       }))
                     }
-                    placeholder="Numero"
+                    placeholder="Número"
                     className={inputClass(
                       submitAttempted &&
                         isTechnicalType(form.tipo) &&
@@ -837,7 +837,7 @@ export const NovoServicoPage: React.FC = () => {
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
                   >
-                    <option value="">Selecione a tensao...</option>
+                    <option value="">Selecione a tensão...</option>
                     <option value="127/220V">127/220V</option>
                     <option value="380/220V">380/220V</option>
                   </select>
@@ -875,7 +875,7 @@ export const NovoServicoPage: React.FC = () => {
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
                   >
-                    <option value="nao">Padrão ate 30m</option>
+                    <option value="nao">Padrão até 30m</option>
                     <option value="sim">Padrão acima de 30m</option>
                   </select>
                   <input
@@ -883,7 +883,7 @@ export const NovoServicoPage: React.FC = () => {
                     onChange={(event) =>
                       setForm((prev) => ({ ...prev, pontoReferencia: event.target.value }))
                     }
-                    placeholder="Ponto de referencia"
+                    placeholder="Ponto de referência"
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
                   />
                 </div>
@@ -1088,7 +1088,7 @@ export const NovoServicoPage: React.FC = () => {
                         },
                       }))
                     }
-                    placeholder="Endereco da geradora"
+                    placeholder="Endereço da geradora"
                     className={inputClass(
                       submitAttempted &&
                         canUseRateioType(form.tipo) &&
@@ -1099,7 +1099,7 @@ export const NovoServicoPage: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-100">
-                      Rateio das Beneficiarias
+                      Rateio das Beneficiárias
                     </h3>
                     <Button
                       type="button"
@@ -1121,7 +1121,7 @@ export const NovoServicoPage: React.FC = () => {
                             UC
                           </th>
                           <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-slate-400">
-                            Endereco
+                            Endereço
                           </th>
                           <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-slate-400">
                             Classe
@@ -1253,7 +1253,7 @@ export const NovoServicoPage: React.FC = () => {
                     Reaproveitar documentos do cliente
                   </h3>
                   <p className="mt-1 text-xs text-slate-400">
-                    {selectedCustomer.nome} ja possui {selectedCustomer.documentos.length}{' '}
+                    {selectedCustomer.nome} já possui {selectedCustomer.documentos.length}{' '}
                     documento(s) cadastrado(s).
                   </p>
                 </div>
@@ -1299,7 +1299,7 @@ export const NovoServicoPage: React.FC = () => {
                   {(uploadedFiles[item.key] ?? []).length > 0
                     ? `${(uploadedFiles[item.key] ?? []).length} arquivo(s) selecionado(s)`
                     : item.maxFiles
-                      ? `Selecionar ate ${item.maxFiles} arquivos`
+                      ? `Selecionar até ${item.maxFiles} arquivos`
                       : 'Selecionar arquivo'}
                 </div>
                 <input

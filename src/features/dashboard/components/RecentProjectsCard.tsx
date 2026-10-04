@@ -31,7 +31,7 @@ const formatProjectCategory = (tipoProjeto?: string) => {
   }
 
   if (['orcamento_conexao', 'orcamento de conexao'].includes(normalized)) {
-    return 'Orcamento de Conexao';
+    return 'Orçamento de Conexão';
   }
 
   return tipoProjeto || '-';

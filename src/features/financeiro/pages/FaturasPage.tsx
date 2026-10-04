@@ -19,7 +19,7 @@ const faturasMock: Fatura[] = [
   {
     id: '1',
     numero: 'FAT-2026-0017',
-    cliente: 'Condominio Vale Verde',
+    cliente: 'Condomínio Vale Verde',
     referencia: 'Janeiro/2026',
     emissao: '2026-02-02',
     valor: 'R$ 24.500,00',
@@ -85,7 +85,7 @@ export const FaturasPage: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-gray-300">
-              Estrutura pronta para incluir filtros por cliente, periodo e status.
+              Estrutura pronta para incluir filtros por cliente, período e status.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm">
@@ -110,9 +110,9 @@ export const FaturasPage: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Numero</th>
+                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Número</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Cliente</th>
-                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Referencia</th>
+                  <th className="text-left py-3 px-4 text-gray-300 font-medium">Referência</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Emissao</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Valor</th>
                   <th className="text-left py-3 px-4 text-gray-300 font-medium">Status</th>

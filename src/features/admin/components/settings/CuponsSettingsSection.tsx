@@ -91,7 +91,7 @@ const CouponList: React.FC<CouponListProps> = ({
 
               <div>
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className={labelClassName.replace('mb-2 ', '')}>Usuarios autorizados</span>
+                  <span className={labelClassName.replace('mb-2 ', '')}>Usuários autorizados</span>
                   <span className="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">
                     {selecionados.length} selecionado(s)
                   </span>
@@ -99,7 +99,7 @@ const CouponList: React.FC<CouponListProps> = ({
 
                 <div className="rounded-md border border-slate-700 bg-slate-950/35 p-3">
                   {usuarios.length === 0 ? (
-                    <p className="text-sm text-slate-400">Nenhum usuario carregado.</p>
+                    <p className="text-sm text-slate-400">Nenhum usuário carregado.</p>
                   ) : (
                     <div className="grid max-h-32 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                       {usuarios.map((usuario) => {
@@ -161,13 +161,13 @@ export const CuponsSettingsSection: React.FC<CuponsSettingsSectionProps> = ({
     <div>
       <h3 className="text-lg font-semibold text-slate-100">Cupons de Desconto</h3>
       <p className="mt-1 max-w-2xl text-sm text-slate-400">
-        Separe descontos por fluxo e marque exatamente quais usuarios podem usa-los.
+        Separe descontos por fluxo e marque exatamente quais usuários podem usá-los.
       </p>
     </div>
 
     <CouponList
       title="Projetos"
-      description="Disponiveis no passo de custo da criacao de projeto."
+      description="Disponíveis no passo de custo da criação de projeto."
       listKey="cuponsDescontoProjetos"
       cupons={formData.cuponsDescontoProjetos}
       usuarios={usuarios}
@@ -176,8 +176,8 @@ export const CuponsSettingsSection: React.FC<CuponsSettingsSectionProps> = ({
     />
 
     <CouponList
-      title="Servicos"
-      description="Disponiveis na criacao e edicao de servicos."
+      title="Serviços"
+      description="Disponíveis na criação e edição de serviços."
       listKey="cuponsDescontoServicos"
       cupons={formData.cuponsDescontoServicos}
       usuarios={usuarios}

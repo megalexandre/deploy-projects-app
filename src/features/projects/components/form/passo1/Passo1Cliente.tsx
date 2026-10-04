@@ -75,7 +75,7 @@ export const Passo1Cliente: React.FC<Passo1ClienteProps> = ({
             setModoCliente('existente');
             setErro(null);
           }}
-          title="Cliente ja cadastrado"
+          title="Cliente já cadastrado"
           description="Selecionar um cliente existente da base."
         />
       </div>
@@ -106,14 +106,14 @@ export const Passo1Cliente: React.FC<Passo1ClienteProps> = ({
       <Button
         onClick={() => {
           if (!validarPasso1()) {
-            setErro('Preencha os campos obrigatorios do cliente para avancar para Passo 2.');
+            setErro('Preencha os campos obrigatórios do cliente para avançar para o Passo 2.');
             return;
           }
           setErro(null);
           setPassoAtual(2);
         }}
       >
-        Proximo Passo
+        Próximo Passo
       </Button>
     </div>
   </div>

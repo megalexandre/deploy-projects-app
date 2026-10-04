@@ -17,7 +17,7 @@ export const CustomerListCard: React.FC<Props> = ({ customers, onEdit, onOpenDoc
       <div className="flex items-center justify-between gap-4">
         <CardTitle>Clientes Cadastrados ({customers.length})</CardTitle>
         <span className="text-sm text-slate-400">
-          Visualizacao resumida com contato e localizacao.
+          Visualização resumida com contato e localização.
         </span>
       </div>
     </CardHeader>
@@ -28,7 +28,7 @@ export const CustomerListCard: React.FC<Props> = ({ customers, onEdit, onOpenDoc
             <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3">Contato</th>
-              <th className="px-4 py-3">Localizacao</th>
+              <th className="px-4 py-3">Localização</th>
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>

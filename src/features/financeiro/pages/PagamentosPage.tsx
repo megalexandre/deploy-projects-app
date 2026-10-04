@@ -32,7 +32,7 @@ export const PagamentosPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao carregar pagamentos:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel carregar os pagamentos.',
+        error instanceof Error ? error.message : 'Não foi possível carregar os pagamentos.',
       );
     } finally {
       setLoading(false);
@@ -53,7 +53,7 @@ export const PagamentosPage: React.FC = () => {
 
     const valor = parseCurrencyBRL(form.valor);
     if (!form.descricao.trim() || !form.data || Number.isNaN(valor) || valor <= 0) {
-      setErrorMessage('Preencha os campos obrigatorios do pagamento: descricao, data e valor.');
+      setErrorMessage('Preencha os campos obrigatórios do pagamento: descrição, data e valor.');
       return;
     }
 
@@ -74,7 +74,7 @@ export const PagamentosPage: React.FC = () => {
     } catch (error) {
       console.error('Erro ao registrar pagamento:', error);
       setErrorMessage(
-        error instanceof Error ? error.message : 'Nao foi possivel registrar o pagamento.',
+        error instanceof Error ? error.message : 'Não foi possível registrar o pagamento.',
       );
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ export const PagamentosPage: React.FC = () => {
                   setForm((current) => ({ ...current, descricao: event.target.value }))
                 }
                 error={
-                  submitAttempted && !form.descricao.trim() ? 'Informe a descricao.' : undefined
+                  submitAttempted && !form.descricao.trim() ? 'Informe a descrição.' : undefined
                 }
                 required
               />
@@ -182,7 +182,7 @@ export const PagamentosPage: React.FC = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Lancamentos</p>
+              <p className="text-sm text-gray-400">Lançamentos</p>
               <p className="text-2xl font-bold text-red-400">{pagamentos.length}</p>
             </div>
             <WarningCircle className="h-8 w-8 text-red-400" />

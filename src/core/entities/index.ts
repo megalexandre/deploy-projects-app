@@ -16,7 +16,7 @@ export type {
 export type { DadosProjeto, DadosTecnicos, Cliente, Projeto, DashboardStats } from './projeto';
 export { StatusProjeto } from './projeto';
 
-export type { Servico } from './servico';
+export type { Servico, StatusAprovacaoServico } from './servico';
 export { TipoServico, StatusServico } from './servico';
 
 export type { Usuario } from './usuario';

@@ -84,7 +84,7 @@ export const CalendarioPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Calendario</h1>
           <p className="text-gray-400 mt-1">
-            Agenda com eventos, projetos e serviços do mes atual.
+            Agenda com eventos, projetos e serviços do mês atual.
           </p>
           {loadingProjetos && (
             <p className="text-xs text-gray-500 mt-1">Carregando datas dos projetos...</p>
@@ -99,7 +99,7 @@ export const CalendarioPage: React.FC = () => {
           >
             <option value="dia">Dia</option>
             <option value="semana">Semana</option>
-            <option value="mes">Mes</option>
+            <option value="mes">Mês</option>
           </select>
           <Button
             onClick={() => {
@@ -139,9 +139,9 @@ export const CalendarioPage: React.FC = () => {
                 className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
               >
                 <option value="todos">Mostrar tudo</option>
-                <option value="evento">So eventos</option>
-                <option value="projeto">So projetos</option>
-                <option value="servico">So serviços</option>
+                <option value="evento">Só eventos</option>
+                <option value="projeto">Só projetos</option>
+                <option value="servico">Só serviços</option>
               </select>
               {selectedDayFilter !== null && (
                 <Button variant="outline" size="sm" onClick={() => setSelectedDayFilter(null)}>
@@ -181,7 +181,7 @@ export const CalendarioPage: React.FC = () => {
                 </select>
               </label>
               <Input
-                label="Titulo"
+                label="Título"
                 placeholder="Ex: Reuniao com cliente"
                 value={novoEvento.titulo}
                 onChange={(event) =>
@@ -201,8 +201,8 @@ export const CalendarioPage: React.FC = () => {
                   }
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:outline-none"
                 >
-                  <option value="instalacao">Instalacao</option>
-                  <option value="manutencao">Manutencao</option>
+                  <option value="instalacao">Instalação</option>
+                  <option value="manutencao">Manutenção</option>
                   <option value="reuniao">Reuniao</option>
                   <option value="vistoria">Vistoria</option>
                 </select>
@@ -244,7 +244,7 @@ export const CalendarioPage: React.FC = () => {
               />
               <div className="md:col-span-2">
                 <Input
-                  label="Descricao"
+                  label="Descrição"
                   placeholder="Resumo"
                   value={novoEvento.descricao}
                   onChange={(event) =>
@@ -439,7 +439,7 @@ export const CalendarioPage: React.FC = () => {
                       {getOrigemLabel(item.origem)}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">{item.descricao || 'Sem descricao.'}</p>
+                  <p className="mt-2 text-sm text-gray-300">{item.descricao || 'Sem descrição.'}</p>
                 </div>
                 {item.projectId ? (
                   <Link to={`/projetos/${item.projectId}`}>

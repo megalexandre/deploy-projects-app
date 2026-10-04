@@ -121,7 +121,7 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <Buildings className="h-4 w-4 text-[#43dde6]" />
-          <span>Concessionaria {servico.concessionaria || 'nao informada'}</span>
+          <span>Concessionária {servico.concessionaria || 'não informada'}</span>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">

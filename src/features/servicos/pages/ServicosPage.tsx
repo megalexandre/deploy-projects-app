@@ -105,7 +105,7 @@ const emptyAddress = (): AddressForm => ({
 
 const buildPadraoItem = (): PadraoEntradaItemForm => ({
   id: crypto.randomUUID(),
-  tipoLigacao: 'Monofasico',
+  tipoLigacao: 'Monofásico',
   classificacao: 'Residencial',
   quantidade: '',
   disjuntor: '',
@@ -143,19 +143,19 @@ const createEmptyForm = (): ServicoForm => ({
 const personDocuments: Record<PersonType, DocumentoCategoria[]> = {
   cpf: [
     { key: 'cnh', label: 'CNH' },
-    { key: 'procuracao_pf', label: 'Procuracao' },
+    { key: 'procuracao_pf', label: 'Procuração' },
   ],
   cnpj: [
     { key: 'contrato_social', label: 'Contrato Social' },
-    { key: 'cartao_cnpj', label: 'Cartao CNPJ' },
-    { key: 'documentacao_socios', label: 'Documentacao do(s) Socio(s)' },
-    { key: 'procuracao_pj', label: 'Procuracao' },
+    { key: 'cartao_cnpj', label: 'Cartão CNPJ' },
+    { key: 'documentacao_socios', label: 'Documentação do(s) Sócio(s)' },
+    { key: 'procuracao_pj', label: 'Procuração' },
   ],
 };
 
 const documentCategoriesByType: Record<TipoServico, DocumentoCategoria[]> = {
   ligacao_nova: [
-    { key: 'matricula_imovel', label: 'Matricula do Imovel' },
+    { key: 'matricula_imovel', label: 'Matrícula do Imóvel' },
     { key: 'foto_padrao_instalado', label: 'Foto do padrão instalado', maxFiles: 3 },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
@@ -171,7 +171,7 @@ const documentCategoriesByType: Record<TipoServico, DocumentoCategoria[]> = {
   ],
   alteracao_compartilhamento_credito: [
     { key: 'conta_geradora', label: 'Conta de Energia da Geradora' },
-    { key: 'contas_beneficiarias', label: 'Conta de Energia da(s) Beneficiarias', maxFiles: 5 },
+    { key: 'contas_beneficiarias', label: 'Conta de Energia da(s) Beneficiárias', maxFiles: 5 },
     { key: 'foto_padrao_atual', label: 'Foto do Padrão de Entrada atual' },
     { key: 'outros', label: 'Outros', maxFiles: 5 },
   ],
@@ -352,7 +352,7 @@ export const ServicosPage: React.FC = () => {
     event.preventDefault();
 
     if (!validateForm()) {
-      kanban.setError('Preencha os campos obrigatorios do serviço antes de salvar.');
+      kanban.setError('Preencha os campos obrigatórios do serviço antes de salvar.');
       return;
     }
 
@@ -455,7 +455,7 @@ export const ServicosPage: React.FC = () => {
       setFormOpen(false);
     } catch (saveError) {
       console.error('Erro ao salvar serviço:', saveError);
-      kanban.setError('Nao foi possivel salvar o serviço.');
+      kanban.setError('Não foi possível salvar o serviço.');
     } finally {
       setSaving(false);
     }
@@ -527,7 +527,7 @@ export const ServicosPage: React.FC = () => {
         <CardContent className="p-6">
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_240px_260px]">
             <Input
-              placeholder="Buscar por protocolo, cliente, tipo ou concessionaria..."
+              placeholder="Buscar por protocolo, cliente, tipo ou concessionária..."
               value={kanban.searchTerm}
               onChange={(event) => kanban.setSearchTerm(event.target.value)}
               icon={<MagnifyingGlass />}

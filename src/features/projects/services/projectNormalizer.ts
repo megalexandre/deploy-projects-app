@@ -72,9 +72,9 @@ const deriveRamal = (
     ?.find((item) => asString(item.tipoLigacao))
     ?.tipoLigacao?.trim();
   if (tipoLigacao) return tipoLigacao;
-  if (numeroFases === 3) return 'Trifasico';
-  if (numeroFases === 2) return 'Bifasico';
-  if (numeroFases === 1) return 'Monofasico';
+  if (numeroFases === 3) return 'Trifásico';
+  if (numeroFases === 2) return 'Bifásico';
+  if (numeroFases === 1) return 'Monofásico';
   return '';
 };
 
@@ -333,9 +333,11 @@ export const normalizeProjeto = (raw: unknown): Projeto => {
   const cliente = isRecord(project.cliente) ? project.cliente : {};
   const client = isRecord(project.client) ? project.client : {};
   const customer = isRecord(project.customer) ? project.customer : {};
+  const clientAddress = isRecord(client.address) ? client.address : {};
   const endereco =
     (isRecord(project.endereco) ? project.endereco : null) ||
     (isRecord(project.address) ? project.address : null) ||
+    (Object.keys(clientAddress).length > 0 ? clientAddress : null) ||
     {};
   const dadosProjeto = isRecord(project.dadosProjeto) ? project.dadosProjeto : {};
   const financeiro = isRecord(project.financeiro) ? project.financeiro : {};

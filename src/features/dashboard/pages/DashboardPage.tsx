@@ -20,11 +20,11 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [statsData, projectsData] = await Promise.all([
-          projectsService.getDashboardStats(),
-          projectsService.getProjetos(),
+        const [projectsData, servicesData] = await Promise.all([
+          projectsService.getProjetos({ includeProjectAddresses: false }),
+          servicosService.list({ includeAddresses: false }).catch(() => []),
         ]);
-        const servicesData = await servicosService.list().catch(() => []);
+        const statsData = await projectsService.getDashboardStats(projectsData);
         const pendingProjectApprovals: ApprovalRequest[] = projectsData
           .filter((projeto) => projeto.status === 'aguardando_aprovacao')
           .map((projeto) => ({

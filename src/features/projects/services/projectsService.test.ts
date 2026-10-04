@@ -297,3 +297,35 @@ describe('projectsService project lifecycle', () => {
     expect(apiClient.delete).toHaveBeenCalledWith('/projects/project-1');
   });
 });
+
+describe('projectsService lightweight lists', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('não consulta cada endereço quando a listagem pede somente dados resumidos', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue([
+      {
+        ...projectResponse,
+        address_id: 'project-address-1',
+        client: {
+          id: 'client-1',
+          name: 'Cliente Teste',
+          address: {
+            address: 'Rua do Cliente',
+            number: '100',
+            city: 'Belo Horizonte',
+            state: 'MG',
+          },
+        },
+      },
+    ]);
+
+    const [project] = await projectsService.getAll({ includeProjectAddresses: false });
+
+    expect(apiClient.get).toHaveBeenCalledTimes(1);
+    expect(apiClient.get).toHaveBeenCalledWith('/projects');
+    expect(project.endereco.logradouro).toBe('Rua do Cliente');
+  });
+});

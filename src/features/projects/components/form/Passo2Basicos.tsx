@@ -104,7 +104,7 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
         </div>
 
         <div>
-          <FormField label="Numero da UC">
+          <FormField label="Número da UC">
             <input
               value={dadosBasicos.numeroUc}
               onChange={(e) =>
@@ -138,8 +138,8 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
             <SelectionCard
               active={modoEnderecoProjeto === 'cliente'}
               onClick={() => setModoEnderecoProjeto('cliente')}
-              title="Usar endereco do cliente"
-              description="Reaproveita o endereco cadastrado no cliente."
+              title="Usar endereço do cliente"
+              description="Reaproveita o endereço cadastrado no cliente."
             />
             <SelectionCard
               active={modoEnderecoProjeto === 'novo'}
@@ -153,7 +153,7 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
             <div className="space-y-3">
               {!enderecoClienteDisponivel && (
                 <p className="rounded border border-yellow-700 bg-yellow-900/20 px-3 py-3 text-sm text-yellow-200">
-                  O cliente selecionado nao possui endereço completo cadastrado. Escolha
+                  O cliente selecionado não possui endereço completo cadastrado. Escolha
                   &quot;Cadastrar novo endereço&quot; para continuar.
                 </p>
               )}
@@ -204,14 +204,14 @@ export const Passo2Basicos: React.FC<Passo2BasicosProps> = ({
         <Button
           onClick={() => {
             if (!validarPasso2()) {
-              setErro('Preencha os campos obrigatorios para avancar ao Passo 3.');
+              setErro('Preencha os campos obrigatórios para avançar ao Passo 3.');
               return;
             }
             setErro(null);
             setPassoAtual(3);
           }}
         >
-          Proximo Passo
+          Próximo Passo
         </Button>
       </div>
     </div>

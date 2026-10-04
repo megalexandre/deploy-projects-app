@@ -97,7 +97,7 @@ type ServicoFormCardProps = {
 
 const buildPadraoItem = (): PadraoEntradaItemForm => ({
   id: crypto.randomUUID(),
-  tipoLigacao: 'Monofasico',
+  tipoLigacao: 'Monofásico',
   classificacao: 'Residencial',
   quantidade: '',
   disjuntor: '',
@@ -155,7 +155,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
     <CardHeader>
       <div className="flex items-center justify-between gap-4">
         <div>
-          <CardTitle>{editingId ? 'Editar Servico' : 'Novo Servico'}</CardTitle>
+          <CardTitle>{editingId ? 'Editar Serviço' : 'Novo Serviço'}</CardTitle>
           <p className="mt-1 text-sm text-slate-400">
             Formulario estruturado conforme o documento funcional.
           </p>
@@ -215,7 +215,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm text-slate-300">Concessionaria</label>
+            <label className="mb-2 block text-sm text-slate-300">Concessionária</label>
             <select
               value={form.concessionaria}
               onChange={(event) =>
@@ -284,7 +284,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
         {isTechnicalType(form.tipo) && (
           <Card className="border-white/10 bg-slate-950/30">
             <CardHeader>
-              <CardTitle>Dados Tecnicos do Serviço</CardTitle>
+              <CardTitle>Dados Técnicos do Serviço</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -344,7 +344,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                       enderecoObra: { ...prev.enderecoObra, numero: event.target.value },
                     }))
                   }
-                  placeholder="Numero"
+                  placeholder="Número"
                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                 />
                 <input
@@ -410,7 +410,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div>
                   <label className="mb-2 block text-sm text-slate-300">
-                    Tensao de Fornecimento
+                    Tensão de Fornecimento
                   </label>
                   <select
                     value={form.tensaoFornecimento}
@@ -465,12 +465,12 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                     }
                     className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                   >
-                    <option value="nao">Nao</option>
+                    <option value="nao">Não</option>
                     <option value="sim">Sim</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">Ponto de Referencia</label>
+                  <label className="mb-2 block text-sm text-slate-300">Ponto de Referência</label>
                   <input
                     value={form.pontoReferencia}
                     onChange={(event) =>
@@ -605,7 +605,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
         {canUseRateioType(form.tipo) && (
           <Card className="border-white/10 bg-slate-950/30">
             <CardHeader>
-              <CardTitle>Compartilhamento de Credito</CardTitle>
+              <CardTitle>Compartilhamento de Crédito</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -679,7 +679,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                       },
                     }))
                   }
-                  placeholder="Numero"
+                  placeholder="Número"
                   className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                 />
                 <input
@@ -743,7 +743,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
-                    Rateio das Beneficiarias
+                    Rateio das Beneficiárias
                   </h4>
                   <Button
                     type="button"
@@ -880,7 +880,7 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
                   {(uploadedFiles[item.key] ?? []).length > 0
                     ? `${(uploadedFiles[item.key] ?? []).length} arquivo(s) selecionado(s)`
                     : item.maxFiles
-                      ? `Selecionar ate ${item.maxFiles} arquivos`
+                      ? `Selecionar até ${item.maxFiles} arquivos`
                       : 'Selecionar arquivo'}
                 </div>
                 <input

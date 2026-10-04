@@ -36,7 +36,7 @@ export const EnderecoFields: React.FC<EnderecoFieldsProps> = ({
       </div>
 
       <div>
-        <FormField label="Numero">
+        <FormField label="Número">
           <input
             value={endereco.numero}
             readOnly={readOnly}

@@ -139,7 +139,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
         {isFotovoltaico
           ? 'Detalhes do Projeto Fotovoltaico'
           : isOrcamentoConexao
-            ? 'Detalhes do Orcamento de Conexao'
+            ? 'Detalhes do Orçamento de Conexão'
             : 'Detalhes do Projeto'}
       </h2>
 
@@ -225,7 +225,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   className={selectCls}
                 >
                   <option value="sim">SIM</option>
-                  <option value="nao_ampliacao">NAO, AMPLIACAO</option>
+                  <option value="nao_ampliacao">NÃO, AMPLIAÇÃO</option>
                 </select>
               </FormField>
             </div>
@@ -243,7 +243,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   }
                   className={selectCls}
                 >
-                  <option value="nao">NAO</option>
+                  <option value="nao">NÃO</option>
                   <option value="sim">SIM</option>
                 </select>
               </FormField>
@@ -261,7 +261,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   }
                   className={selectCls}
                 >
-                  <option value="nao">Nao</option>
+                  <option value="nao">Não</option>
                   <option value="sim">Sim</option>
                 </select>
               </FormField>
@@ -272,9 +272,9 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-2xl font-semibold text-gray-100">Divisao de Creditos</h3>
+                  <h3 className="text-2xl font-semibold text-gray-100">Divisão de Créditos</h3>
                   <p className="text-sm text-gray-400">
-                    Informe as unidades consumidoras beneficiarias e o percentual destinado a cada
+                    Informe as unidades consumidoras beneficiárias e o percentual destinado a cada
                     uma.
                   </p>
                 </div>
@@ -306,7 +306,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   <thead className="bg-gray-900/60">
                     <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
                       <th className="px-4 py-3">UC</th>
-                      <th className="px-4 py-3">Endereco</th>
+                      <th className="px-4 py-3">Endereço</th>
                       <th className="px-4 py-3">Classificacao</th>
                       <th className="px-4 py-3">Porcentagem</th>
                       <th className="w-12 px-4 py-3" aria-label="Acoes" />
@@ -321,7 +321,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                             onChange={(event) =>
                               handleDivisaoCreditosChange(item.id, 'uc', event.target.value)
                             }
-                            placeholder="Numero da UC"
+                            placeholder="Número da UC"
                             className="w-full min-w-[140px] rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
                         </td>
@@ -331,7 +331,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                             onChange={(event) =>
                               handleDivisaoCreditosChange(item.id, 'endereco', event.target.value)
                             }
-                            placeholder="Endereco da UC"
+                            placeholder="Endereço da UC"
                             className="w-full min-w-[260px] rounded border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-opj-blue"
                           />
                         </td>
@@ -346,7 +346,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                             <option value="Residencial">Residencial</option>
                             <option value="Comercial">Comercial</option>
                             <option value="Industrial">Industrial</option>
-                            <option value="Condominio">Condominio</option>
+                            <option value="Condomínio">Condomínio</option>
                             <option value="Sistema Suspenso">Sistema Suspenso</option>
                           </select>
                         </td>
@@ -447,13 +447,13 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   className={selectCls}
                 >
                   <option value="sim">SIM</option>
-                  <option value="nao_ampliacao">NAO, AMPLIACAO</option>
+                  <option value="nao_ampliacao">NÃO, AMPLIAÇÃO</option>
                 </select>
               </FormField>
             </div>
 
             <div>
-              <FormField label="Tensao de Fornecimento">
+              <FormField label="Tensão de Fornecimento">
                 <select
                   value={detalhesProjeto.tensaoFornecimento}
                   onChange={(e) =>
@@ -474,7 +474,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
 
           <div className="space-y-4">
             <div>
-              <h3 className="text-2xl font-semibold text-gray-100">Quadro de Padrao de Entrada</h3>
+              <h3 className="text-2xl font-semibold text-gray-100">Quadro de Padrão de Entrada</h3>
               <p className="text-sm text-gray-400">
                 Preencha quantidade e disjuntor nas linhas necessarias para o projeto EMUC.
               </p>
@@ -486,7 +486,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
                     <th className="px-4 py-3">Tipo de Ligação</th>
                     <th className="px-4 py-3">Classificação</th>
-                    <th className="px-4 py-3">Valor Unitario</th>
+                    <th className="px-4 py-3">Valor Unitário</th>
                     <th className="px-4 py-3">Quantidade</th>
                     <th className="px-4 py-3">Disjuntor</th>
                     <th className="px-4 py-3">Subtotal</th>
@@ -608,12 +608,12 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
           {isFotovoltaico
             ? `Valor sugerido pela faixa de potência: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
             : isOrcamentoConexao
-              ? `Valor sugerido para orcamento de conexao: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
+              ? `Valor sugerido para orçamento de conexão: ${formatCurrencyBRL(custoCalculadoProjeto)}.`
               : `Valor sugerido pela tabela do EMUC: ${formatCurrencyBRL(custoCalculadoProjeto)}.`}
         </p>
         {valorProjetoEditado && (
           <p className="mt-1 text-xs text-amber-300">
-            Valor manual ativo. Alterações de potência nao substituem o valor ate você reaplicar o
+            Valor manual ativo. Alterações de potência não substituem o valor até você reaplicar o
             sugerido.
           </p>
         )}
@@ -643,7 +643,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                   Reaproveitar documentos do cliente
                 </h4>
                 <p className="mt-1 text-sm text-gray-400">
-                  {clienteSelecionadoDetalhe.nome} ja possui{' '}
+                  {clienteSelecionadoDetalhe.nome} já possui{' '}
                   {clienteSelecionadoDetalhe.documentos.length} documento(s) cadastrado(s).
                 </p>
               </div>
@@ -691,7 +691,7 @@ export const Passo3Detalhes: React.FC<Passo3DetalhesProps> = ({
                 {(documentos[item.key] ?? []).length > 0
                   ? `${(documentos[item.key] ?? []).length} arquivo(s) selecionado(s)`
                   : item.maxFiles
-                    ? `Selecionar ate ${item.maxFiles} arquivos`
+                    ? `Selecionar até ${item.maxFiles} arquivos`
                     : 'Selecionar arquivo'}
               </span>
               <input

@@ -86,7 +86,7 @@ const EditableProjectField: React.FC<{
       setEditing(false);
     } catch (saveError) {
       console.error(`Erro ao atualizar ${label}:`, saveError);
-      setError('Nao foi possivel salvar.');
+      setError('Não foi possível salvar.');
     } finally {
       setSaving(false);
     }
@@ -156,7 +156,7 @@ const EditableProjectField: React.FC<{
             onClick={cancel}
             disabled={saving}
             className="rounded-lg border border-white/15 p-2 text-gray-400 transition hover:bg-white/10 hover:text-gray-200 disabled:opacity-50"
-            aria-label={`Cancelar edicao de ${label}`}
+            aria-label={`Cancelar edição de ${label}`}
             title="Cancelar"
           >
             <X className="h-4 w-4" />
@@ -175,20 +175,20 @@ const procuracaoTemplates: Record<
   { buttonLabel: string; title: string; grantee: string; validityDays: number; powers: string }
 > = {
   fotovoltaico: {
-    buttonLabel: 'Gerar procuracao Solar',
+    buttonLabel: 'Gerar procuração Solar',
     title: 'INSTRUMENTO PARTICULAR DE PROCURAÇÃO PARA PROJETOS FOTOVOLTAICOS',
     grantee:
-      'OPJ Engenharia, com sede na Rua Pelotas, 256, Centro, Campina das Missões, RS, CEP: 98975-000, inscrita no CNPJ: 40.888.978/0001-56, neste ato representada pelo ENG. ORLEI PETRY JUNIOR, brasileiro, solteiro, empresário, portador do CPF 028.141.010-05, RG n° 1092760741 expedido por SSP/DI RS, registro geral CREA n° RS260827, residente e domiciliado em Rua Pelotas, 256, Centro, Campina das Missões, RS, Telefone (51) 99783-6992, E-mail orlei@opjengenharia.com',
+      'OPJ Engenharia, com sede na Rua Pelotas, 256, Centro, Campina das Missões, RS, CEP: 98975-000, inscrita no CNPJ: 40.888.978/0001-56, neste ato representada pelo ENG. ORLEI PETRY JUNIOR, brasileiro, solteiro, empresário, portador do CPF 028.141.010-05, RG nº 1092760741 expedido por SSP/DI RS, registro geral CREA nº RS260827, residente e domiciliado em Rua Pelotas, 256, Centro, Campina das Missões, RS, Telefone (51) 99783-6992, E-mail orlei@opjengenharia.com',
     validityDays: 180,
     powers:
       'Atuar junto à concessionária de energia elétrica, podendo solicitar orçamento de conexão para mini ou microgeração distribuída, dar entrada em consulta de acesso, solicitar parecer de acesso, aumento de carga, adequação do ramal de entrada, protocolar, acompanhar e responder exigências técnicas, assinar documentos, cadastros, projetos e demais formulários necessários, bem como representar o(a) OUTORGANTE perante a Ouvidoria da concessionária e junto à Agência Nacional de Energia Elétrica (ANEEL), podendo registrar, acompanhar e responder reclamações, manifestações, recursos administrativos e demais procedimentos relacionados ao objeto deste mandato, praticando, ainda, todos os atos necessários ao fiel cumprimento deste instrumento, inclusive dar vistas e assinar documentos, como se o(a) OUTORGANTE pessoalmente os praticasse.',
   },
   padrao_entrada: {
-    buttonLabel: 'Gerar procuracao EMUC',
+    buttonLabel: 'Gerar procuração EMUC',
     title:
       'INSTRUMENTO PARTICULAR DE PROCURAÇÃO PARA PROJETOS DE EMPREENDIMENTOS DE MÚLTIPLAS UNIDADES CONSUMIDORAS (EMUC)',
     grantee:
-      'OPJ Engenharia, com sede na Rua Pelotas, 256, Centro, Campina das Missões, RS, CEP 98975-000, inscrita no CNPJ: 40.888.978/0001-56, registrada no CREA-RS n° 271024, neste ato representada pelo ENG. ORLEI PETRY JUNIOR, brasileiro, solteiro, empresário, portador do CPF 028.141.010-05, registro geral CREA n° RS260827, residente e domiciliado em Rua Pelotas, 256, Centro, Campina das Missões, RS, Telefone (51) 99783-6992, E-mail orlei@opjengenharia.com',
+      'OPJ Engenharia, com sede na Rua Pelotas, 256, Centro, Campina das Missões, RS, CEP 98975-000, inscrita no CNPJ: 40.888.978/0001-56, registrada no CREA-RS nº 271024, neste ato representada pelo ENG. ORLEI PETRY JUNIOR, brasileiro, solteiro, empresário, portador do CPF 028.141.010-05, registro geral CREA nº RS260827, residente e domiciliado em Rua Pelotas, 256, Centro, Campina das Missões, RS, Telefone (51) 99783-6992, E-mail orlei@opjengenharia.com',
     validityDays: 365,
     powers:
       'Representar o(a) OUTORGANTE perante a concessionária de energia elétrica, sua Ouvidoria, a Agência Nacional de Energia Elétrica (ANEEL) e demais órgãos competentes, com poderes para protocolar, acompanhar e praticar todos os atos necessários à elaboração, análise, aprovação e conclusão de processos relativos a Empreendimentos de Múltiplas Unidades Consumidoras (EMUC), incluindo solicitação de orçamento e parecer de conexão, consulta de acesso, aumento de carga, adequação de ramal de entrada, apresentação, assinatura e retificação de projetos e documentos, cadastramentos, recursos, manifestações e reclamações administrativas, bem como assinar requerimentos, declarações e demais documentos, solicitar vistas, prestar esclarecimentos e adotar todas as providências necessárias ao fiel cumprimento deste mandato, como se o(a) OUTORGANTE pessoalmente praticasse tais atos.',
@@ -313,10 +313,10 @@ const buildProcuracaoHtml = (
   <main class="page">
     <section class="content">
       <h1>${escapeHtml(template.title)}</h1>
-      <p><strong>OUTORGANTE:</strong> ${escapeHtml(nomeCliente)}, inscrito no ${tipoDocumento} n° ${escapeHtml(documentoCliente)}, ${escapeHtml(qualificacao)}</p>
+      <p><strong>OUTORGANTE:</strong> ${escapeHtml(nomeCliente)}, inscrito no ${tipoDocumento} nº ${escapeHtml(documentoCliente)}, ${escapeHtml(qualificacao)}</p>
       <p><strong>OUTORGADO:</strong> ${escapeHtml(template.grantee)}</p>
       <p><strong>PODERES:</strong> ${escapeHtml(template.powers)}</p>
-      <p>Esta procuração é válida por ${template.validityDays} dias contado a partir de sua assinatura.</p>
+      <p>Esta procuração é válida por ${template.validityDays} dias contados a partir de sua assinatura.</p>
       <p class="signature-place">________________________________, _____ de _____________ de _____.</p>
       <div class="signature">
         <div class="signature-line"></div>
@@ -546,26 +546,26 @@ export const ProjetoDetailPage: React.FC = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'aguardando_aprovacao':
-        return 'Aguardando Aprovacao';
+        return 'Aguardando Aprovação';
       case 'projeto_encerrado':
         return 'Projeto Encerrado';
       case 'projeto_cancelado':
       case 'cancelado':
         return 'Projeto Cancelado';
       case 'em_analise_documentacao':
-        return 'Em Analise de Documentacao';
+        return 'Em Análise de Documentação';
       case 'elaboracao_documentacao_tecnica':
-        return 'Elaboracao de Documentacao Tecnica';
+        return 'Elaboração de Documentação Técnica';
       case 'aguardando_assinatura_cliente':
         return 'Aguardando Assinatura do Cliente';
       case 'projeto_enviado_aguardando_protocolo_concessionaria':
-        return 'Aguardando Protocolo da Concessionaria';
+        return 'Aguardando Protocolo da Concessionária';
       case 'em_analise_concessionaria':
-        return 'Em Analise da Concessionaria';
+        return 'Em Análise da Concessionária';
       case 'ressalvas_projetos':
         return 'Ressalvas do Projeto';
       case 'obras_concessionaria':
-        return 'Obras da Concessionaria';
+        return 'Obras da Concessionária';
       case 'projeto_aprovado':
         return 'Projeto Aprovado';
       case 'vistoria_solicitada':
@@ -648,11 +648,11 @@ export const ProjetoDetailPage: React.FC = () => {
     }
 
     if (value === 'nao') {
-      return 'Nao';
+      return 'Não';
     }
 
     if (value === 'nao_ampliacao') {
-      return 'Nao, Ampliacao';
+      return 'Não, Ampliação';
     }
 
     return value;
@@ -685,7 +685,7 @@ export const ProjetoDetailPage: React.FC = () => {
   if (!projeto) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-400">Projeto nao encontrado.</div>
+        <div className="text-gray-400">Projeto não encontrado.</div>
       </div>
     );
   }
@@ -736,7 +736,7 @@ export const ProjetoDetailPage: React.FC = () => {
       setDocumentsError(
         error instanceof Error
           ? error.message
-          : 'Nao foi possivel enviar os documentos. Tente novamente.',
+          : 'Não foi possível enviar os documentos. Tente novamente.',
       );
     } finally {
       setSavingDocuments(false);
@@ -745,7 +745,7 @@ export const ProjetoDetailPage: React.FC = () => {
 
   const tabs = [
     { id: 'dados', label: 'Dados do Projeto' },
-    { id: 'tecnicos', label: 'Dados Tecnicos' },
+    { id: 'tecnicos', label: 'Dados Técnicos' },
     { id: 'financeiro', label: 'Financeiro' },
     { id: 'timeline', label: 'Linha do Tempo' },
     { id: 'documentos', label: 'Documentos' },
@@ -850,7 +850,7 @@ export const ProjetoDetailPage: React.FC = () => {
   const parseNumber = (value: string) => {
     const parsed = Number(value.replace(',', '.'));
     if (!Number.isFinite(parsed)) {
-      throw new Error('Valor numerico invalido.');
+      throw new Error('Valor numérico inválido.');
     }
     return parsed;
   };
@@ -970,7 +970,7 @@ export const ProjetoDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-400">Endereco</label>
+                  <label className="text-sm font-medium text-gray-400">Endereço</label>
                   <p className="text-gray-100">
                     {projeto.endereco.logradouro || '-'}
                     {projeto.endereco.numero ? `, ${projeto.endereco.numero}` : ''}
@@ -1033,7 +1033,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   onSave={(value) => handleUpdateField({ secondaryProtocol: value.trim() })}
                 />
                 <EditableProjectField
-                  label="Concessionaria"
+                  label="Concessionária"
                   value={projeto.dadosProjeto.concessionaria}
                   canEdit={false}
                   onSave={(value) => handleUpdateField({ utilityCompany: value.trim() })}
@@ -1069,7 +1069,7 @@ export const ProjetoDetailPage: React.FC = () => {
                       onSave={(value) => handleUpdateField({ modality: value })}
                     />
                     <EditableProjectField
-                      label="Potencia do Sistema"
+                      label="Potência do Sistema"
                       value={String(projeto.dadosProjeto.potenciaSistema)}
                       displayValue={`${projeto.dadosProjeto.potenciaSistema} kWp`}
                       canEdit={false}
@@ -1079,7 +1079,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   </>
                 )}
                 <EditableProjectField
-                  label="Numero da UC"
+                  label="Número da UC"
                   value={projeto.numeroUc ?? ''}
                   canEdit={false}
                   onSave={(value) => handleUpdateField({ unitControl: value.trim() })}
@@ -1093,7 +1093,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   options={[
                     { value: 'fotovoltaico', label: 'Projeto Solar' },
                     { value: 'padrao_entrada', label: 'Projeto EMUC' },
-                    { value: 'orcamento_conexao', label: 'Orcamento de Conexao' },
+                    { value: 'orcamento_conexao', label: 'Orçamento de Conexão' },
                   ]}
                   onSave={(value) => handleUpdateField({ projectType: value })}
                 />
@@ -1128,19 +1128,19 @@ export const ProjetoDetailPage: React.FC = () => {
                   />
                 )}
                 <EditableProjectField
-                  label="Tensao de Fornecimento"
+                  label="Tensão de Fornecimento"
                   value={projeto.tensaoFornecimento ?? ''}
                   canEdit={false}
                   type="select"
                   options={[
-                    { value: '', label: 'Nao informado' },
+                    { value: '', label: 'Não informado' },
                     { value: '127/220V', label: '127/220V' },
                     { value: '380/220V', label: '380/220V' },
                   ]}
                   onSave={(value) => handleUpdateField({ tensaoFornecimento: value })}
                 />
                 <EditableProjectField
-                  label="Servicos"
+                  label="Serviços"
                   value={projeto.servicos?.join(', ') ?? ''}
                   canEdit={false}
                   onSave={(value) =>
@@ -1191,7 +1191,7 @@ export const ProjetoDetailPage: React.FC = () => {
                     type="select"
                     options={[
                       { value: 'sim', label: 'Sim' },
-                      { value: 'nao', label: 'Nao' },
+                      { value: 'nao', label: 'Não' },
                     ]}
                     onSave={(value) => handleUpdateField({ fastTrack: value })}
                   />
@@ -1204,7 +1204,7 @@ export const ProjetoDetailPage: React.FC = () => {
                   type="select"
                   options={[
                     { value: 'sim', label: 'Sim' },
-                    { value: 'nao_ampliacao', label: 'Nao, Ampliacao' },
+                    { value: 'nao_ampliacao', label: 'Não, Ampliação' },
                   ]}
                   onSave={(value) => handleUpdateField({ projetoNovo: value })}
                 />
@@ -1217,7 +1217,7 @@ export const ProjetoDetailPage: React.FC = () => {
                     type="select"
                     options={[
                       { value: 'sim', label: 'Sim' },
-                      { value: 'nao', label: 'Nao' },
+                      { value: 'nao', label: 'Não' },
                     ]}
                     onSave={(value) => handleUpdateField({ zeroGridControleExportacao: value })}
                   />
@@ -1322,7 +1322,7 @@ export const ProjetoDetailPage: React.FC = () => {
                     <h4 className="text-lg font-semibold text-gray-100">Modulos</h4>
                     {projeto.dadosTecnicos.modulos.length === 0 ? (
                       <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-900/30 px-4 py-5 text-gray-400">
-                        Nenhum modulo cadastrado.
+                        Nenhum módulo cadastrado.
                       </div>
                     ) : (
                       <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
@@ -1430,7 +1430,7 @@ export const ProjetoDetailPage: React.FC = () => {
 
               {projeto.dadosTecnicos.divisaoCreditos.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5">
-                  <h4 className="text-lg font-semibold text-gray-100">Divisão de Creditos</h4>
+                  <h4 className="text-lg font-semibold text-gray-100">Divisão de Créditos</h4>
                   <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40">
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
@@ -1606,7 +1606,8 @@ export const ProjetoDetailPage: React.FC = () => {
                 entityLabel={projeto.protocolo}
                 amount={projeto.valor}
                 createdAt={projeto.dataCriacao}
-                showExpenseDetails={currentUser?.isAdmin === true}
+                showExpenseDetails
+                canManageExpenses={currentUser?.isAdmin === true}
               />
             )}
           </div>
@@ -1664,7 +1665,7 @@ export const ProjetoDetailPage: React.FC = () => {
                       </h4>
                       <p className="mt-1 text-xs text-slate-400">
                         {clienteDetalhe.nome} possui {clienteDetalhe.documentos.length} documento(s)
-                        disponivel(is).
+                        disponível(is).
                       </p>
                     </div>
                     <Button
