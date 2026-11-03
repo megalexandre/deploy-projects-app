@@ -1,6 +1,7 @@
 /** Camada de acesso ao financeiro baseada no contrato /ledgers da API Rails. */
 import { apiClient } from '@/shared/api/apiClient';
 import { createKeyedRequestCache } from '@/shared/api/requestCache';
+import { moneyToCents } from '../domain/projectFinance';
 
 export type LedgerKind = 'receita' | 'despesa';
 
@@ -18,6 +19,7 @@ export interface Ledger {
 }
 
 export interface LedgerListParams {
+  limit?: number;
   page?: number;
   items?: number;
   project_id?: string;
@@ -77,6 +79,13 @@ const getCacheKey = (params?: LedgerListParams) => JSON.stringify(params ?? {});
 const invalidateLedgerCaches = () => {
   ledgerListCache.invalidate();
   ledgerPageCache.invalidate();
+};
+
+const handleLedgerPermissionError = (error: unknown): never => {
+  if (error && typeof error === 'object' && 'status' in error && error.status === 403) {
+    throw new Error('Você só pode editar ou excluir lançamentos criados por você.');
+  }
+  throw error;
 };
 
 const normalizeReason = (reason?: string | null): LedgerKind => {
@@ -145,12 +154,12 @@ export const financeiroService = {
     ),
 
   async listFilteredLedgers(params?: Omit<LedgerListParams, 'page'>) {
-    const first = await financeiroService.paginateLedgers({ ...params, page: 1, items: 100 });
+    const first = await financeiroService.paginateLedgers({ ...params, page: 1, limit: 100 });
     if (first.totalPages <= 1) return first.content;
 
     const remaining = await Promise.all(
       Array.from({ length: first.totalPages - 1 }, (_, index) =>
-        financeiroService.paginateLedgers({ ...params, page: index + 2, items: 100 }),
+        financeiroService.paginateLedgers({ ...params, page: index + 2, limit: 100 }),
       ),
     );
     return [first, ...remaining].flatMap((page) => page.content);
@@ -159,24 +168,32 @@ export const financeiroService = {
   getLedgerById: (id: string) => apiClient.get<Ledger>(`/ledgers/${id}`),
 
   async createLedger(payload: LedgerPayload) {
-    const ledger = await apiClient.post<Ledger>('/ledgers', payload);
+    const ledger = await apiClient.post<Ledger>('/ledgers', {
+      ...payload,
+      amount: moneyToCents(payload.amount) / 100,
+    });
     invalidateLedgerCaches();
     return ledger;
   },
 
   async updateLedger(id: string, payload: Partial<LedgerPayload>) {
-    const ledger = await apiClient.patch<Ledger>(`/ledgers/${id}`, payload);
+    const ledger = await apiClient
+      .patch<Ledger>(`/ledgers/${id}`, {
+        ...payload,
+        ...(payload.amount !== undefined ? { amount: moneyToCents(payload.amount) / 100 } : {}),
+      })
+      .catch(handleLedgerPermissionError);
     invalidateLedgerCaches();
     return ledger;
   },
 
   removeLedger: async (id: string) => {
-    await apiClient.delete(`/ledgers/${id}`);
+    await apiClient.delete(`/ledgers/${id}`).catch(handleLedgerPermissionError);
     invalidateLedgerCaches();
   },
 
   async listTransacoes(params?: LedgerListParams) {
-    const ledgers = await financeiroService.listLedgers(params);
+    const ledgers = await financeiroService.listFilteredLedgers(params);
     return ledgers.map(ledgerToTransacao);
   },
 

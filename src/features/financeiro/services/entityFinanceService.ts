@@ -4,6 +4,11 @@ import {
   ledgerToTransacao,
   type Ledger,
 } from './financeiroService';
+import {
+  calculateProjectReceipts,
+  resolveProjectPaymentStatus,
+  moneyToCents,
+} from '../domain/projectFinance';
 
 export type FinanceEntityType = 'projeto' | 'servico';
 export type FinanceStatus = 'pago' | 'pendente';
@@ -93,7 +98,7 @@ const ledgerToExpense = (ledger: Ledger): EntityExpense => ({
   id: ledger.id,
   descricao: ledger.description?.trim() || 'Despesa do projeto',
   categoria: 'Despesas',
-  valor: ledgerAmountToNumber(ledger),
+  valor: Math.abs(ledgerAmountToNumber(ledger)),
   data: normalizeDate(ledger.paid_at ?? ledger.created_at),
   status: 'pago',
 });
@@ -107,9 +112,11 @@ export const entityFinanceService = {
     const expenses = sortByDateDesc(
       ledgers.filter((ledger) => ledgerToTransacao(ledger).tipo === 'despesa').map(ledgerToExpense),
     );
-    const receitasRecebidas = receipts.reduce((total, item) => total + item.valor, 0);
-    const receitasPendentes = Math.max(scope.amount - receitasRecebidas, 0);
-    const despesas = expenses.reduce((total, item) => total + item.valor, 0);
+    const { paid: receitasRecebidas, remaining: receitasPendentes } = calculateProjectReceipts(
+      scope.amount,
+      receipts.reduce((total, item) => total + moneyToCents(item.valor), 0) / 100,
+    );
+    const despesas = expenses.reduce((total, item) => total + moneyToCents(item.valor), 0) / 100;
     const lastReceipt = receipts[0];
 
     return {
@@ -120,7 +127,10 @@ export const entityFinanceService = {
         valorRecebido: receitasRecebidas,
         valorPendente: receitasPendentes,
         data: normalizeDate(lastReceipt?.data ?? scope.createdAt),
-        status: receitasRecebidas >= scope.amount && scope.amount > 0 ? 'pago' : 'pendente',
+        status:
+          resolveProjectPaymentStatus(scope.amount, receitasPendentes) === 'pago'
+            ? 'pago'
+            : 'pendente',
         confirmedAt: receitasPendentes === 0 && lastReceipt ? lastReceipt.data : undefined,
       },
       receipts,
@@ -130,15 +140,17 @@ export const entityFinanceService = {
         receitasRecebidas,
         receitasPendentes,
         despesas,
-        saldo: receitasRecebidas - despesas,
+        saldo: (moneyToCents(receitasRecebidas) - moneyToCents(despesas)) / 100,
         despesasPendentes: 0,
       },
     };
   },
 
   async setPaymentStatus(scope: EntityFinanceScope, status: FinanceStatus) {
+    if (status !== 'pago')
+      throw new Error('Para reabrir o saldo, edite ou exclua os recebimentos lançados.');
     const snapshot = await entityFinanceService.getSnapshot(scope);
-    const remainingAmount = Math.max(scope.amount - snapshot.payment.valorRecebido, 0);
+    const remainingAmount = snapshot.payment.valorPendente;
 
     if (status === 'pago' && remainingAmount > 0) {
       await financeiroService.createLedger({
@@ -155,15 +167,17 @@ export const entityFinanceService = {
 
   async saveReceipt(
     scope: EntityFinanceScope,
-    receipt: { descricao: string; valor: number; data: string },
+    receipt: { id?: string; descricao: string; valor: number; data: string },
   ) {
-    await financeiroService.createLedger({
+    const payload = {
       ...getScopeParams(scope),
       amount: receipt.valor,
-      reason: 'receita',
+      reason: 'receita' as const,
       description: receipt.descricao.trim() || getPaymentDescription(scope),
       paid_at: receipt.data,
-    });
+    };
+    if (receipt.id) await financeiroService.updateLedger(receipt.id, payload);
+    else await financeiroService.createLedger(payload);
 
     return entityFinanceService.getSnapshot(scope);
   },
@@ -186,6 +200,17 @@ export const entityFinanceService = {
       await financeiroService.createLedger(payload);
     }
 
+    return entityFinanceService.getSnapshot(scope);
+  },
+
+  async removeEntry(scope: EntityFinanceScope, id: string) {
+    const ledger = await financeiroService.getLedgerById(id);
+    const belongs =
+      scope.entityType === 'projeto'
+        ? ledger.project_id === scope.entityId
+        : ledger.service_id === scope.entityId;
+    if (!belongs) throw new Error('Este lançamento não pertence a este cadastro.');
+    await financeiroService.removeLedger(id);
     return entityFinanceService.getSnapshot(scope);
   },
 };

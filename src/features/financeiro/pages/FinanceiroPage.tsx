@@ -1,5 +1,6 @@
 /** Pagina 'FinanceiroPage': dashboard financeiro baseado nos lancamentos da API. */
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowUp,
@@ -16,6 +17,7 @@ import {
   X,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
+import { ConfirmActionButton } from '@/shared/components/ConfirmActionButton';
 import { Input } from '@/shared/components/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { formatCurrencyBRL, maskCurrencyBRL, parseCurrencyBRL } from '@/core/utils/masks';
@@ -29,9 +31,15 @@ import {
   type LedgerKind,
   type TransacaoFinanceira,
 } from '../services/financeiroService';
-import { calculateProjectReceipts } from '../domain/projectFinance';
+import {
+  calculateProjectReceipts,
+  resolveProjectPaymentStatus,
+  type ProjectPaymentStatus,
+} from '../domain/projectFinance';
 
 type TransactionFormState = {
+  projectId: string;
+  serviceId: string;
   descricao: string;
   tipo: LedgerKind;
   valor: string;
@@ -41,6 +49,7 @@ type TransactionFormState = {
 type FinanceTab = 'geral' | 'projetos' | 'servicos';
 type PeriodFilter = 'todos' | '30' | 'mes' | 'ano' | 'personalizado';
 type TypeFilter = 'todos' | LedgerKind;
+type PaymentStatusFilter = 'todos' | ProjectPaymentStatus;
 type ChartGranularity = 'day' | 'month';
 
 type ForecastReceivable = {
@@ -57,6 +66,8 @@ type FinanceRow =
   | { kind: 'previsao'; previsao: ForecastReceivable };
 
 const createEmptyTransactionForm = (): TransactionFormState => ({
+  projectId: '',
+  serviceId: '',
   descricao: '',
   tipo: 'receita',
   valor: '',
@@ -391,32 +402,30 @@ const buildProjectFinanceRows = (projetos: Projeto[], transacoes: TransacaoFinan
       ]);
     });
 
-  return projetos
-    .map((projeto) => {
-      const valorProjeto = Number(projeto.valor) || 0;
-      const receipts = receiptsByProjectId.get(projeto.id) ?? [];
-      const valorRecebido = receipts.reduce((sum, transacao) => sum + transacao.valor, 0);
-      // Todo recebimento registrado ja e um valor pago, mesmo quando ainda nao
-      // quita o projeto inteiro. Antes, pagamentos parciais eram zerados aqui e
-      // desapareciam do resumo financeiro do integrador.
-      const { paid: receitaPaga, remaining: receitaPrevista } = calculateProjectReceipts(
-        valorProjeto,
-        valorRecebido,
-      );
-      const lastReceiptDate = receipts
-        .map((transacao) => transacao.data)
-        .sort((left, right) => right.localeCompare(left))[0];
+  return projetos.map((projeto) => {
+    const valorProjeto = Number(projeto.valor) || 0;
+    const receipts = receiptsByProjectId.get(projeto.id) ?? [];
+    const valorRecebido = receipts.reduce((sum, transacao) => sum + transacao.valor, 0);
+    // Todo recebimento registrado ja e um valor pago, mesmo quando ainda nao
+    // quita o projeto inteiro. Antes, pagamentos parciais eram zerados aqui e
+    // desapareciam do resumo financeiro do integrador.
+    const { paid: receitaPaga, remaining: receitaPrevista } = calculateProjectReceipts(
+      valorProjeto,
+      valorRecebido,
+    );
+    const lastReceiptDate = receipts
+      .map((transacao) => transacao.data)
+      .sort((left, right) => right.localeCompare(left))[0];
 
-      return {
-        projeto,
-        receitaPaga,
-        receitaPrevista,
-        dataReceita: lastReceiptDate || getProjectDate(projeto),
-        dataPrevista: getProjectDate(projeto),
-        status: receitaPaga > 0 ? 'pago' : 'aberto',
-      };
-    })
-    .filter((item) => item.receitaPaga > 0 || item.receitaPrevista > 0);
+    return {
+      projeto,
+      receitaPaga,
+      receitaPrevista,
+      dataReceita: lastReceiptDate || getProjectDate(projeto),
+      dataPrevista: getProjectDate(projeto),
+      status: resolveProjectPaymentStatus(valorProjeto, receitaPrevista),
+    };
+  });
 };
 
 const getDailyChartLabels = (rows: Array<{ dataReceita: string; dataPrevista: string }>) =>
@@ -433,6 +442,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('todos');
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<PaymentStatusFilter>('todos');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
 
@@ -476,10 +486,15 @@ const UsuarioFinanceiroPage: React.FC = () => {
     const query = normalizeSearchText(searchTerm);
 
     return projectRows.filter((row) => {
+      if (selectedPaymentStatus !== 'todos' && row.status !== selectedPaymentStatus) return false;
+
       const matchesPeriod =
         (row.receitaPaga > 0 &&
           isInsidePeriod(row.dataReceita, selectedPeriod, customFrom, customTo)) ||
         (row.receitaPrevista > 0 &&
+          isInsidePeriod(row.dataPrevista, selectedPeriod, customFrom, customTo)) ||
+        (row.receitaPaga === 0 &&
+          row.receitaPrevista === 0 &&
           isInsidePeriod(row.dataPrevista, selectedPeriod, customFrom, customTo));
 
       if (!matchesPeriod) return false;
@@ -492,51 +507,18 @@ const UsuarioFinanceiroPage: React.FC = () => {
         row.projeto.dadosProjeto.concessionaria,
       ].some((value) => normalizeSearchText(value).includes(query));
     });
-  }, [customFrom, customTo, projectRows, searchTerm, selectedPeriod]);
-
-  const visibleExpenses = useMemo(() => {
-    const projectsById = new Map(visibleProjects.map((projeto) => [projeto.id, projeto]));
-    const query = normalizeSearchText(searchTerm);
-
-    return transacoes
-      .filter(
-        (transacao) =>
-          transacao.tipo === 'despesa' &&
-          Boolean(transacao.projectId) &&
-          projectsById.has(transacao.projectId as string),
-      )
-      .map((transacao) => ({
-        transacao,
-        projeto: projectsById.get(transacao.projectId as string) as Projeto,
-      }))
-      .filter(({ transacao, projeto }) => {
-        if (!isInsidePeriod(transacao.data, selectedPeriod, customFrom, customTo)) return false;
-        if (!query) return true;
-
-        return [
-          transacao.descricao,
-          projeto.protocolo,
-          projeto.protocoloConcessionaria,
-          projeto.cliente.nome,
-          projeto.dadosProjeto.concessionaria,
-        ].some((value) => normalizeSearchText(value).includes(query));
-      })
-      .sort((left, right) => right.transacao.data.localeCompare(left.transacao.data));
-  }, [customFrom, customTo, searchTerm, selectedPeriod, transacoes, visibleProjects]);
+  }, [customFrom, customTo, projectRows, searchTerm, selectedPaymentStatus, selectedPeriod]);
 
   const userTotals = useMemo(() => {
     const totalReceita = filteredProjectRows.reduce((sum, row) => sum + row.receitaPaga, 0);
-    const totalDespesas = visibleExpenses.reduce((sum, item) => sum + item.transacao.valor, 0);
 
     return {
       totalReceita,
-      totalDespesas,
-      saldo: totalReceita - totalDespesas,
       receitaPrevista: filteredProjectRows.reduce((sum, row) => sum + row.receitaPrevista, 0),
-      projetosPagos: filteredProjectRows.filter((row) => row.receitaPaga > 0).length,
-      projetosAbertos: filteredProjectRows.filter((row) => row.receitaPrevista > 0).length,
+      projetosPagos: filteredProjectRows.filter((row) => row.status === 'pago').length,
+      projetosAbertos: filteredProjectRows.filter((row) => row.status === 'aberto').length,
     };
-  }, [filteredProjectRows, visibleExpenses]);
+  }, [filteredProjectRows]);
 
   const dailyChartData = useMemo(() => {
     const labels = getDailyChartLabels(filteredProjectRows);
@@ -574,7 +556,12 @@ const UsuarioFinanceiroPage: React.FC = () => {
     [dailyMaxValue],
   );
 
-  const hasFilters = searchTerm || selectedPeriod !== 'todos' || customFrom || customTo;
+  const hasFilters =
+    searchTerm ||
+    selectedPeriod !== 'todos' ||
+    selectedPaymentStatus !== 'todos' ||
+    customFrom ||
+    customTo;
 
   return (
     <div className="page-enter space-y-8">
@@ -582,7 +569,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-cyan-200">Meu Financeiro</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Receitas, despesas e previsão dos projetos atribuídos a você
+            Receitas e previsão dos projetos atribuídos a você
           </p>
           {loading && <p className="mt-2 text-xs text-slate-500">Sincronizando com a API...</p>}
           {errorMessage && <p className="mt-2 text-xs text-red-300">{errorMessage}</p>}
@@ -606,7 +593,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
               { value: 'personalizado', label: 'Personalizado' },
             ].map((item) => (
               <button
-                key={item.value}
+                key={`period-${item.value}`}
                 type="button"
                 onClick={() => setSelectedPeriod(item.value as PeriodFilter)}
                 className={[
@@ -634,6 +621,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
                 onClick={() => {
                   setSearchTerm('');
                   setSelectedPeriod('todos');
+                  setSelectedPaymentStatus('todos');
                   setCustomFrom('');
                   setCustomTo('');
                 }}
@@ -664,7 +652,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className={`${glassCardClass} flex items-center justify-between p-5`}>
           <div>
             <p className="mb-2 text-xs font-bold uppercase text-slate-400">Valores recebidos</p>
@@ -673,7 +661,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
             </h3>
             <div className="mt-2 flex items-center gap-1 text-sm text-emerald-300">
               <ArrowUp className="h-4 w-4" />
-              <span>{userTotals.projetosPagos} projetos com recebimento</span>
+              <span>{userTotals.projetosPagos} projetos totalmente pagos</span>
             </div>
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300">
@@ -694,39 +682,6 @@ const UsuarioFinanceiroPage: React.FC = () => {
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-200">
             <CalendarBlank className="h-7 w-7" />
-          </div>
-        </div>
-
-        <div className={`${glassCardClass} flex items-center justify-between p-5`}>
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Despesas</p>
-            <h3 className="text-2xl font-semibold text-rose-300">
-              {formatCurrencyBRL(userTotals.totalDespesas)}
-            </h3>
-            <div className="mt-2 flex items-center gap-1 text-sm text-rose-300">
-              <ArrowDown className="h-4 w-4" />
-              <span>{visibleExpenses.length} lançamentos</span>
-            </div>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-rose-400/10 text-rose-300">
-            <ArrowDown className="h-7 w-7" />
-          </div>
-        </div>
-
-        <div className={`${glassCardClass} flex items-center justify-between p-5`}>
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Saldo realizado</p>
-            <h3
-              className={`text-2xl font-semibold ${
-                userTotals.saldo >= 0 ? 'text-cyan-200' : 'text-rose-300'
-              }`}
-            >
-              {formatCurrencyBRL(userTotals.saldo)}
-            </h3>
-            <p className="mt-2 text-sm text-slate-400">Recebido menos despesas</p>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-200">
-            <ChartLineUp className="h-7 w-7" />
           </div>
         </div>
       </section>
@@ -799,43 +754,88 @@ const UsuarioFinanceiroPage: React.FC = () => {
       </section>
 
       <section className={`${glassCardClass} overflow-hidden`}>
-        <div className="border-b border-white/10 p-5">
-          <h3 className="text-lg font-semibold text-slate-100">Despesas dos meus projetos</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            Lançamentos devolvidos pela API para os projetos atribuídos a você.
-          </p>
+        <div className="flex flex-col gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-100">Meus projetos</h3>
+            <p className="mt-1 text-sm text-slate-400">
+              Acompanhe o valor recebido e o que ainda falta receber em cada projeto.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { value: 'todos', label: 'Todos os status' },
+              { value: 'aberto', label: 'Em aberto' },
+              { value: 'pago', label: 'Totalmente pagos' },
+            ].map((item) => (
+              <button
+                key={`status-${item.value}`}
+                type="button"
+                aria-pressed={selectedPaymentStatus === item.value}
+                onClick={() => setSelectedPaymentStatus(item.value as PaymentStatusFilter)}
+                className={[
+                  'rounded-xl px-3 py-2 text-xs font-bold transition',
+                  selectedPaymentStatus === item.value
+                    ? 'bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/30'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-100',
+                ].join(' ')}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {visibleExpenses.length === 0 ? (
-          <div className="p-6 text-sm text-amber-200">
-            Nenhuma despesa foi retornada pela API. Se o projeto possui lançamentos, verifique a
-            permissão financeira do integrador.
+        {filteredProjectRows.length === 0 ? (
+          <div className="p-6 text-sm text-slate-400">
+            Nenhum projeto foi encontrado para os filtros selecionados.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-white/10">
               <thead className="bg-slate-950/30">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">
-                    Descrição
-                  </th>
                   <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Projeto</th>
-                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Data</th>
-                  <th className="px-5 py-3 text-right text-xs uppercase text-slate-400">Valor</th>
+                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Cliente</th>
+                  <th className="px-5 py-3 text-right text-xs uppercase text-slate-400">
+                    Valor total
+                  </th>
+                  <th className="px-5 py-3 text-right text-xs uppercase text-slate-400">
+                    Recebido
+                  </th>
+                  <th className="px-5 py-3 text-right text-xs uppercase text-slate-400">
+                    A receber
+                  </th>
+                  <th className="px-5 py-3 text-center text-xs uppercase text-slate-400">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {visibleExpenses.map(({ transacao, projeto }) => (
-                  <tr key={transacao.id}>
-                    <td className="px-5 py-4 text-sm text-slate-100">{transacao.descricao}</td>
-                    <td className="px-5 py-4 text-sm text-slate-300">
-                      {formatProjectIdentifier(projeto)} · {projeto.cliente.nome}
+                {filteredProjectRows.map((row) => (
+                  <tr key={row.projeto.id} className="transition hover:bg-white/[0.03]">
+                    <td className="px-5 py-4 text-sm font-semibold text-cyan-100">
+                      <Link to={`/projetos/${row.projeto.id}`} className="hover:text-cyan-300">
+                        {formatProjectIdentifier(row.projeto)}
+                      </Link>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-300">
-                      {formatDateBR(transacao.data)}
+                    <td className="px-5 py-4 text-sm text-slate-300">{row.projeto.cliente.nome}</td>
+                    <td className="px-5 py-4 text-right text-sm text-slate-200">
+                      {formatCurrencyBRL(row.projeto.valor)}
                     </td>
-                    <td className="px-5 py-4 text-right text-sm font-semibold text-rose-200">
-                      {formatCurrencyBRL(transacao.valor)}
+                    <td className="px-5 py-4 text-right text-sm font-semibold text-emerald-300">
+                      {formatCurrencyBRL(row.receitaPaga)}
+                    </td>
+                    <td className="px-5 py-4 text-right text-sm font-semibold text-cyan-200">
+                      {formatCurrencyBRL(row.receitaPrevista)}
+                    </td>
+                    <td className="px-5 py-4 text-center">
+                      <span
+                        className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                          row.status === 'pago'
+                            ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-300'
+                            : 'border-amber-300/30 bg-amber-400/10 text-amber-200'
+                        }`}
+                      >
+                        {row.status === 'pago' ? 'Totalmente pago' : 'Em aberto'}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -981,7 +981,7 @@ const AdminFinanceiroPage: React.FC = () => {
             .map((projeto) => {
               const total = Number(projeto.valor) || 0;
               const paid = paidByProjectId.get(projeto.id) ?? 0;
-              return { projeto, remaining: Math.max(total - paid, 0) };
+              return { projeto, remaining: calculateProjectReceipts(total, paid).remaining };
             })
             .filter((item) => item.remaining > 0)
             .map((projeto) => ({
@@ -1004,7 +1004,7 @@ const AdminFinanceiroPage: React.FC = () => {
             .map((servico) => {
               const total = Number(servico.valorFinal) || 0;
               const paid = paidByServiceId.get(servico.id) ?? 0;
-              return { servico, remaining: Math.max(total - paid, 0) };
+              return { servico, remaining: calculateProjectReceipts(total, paid).remaining };
             })
             .filter((item) => item.remaining > 0)
             .map((servico) => ({
@@ -1242,6 +1242,10 @@ const AdminFinanceiroPage: React.FC = () => {
       setErrorMessage('Preencha os campos obrigatórios do lançamento: descrição, data e valor.');
       return;
     }
+    if (novaTransacao.projectId && novaTransacao.serviceId) {
+      setErrorMessage('Escolha apenas um vínculo para o lançamento: projeto ou serviço.');
+      return;
+    }
 
     setLoading(true);
     setErrorMessage(null);
@@ -1249,6 +1253,8 @@ const AdminFinanceiroPage: React.FC = () => {
 
     try {
       const payload = {
+        project_id: novaTransacao.projectId || null,
+        service_id: novaTransacao.serviceId || null,
         amount: valor,
         reason: novaTransacao.tipo,
         description: novaTransacao.descricao.trim(),
@@ -1276,6 +1282,8 @@ const AdminFinanceiroPage: React.FC = () => {
   const handleEditTransacao = (transacao: TransacaoFinanceira) => {
     setEditingTransactionId(transacao.id);
     setNovaTransacao({
+      projectId: transacao.projectId ?? '',
+      serviceId: transacao.serviceId ?? '',
       descricao: transacao.descricao,
       tipo: transacao.tipo,
       valor: formatCurrencyBRL(transacao.valor),
@@ -1555,7 +1563,7 @@ const AdminFinanceiroPage: React.FC = () => {
 
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-sm">
-          <Card className="w-full max-w-2xl">
+          <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle>
@@ -1576,6 +1584,67 @@ const AdminFinanceiroPage: React.FC = () => {
                 onSubmit={handleSubmitTransacao}
                 className="grid grid-cols-1 gap-4 md:grid-cols-2"
               >
+                <label className="block text-sm text-gray-300">
+                  <span className="mb-1 block">Projeto vinculado</span>
+                  <select
+                    aria-label="Projeto vinculado"
+                    value={novaTransacao.projectId}
+                    onChange={(event) =>
+                      setNovaTransacao((previous) => ({
+                        ...previous,
+                        projectId: event.target.value,
+                        ...(event.target.value ? { serviceId: '' } : {}),
+                      }))
+                    }
+                    className="w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2.5 text-gray-100"
+                  >
+                    <option value="">Sem projeto</option>
+                    {novaTransacao.projectId &&
+                      !projetos.some((project) => project.id === novaTransacao.projectId) && (
+                        <option value={novaTransacao.projectId}>
+                          Projeto atual ({novaTransacao.projectId})
+                        </option>
+                      )}
+                    {projetos.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {formatProjectIdentifier(project)} — {project.cliente.nome}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm text-gray-300">
+                  <span className="mb-1 block">Serviço vinculado</span>
+                  <select
+                    aria-label="Serviço vinculado"
+                    value={novaTransacao.serviceId}
+                    onChange={(event) =>
+                      setNovaTransacao((previous) => ({
+                        ...previous,
+                        serviceId: event.target.value,
+                        ...(event.target.value ? { projectId: '' } : {}),
+                      }))
+                    }
+                    className="w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2.5 text-gray-100"
+                  >
+                    <option value="">Sem serviço</option>
+                    {novaTransacao.serviceId &&
+                      !servicos.some((service) => service.id === novaTransacao.serviceId) && (
+                        <option value={novaTransacao.serviceId}>
+                          Serviço atual ({novaTransacao.serviceId})
+                        </option>
+                      )}
+                    {servicos.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.protocolo}
+                        {service.subsequencia ? `/${service.subsequencia}` : ''} — {service.cliente}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="text-sm text-slate-400 md:col-span-2">
+                  Selecione um projeto ou serviço para atualizar seu saldo a receber. Sem vínculo, o
+                  lançamento afeta apenas o financeiro geral.
+                </p>
                 <Input
                   label="Descrição"
                   placeholder="Ex: Entrada projeto comercial"
@@ -2042,14 +2111,27 @@ const AdminFinanceiroPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       {!isForecast && (
-                        <button
-                          type="button"
-                          onClick={() => handleEditTransacao(row.transacao)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-slate-900/50 text-slate-400 transition hover:border-cyan-300/45 hover:bg-slate-800/80 hover:text-cyan-200"
-                          aria-label="Editar lançamento"
-                        >
-                          <PencilSimple className="h-4 w-4" />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditTransacao(row.transacao)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-slate-900/50 text-slate-400 transition hover:border-cyan-300/45 hover:bg-slate-800/80 hover:text-cyan-200"
+                            aria-label="Editar lançamento"
+                          >
+                            <PencilSimple className="h-4 w-4" />
+                          </button>
+                          <ConfirmActionButton
+                            label="Excluir lançamento"
+                            disabled={loading}
+                            description={`Excluir definitivamente "${row.transacao.descricao}" de ${formatCurrencyBRL(row.transacao.valor)}? Os totais e saldos vinculados serão recalculados.`}
+                            onConfirm={async () => {
+                              await financeiroService.removeLedger(row.transacao.id);
+                              if (editingTransactionId === row.transacao.id) closeForm();
+                              await loadFinanceData();
+                              setSuccessMessage('Lançamento excluído. Saldos atualizados.');
+                            }}
+                          />
+                        </div>
                       )}
                     </td>
                   </tr>

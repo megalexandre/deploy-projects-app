@@ -7,6 +7,7 @@ import {
   usersService,
 } from '@/services';
 import type { TransacaoFinanceira } from '@/features/financeiro/services/financeiroService';
+import { calculateProjectReceipts } from '@/features/financeiro/domain/projectFinance';
 import type { Projeto } from '@/types';
 import { columns, getStatusLabel, toKanbanStatus, type KanbanStatus } from '../kanban/kanbanConfig';
 import { useDragToScroll } from './useDragToScroll';
@@ -36,7 +37,9 @@ export const calculateExpectedProjectRevenue = (
 
   return projetos.reduce(
     (total, projeto) =>
-      total + Math.max((Number(projeto.valor) || 0) - (receivedByProject.get(projeto.id) ?? 0), 0),
+      total +
+      calculateProjectReceipts(Number(projeto.valor) || 0, receivedByProject.get(projeto.id) ?? 0)
+        .remaining,
     0,
   );
 };
@@ -199,6 +202,7 @@ export const useProjetosKanban = () => {
           normalizeText(projeto.protocolo).includes(query) ||
           normalizeText(projeto.protocoloConcessionaria).includes(query) ||
           normalizeText(projeto.cliente.nome).includes(query) ||
+          normalizeText(projeto.dadosProjeto.integrador).includes(query) ||
           normalizeText(projeto.dadosProjeto.concessionaria).includes(query)
         );
       }),

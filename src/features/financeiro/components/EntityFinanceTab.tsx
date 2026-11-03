@@ -10,10 +10,13 @@ import {
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { Input } from '@/shared/components/Input';
+import { ConfirmActionButton } from '@/shared/components/ConfirmActionButton';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { formatCurrencyBRL, maskCurrencyBRL, parseCurrencyBRL } from '@/core/utils/masks';
 import {
   entityFinanceService,
   type EntityExpense,
+  type EntityReceipt,
   type EntityFinanceScope,
   type EntityFinanceSnapshot,
   type FinanceStatus,
@@ -43,7 +46,7 @@ const createEmptyExpenseForm = (): ExpenseFormState => ({
   categoria: '',
   valor: '',
   data: new Date().toISOString().slice(0, 10),
-  status: 'pendente',
+  status: 'pago',
 });
 
 const createEmptyReceiptForm = (): ReceiptFormState => ({
@@ -72,6 +75,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
   showExpenseDetails = true,
   canManageExpenses = true,
 }) => {
+  const currentUser = useCurrentUser();
+  // The current API does not expose ledger ownership; it authorizes each mutation.
+  const canManageEntries = Boolean(currentUser?.id);
   const scope = useMemo(
     () => ({ entityType, entityId, entityLabel, amount, createdAt }),
     [amount, createdAt, entityId, entityLabel, entityType],
@@ -80,6 +86,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
   const [formOpen, setFormOpen] = useState(false);
   const [receiptFormOpen, setReceiptFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<EntityExpense | null>(null);
+  const [editingReceipt, setEditingReceipt] = useState<EntityReceipt | null>(null);
   const [form, setForm] = useState<ExpenseFormState>(createEmptyExpenseForm());
   const [receiptForm, setReceiptForm] = useState<ReceiptFormState>(createEmptyReceiptForm());
   const [loading, setLoading] = useState(false);
@@ -121,6 +128,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
   };
 
   const openReceiptForm = () => {
+    setEditingReceipt(null);
     setReceiptForm({
       descricao: `Recebimento parcial ${entityLabel}`,
       valor: snapshot?.payment.valorPendente
@@ -130,6 +138,35 @@ export const EntityFinanceTab: React.FC<Props> = ({
     });
     setReceiptSubmitAttempted(false);
     setReceiptFormOpen(true);
+  };
+
+  const openEditReceipt = (receipt: EntityReceipt) => {
+    setEditingReceipt(receipt);
+    setReceiptForm({
+      descricao: receipt.descricao,
+      valor: formatCurrencyBRL(receipt.valor),
+      data: receipt.data,
+    });
+    setReceiptSubmitAttempted(false);
+    setReceiptFormOpen(true);
+  };
+
+  const removeEntry = async (id: string) => {
+    setLoading(true);
+    try {
+      const updated = await entityFinanceService.removeEntry(scope, id);
+      setSnapshot(updated);
+      if (editingReceipt?.id === id) {
+        setEditingReceipt(null);
+        setReceiptFormOpen(false);
+      }
+      if (editingExpense?.id === id) {
+        resetForm();
+        setFormOpen(false);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openEditForm = (expense: EntityExpense) => {
@@ -204,12 +241,14 @@ export const EntityFinanceTab: React.FC<Props> = ({
     try {
       setSnapshot(
         await entityFinanceService.saveReceipt(scope, {
+          id: editingReceipt?.id,
           descricao: receiptForm.descricao,
           valor,
           data: receiptForm.data,
         }),
       );
       setReceiptForm(createEmptyReceiptForm());
+      setEditingReceipt(null);
       setReceiptSubmitAttempted(false);
       setReceiptFormOpen(false);
     } catch (error) {
@@ -229,12 +268,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
     setErrorMessage(null);
 
     try {
-      setSnapshot(
-        await entityFinanceService.setPaymentStatus(
-          scope,
-          snapshot.payment.status === 'pago' ? 'pendente' : 'pago',
-        ),
-      );
+      setSnapshot(await entityFinanceService.setPaymentStatus(scope, 'pago'));
     } catch (error) {
       console.error('Erro ao atualizar recebimento vinculado:', error);
       setErrorMessage(
@@ -257,6 +291,11 @@ export const EntityFinanceTab: React.FC<Props> = ({
 
   return (
     <div className="space-y-6 page-enter">
+      {!currentUser?.isAdmin && (
+        <p className="text-sm text-slate-400">
+          Você pode editar ou excluir apenas os lançamentos criados por você.
+        </p>
+      )}
       {(loading || errorMessage) && (
         <div className="text-sm text-slate-400">
           {loading && 'Sincronizando financeiro com a API...'}
@@ -404,7 +443,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
       {receiptFormOpen && (
         <Card>
           <CardHeader>
-            <CardTitle>Novo recebimento</CardTitle>
+            <CardTitle>{editingReceipt ? 'Editar recebimento' : 'Novo recebimento'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSaveReceipt} className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -451,6 +490,7 @@ export const EntityFinanceTab: React.FC<Props> = ({
                   variant="outline"
                   onClick={() => {
                     setReceiptFormOpen(false);
+                    setEditingReceipt(null);
                     setReceiptForm(createEmptyReceiptForm());
                     setReceiptSubmitAttempted(false);
                   }}
@@ -492,6 +532,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
                     <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
                       Status
                     </th>
+                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-400">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
@@ -508,6 +551,27 @@ export const EntityFinanceTab: React.FC<Props> = ({
                         <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-200">
                           Pago
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {canManageEntries && (
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={loading}
+                              onClick={() => openEditReceipt(receipt)}
+                            >
+                              Editar recebimento
+                            </Button>
+                            <ConfirmActionButton
+                              label="Excluir recebimento"
+                              disabled={loading}
+                              description={`Excluir definitivamente o recebimento "${receipt.descricao}" de ${formatCurrencyBRL(receipt.valor)}? O saldo a receber será recalculado.`}
+                              onConfirm={() => removeEntry(receipt.id)}
+                            />
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -577,22 +641,9 @@ export const EntityFinanceTab: React.FC<Props> = ({
                 error={expenseSubmitAttempted && !form.data ? 'Informe a data.' : undefined}
                 required
               />
-              <label className="block text-sm text-gray-300">
-                <span className="mb-1 block">Status</span>
-                <select
-                  value={form.status}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      status: event.target.value as FinanceStatus,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="pendente">Pendente</option>
-                  <option value="pago">Pago</option>
-                </select>
-              </label>
+              <p className="text-sm text-slate-400">
+                A despesa será registrada como pagamento realizado.
+              </p>
               <div className="md:col-span-2 flex justify-end gap-3">
                 <Button
                   type="button"
@@ -683,15 +734,25 @@ export const EntityFinanceTab: React.FC<Props> = ({
                         </td>
                         {canManageExpenses && (
                           <td className="px-4 py-3 text-sm text-slate-300">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditForm(expense)}
-                            >
-                              <PencilSimple className="mr-2 h-4 w-4" />
-                              Editar
-                            </Button>
+                            {canManageEntries && (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openEditForm(expense)}
+                                >
+                                  <PencilSimple className="mr-2 h-4 w-4" />
+                                  Editar
+                                </Button>
+                                <ConfirmActionButton
+                                  label="Excluir despesa"
+                                  disabled={loading}
+                                  description={`Excluir definitivamente a despesa "${expense.descricao}" de ${formatCurrencyBRL(expense.valor)}?`}
+                                  onConfirm={() => removeEntry(expense.id)}
+                                />
+                              </>
+                            )}
                           </td>
                         )}
                       </tr>

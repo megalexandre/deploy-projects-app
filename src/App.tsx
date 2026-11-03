@@ -10,6 +10,7 @@ import { ServicosPage } from '@/features/servicos/pages/ServicosPage';
 import { ServicoDetailPage } from '@/features/servicos/pages/ServicoDetailPage';
 import { NovoServicoPage } from '@/features/servicos/pages/NovoServicoPage';
 import { FinanceiroPage } from '@/features/financeiro/pages/FinanceiroPage';
+import { AdminFinanceiroV2Page } from '@/features/financeiro/pages/AdminFinanceiroV2Page';
 import { PagamentosPage } from '@/features/financeiro/pages/PagamentosPage';
 import { RecebimentosPage } from '@/features/financeiro/pages/RecebimentosPage';
 import { FaturasPage } from '@/features/financeiro/pages/FaturasPage';
@@ -63,6 +64,14 @@ const AppRoutes: React.FC = () => {
         <Route path="/servicos/novo" element={<NovoServicoPage />} />
         <Route path="/servicos/:id" element={<ServicoDetailPage />} />
         <Route path="/financeiro" element={<FinanceiroPage />} />
+        <Route
+          path="/financeiro/visao"
+          element={
+            <AdminOnlyRoute>
+              <AdminFinanceiroV2Page />
+            </AdminOnlyRoute>
+          }
+        />
         <Route path="/financeiro/pagamentos" element={<PagamentosPage />} />
         <Route path="/financeiro/recebimentos" element={<RecebimentosPage />} />
         <Route path="/financeiro/faturas" element={<FaturasPage />} />
