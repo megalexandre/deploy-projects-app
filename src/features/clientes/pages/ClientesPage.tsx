@@ -37,6 +37,8 @@ export const ClientesPage: React.FC = () => {
     handleDownload,
     handleUploadDocuments,
     handleEnderecoCepBlur,
+    removeCustomer,
+    refreshDocuments,
   } = useClientes();
 
   if (loading) {
@@ -74,7 +76,9 @@ export const ClientesPage: React.FC = () => {
       </Card>
 
       <CustomerListCard
+        key={searchTerm}
         customers={clientesFiltrados}
+        onRemove={removeCustomer}
         onEdit={handleEditCustomer}
         onOpenDocuments={handleOpenDocuments}
       />
@@ -95,6 +99,7 @@ export const ClientesPage: React.FC = () => {
 
       {selectedDocumentsCustomerId && clienteComDocumentosAbertos && (
         <CustomerDocumentsCard
+          onDocumentsChanged={refreshDocuments}
           customer={clienteComDocumentosAbertos}
           uploadingDocuments={uploadingDocuments}
           onUploadDocuments={(files) => void handleUploadDocuments(files)}

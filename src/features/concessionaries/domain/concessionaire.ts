@@ -1,4 +1,5 @@
 export interface ConcessionaireData {
+  created_by?: string;
   id: string;
   name: string;
   acronym: string;
@@ -11,6 +12,7 @@ export interface ConcessionaireData {
 }
 
 export class Concessionaire {
+  readonly createdBy?: string;
   readonly id: string;
   readonly name: string;
   readonly acronym: string;
@@ -22,6 +24,7 @@ export class Concessionaire {
   readonly logo: string | null;
 
   constructor(data: ConcessionaireData) {
+    this.createdBy = data.created_by;
     this.id = data.id;
     this.name = data.name.trim();
     this.acronym = data.acronym ?? '';

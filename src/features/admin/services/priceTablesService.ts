@@ -1,4 +1,6 @@
 import { apiClient } from '@/shared/api/apiClient';
+import { getAllPages } from '@/shared/api/pagination';
+import { clearAllRequestCaches } from '@/shared/api/requestCache';
 
 export type PriceTableKind = 'fotovoltaico' | 'padrao_entrada' | 'cupom_projeto' | 'cupom_servico';
 
@@ -12,7 +14,12 @@ export interface PriceTableResponse {
 type PriceTablePayload = Pick<PriceTableResponse, 'kind' | 'name' | 'values'>;
 
 export const priceTablesService = {
-  getAll: () => apiClient.get<PriceTableResponse[]>('/price_tables'),
+  getAll: () => getAllPages<PriceTableResponse>('/price_tables'),
+
+  async remove(id: string) {
+    await apiClient.delete(`/price_tables/${id}`);
+    clearAllRequestCaches();
+  },
 
   create: (payload: PriceTablePayload) =>
     apiClient.post<PriceTableResponse>('/price_tables', payload),

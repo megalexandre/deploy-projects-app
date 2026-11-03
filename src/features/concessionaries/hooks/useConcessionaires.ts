@@ -130,6 +130,10 @@ export const useConcessionaires = () => {
   };
 
   return {
+    async remove(item: Concessionaire) {
+      await concessionairesService.remove(item.id);
+      setItems((items) => items.filter((current) => current.id !== item.id));
+    },
     form,
     setField,
     filteredItems,

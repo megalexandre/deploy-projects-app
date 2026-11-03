@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ConfirmActionButton } from '@/shared/components/ConfirmActionButton';
+import { Pagination } from '@/shared/components/Pagination';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 import { PencilSimple, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
@@ -9,105 +12,125 @@ type Props = {
   customers: Customer[];
   onEdit: (customer: Customer) => void;
   onOpenDocuments: (customer: Customer) => void;
+  onRemove: (customer: Customer) => Promise<unknown>;
 };
 
-export const CustomerListCard: React.FC<Props> = ({ customers, onEdit, onOpenDocuments }) => (
-  <Card>
-    <CardHeader>
-      <div className="flex items-center justify-between gap-4">
-        <CardTitle>Clientes Cadastrados ({customers.length})</CardTitle>
-        <span className="text-sm text-slate-400">
-          Visualização resumida com contato e localização.
-        </span>
-      </div>
-    </CardHeader>
-    <CardContent className="p-0">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-white/10">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
-              <th className="px-4 py-3">Cliente</th>
-              <th className="px-4 py-3">Contato</th>
-              <th className="px-4 py-3">Localização</th>
-              <th className="px-4 py-3 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {customers.map((cliente) => (
-              <tr key={cliente.id} className="text-sm text-slate-200">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-sm font-semibold text-cyan-200">
-                      {cliente.nome.slice(0, 1).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-medium text-slate-100">{cliente.nome}</div>
-                      <div className="text-xs text-slate-400">
-                        {formatDocumento(cliente.cpfCnpj)}
+export const CustomerListCard: React.FC<Props> = ({
+  customers,
+  onEdit,
+  onOpenDocuments,
+  onRemove,
+}) => {
+  const user = useCurrentUser();
+  const [page, setPage] = useState(1);
+  const size = 20;
+  const current = Math.min(page, Math.max(1, Math.ceil(customers.length / size)));
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between gap-4">
+          <CardTitle>Clientes Cadastrados ({customers.length})</CardTitle>
+          <span className="text-sm text-slate-400">
+            Visualização resumida com contato e localização.
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-white/10">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
+                <th className="px-4 py-3">Cliente</th>
+                <th className="px-4 py-3">Contato</th>
+                <th className="px-4 py-3">Localização</th>
+                <th className="px-4 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {customers.slice((current - 1) * size, current * size).map((cliente) => (
+                <tr key={cliente.id} className="text-sm text-slate-200">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-sm font-semibold text-cyan-200">
+                        {cliente.nome.slice(0, 1).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-100">{cliente.nome}</div>
+                        <div className="text-xs text-slate-400">
+                          {formatDocumento(cliente.cpfCnpj)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="space-y-1">
-                    <div>{formatTelefone(cliente.telefone)}</div>
-                    <div className="text-xs text-slate-400">{cliente.email}</div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="space-y-1">
-                    <div className="font-medium text-slate-100">
-                      {cliente.endereco?.cidade
-                        ? `${cliente.endereco.cidade}/${cliente.endereco.estado}`
-                        : '-'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <div>{formatTelefone(cliente.telefone)}</div>
+                      <div className="text-xs text-slate-400">{cliente.email}</div>
                     </div>
-                    <div className="max-w-xs text-xs text-slate-400">
-                      {cliente.enderecoCompleto ||
-                        [
-                          cliente.endereco?.logradouro,
-                          cliente.endereco?.numero,
-                          cliente.endereco?.bairro,
-                        ]
-                          .filter(Boolean)
-                          .join(', ') ||
-                        '-'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <div className="font-medium text-slate-100">
+                        {cliente.endereco?.cidade
+                          ? `${cliente.endereco.cidade}/${cliente.endereco.estado}`
+                          : '-'}
+                      </div>
+                      <div className="max-w-xs text-xs text-slate-400">
+                        {cliente.enderecoCompleto ||
+                          [
+                            cliente.endereco?.logradouro,
+                            cliente.endereco?.numero,
+                            cliente.endereco?.bairro,
+                          ]
+                            .filter(Boolean)
+                            .join(', ') ||
+                          '-'}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void onOpenDocuments(cliente)}
-                    >
-                      <UploadSimple className="mr-2 h-4 w-4" />
-                      Documentos
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(cliente)}
-                    >
-                      <PencilSimple className="mr-2 h-4 w-4" />
-                      Editar
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {customers.length === 0 && (
-              <tr>
-                <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={6}>
-                  Nenhum cliente encontrado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </CardContent>
-  </Card>
-);
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void onOpenDocuments(cliente)}
+                      >
+                        <UploadSimple className="mr-2 h-4 w-4" />
+                        Documentos
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(cliente)}
+                      >
+                        <PencilSimple className="mr-2 h-4 w-4" />
+                        Editar
+                      </Button>
+                      {(user?.isAdmin || cliente.createdBy === user?.id) && (
+                        <ConfirmActionButton
+                          label="Excluir cliente"
+                          description={`Excluir definitivamente ${cliente.nome}? Projetos ou serviços vinculados podem impedir a exclusão.`}
+                          onConfirm={() => onRemove(cliente)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {customers.length === 0 && (
+                <tr>
+                  <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={6}>
+                    Nenhum cliente encontrado.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <Pagination page={current} pageSize={size} total={customers.length} onChange={setPage} />
+      </CardContent>
+    </Card>
+  );
+};

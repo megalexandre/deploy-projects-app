@@ -3,6 +3,10 @@ import { DownloadSimple, FileText, UploadSimple } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import type { Customer } from '@/services';
+import {
+  DocumentRemoveButton,
+  RemoveAllDocumentsButton,
+} from '@/shared/components/DocumentRemoveButton';
 
 type Props = {
   customer: Customer;
@@ -10,6 +14,7 @@ type Props = {
   onUploadDocuments: (files: FileList | null) => void;
   onDownload: (fileId?: string) => void;
   onClose: () => void;
+  onDocumentsChanged: () => Promise<unknown>;
 };
 
 export const CustomerDocumentsCard: React.FC<Props> = ({
@@ -18,6 +23,7 @@ export const CustomerDocumentsCard: React.FC<Props> = ({
   onUploadDocuments,
   onDownload,
   onClose,
+  onDocumentsChanged,
 }) => (
   <Card>
     <CardHeader>
@@ -27,6 +33,9 @@ export const CustomerDocumentsCard: React.FC<Props> = ({
           <p className="mt-1 text-sm text-slate-400">{customer.nome}</p>
         </div>
         <div className="flex items-center gap-3">
+          {customer.documentos.length > 0 && (
+            <RemoveAllDocumentsButton itemId={customer.id} onRemoved={onDocumentsChanged} />
+          )}
           <label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50">
             <UploadSimple className="mr-2 h-4 w-4" />
             {uploadingDocuments ? 'Enviando...' : 'Adicionar documentos'}
@@ -85,6 +94,11 @@ export const CustomerDocumentsCard: React.FC<Props> = ({
                       <DownloadSimple className="mr-2 h-4 w-4" />
                       Download
                     </Button>
+                    <DocumentRemoveButton
+                      itemId={customer.id}
+                      document={documento}
+                      onRemoved={onDocumentsChanged}
+                    />
                   </td>
                 </tr>
               ))}

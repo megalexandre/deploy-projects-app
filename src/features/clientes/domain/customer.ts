@@ -12,6 +12,7 @@ export interface CustomerAddress {
 }
 
 export interface Customer {
+  createdBy?: string;
   id: string;
   addressId?: string;
   nome: string;

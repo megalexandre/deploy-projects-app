@@ -172,6 +172,9 @@ export const useConfiguracoes = () => {
   };
 
   return {
+    async reload() {
+      setFormData(await loadConfiguracoesSistemaFromApi());
+    },
     formData,
     usuarios,
     saveMessage,

@@ -1,6 +1,8 @@
 import { asString, isRecord } from '@/core/utils/normalize';
 import { apiClient } from './apiClient';
 import { createKeyedRequestCache } from './requestCache';
+import { clearAllRequestCaches } from './requestCache';
+import { getAllPages } from './pagination';
 
 export interface Address {
   id: string;
@@ -92,6 +94,13 @@ const buildAddressPayload = (addressData: CreateAddressData | UpdateAddressData)
 };
 
 export const addressService = {
+  async list(): Promise<Address[]> {
+    return (await getAllPages<unknown>(ADDRESS_ENDPOINT)).map(normalizeAddress);
+  },
+  async remove(id: string): Promise<void> {
+    await apiClient.delete(`${ADDRESS_ENDPOINT}/${id}`);
+    clearAllRequestCaches();
+  },
   async create(addressData: CreateAddressData): Promise<Address> {
     const response = await apiClient.post<unknown>(
       ADDRESS_ENDPOINT,

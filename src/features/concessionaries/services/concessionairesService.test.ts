@@ -44,16 +44,18 @@ describe('concessionairesService', () => {
 
   describe('getAll', () => {
     it('chama apiClient.get com o endpoint correto', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce([]);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ content: [], totalPages: 1 });
       await concessionairesService.getAll();
-      expect(apiClient.get).toHaveBeenCalledWith(ENDPOINTS.concessionaires);
+      expect(apiClient.get).toHaveBeenCalledWith(`${ENDPOINTS.concessionaires}/paginate`, {
+        query: { page: 1, limit: 100 },
+      });
     });
 
     it('retorna instâncias de Concessionaire', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce([
-        makeData(),
-        makeData({ id: '2', name: 'CPFL' }),
-      ]);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({
+        content: [makeData(), makeData({ id: '2', name: 'CPFL' })],
+        totalPages: 1,
+      });
       const result = await concessionairesService.getAll();
       expect(result).toHaveLength(2);
       expect(result[0]).toBeInstanceOf(Concessionaire);
@@ -61,7 +63,7 @@ describe('concessionairesService', () => {
     });
 
     it('retorna array vazio quando API retorna vazio', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce([]);
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ content: [], totalPages: 1 });
       const result = await concessionairesService.getAll();
       expect(result).toEqual([]);
     });

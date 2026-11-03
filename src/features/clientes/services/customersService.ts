@@ -3,6 +3,9 @@ import type { Documento } from '@/types';
 import { asNumber, asString, isRecord } from '@/core/utils/normalize';
 import { createRecordStorage } from '@/core/utils/storage';
 import { apiClient } from '@/shared/api/apiClient';
+import { getAllPages } from '@/shared/api/pagination';
+import { filesService } from '@/shared/api/filesService';
+import { clearAllRequestCaches } from '@/shared/api/requestCache';
 import { createKeyedRequestCache, createRequestCache } from '@/shared/api/requestCache';
 import type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
 export type { CreateCustomerData, Customer, UpdateCustomerData } from '../domain/customer';
@@ -101,6 +104,7 @@ const normalizeCustomer = (raw: unknown): Customer => {
 
   return {
     id: asString(customer.id) || crypto.randomUUID(),
+    createdBy: asString(customer.created_by) || undefined,
     addressId:
       asString(customer.address_id) || asString(customer.addressId) || nestedAddressId || undefined,
     nome: asString(customer.nome) || asString(customer.name),
@@ -153,6 +157,32 @@ const buildCustomerPayload = (customerData: CreateCustomerData | UpdateCustomerD
 };
 
 export const customersService = {
+  async remove(id: string): Promise<void> {
+    await apiClient.delete(`${CUSTOMERS_ENDPOINT}/${id}`);
+    const enhancements = customerEnhancementsStorage.read();
+    delete enhancements[id];
+    customerEnhancementsStorage.write(enhancements);
+    clearAllRequestCaches();
+  },
+
+  async refreshDocuments(id: string): Promise<Customer> {
+    const uploads = await filesService.listByItem(id);
+    const documentos = uploads.map((file) => ({
+      id: file.id,
+      fileId: file.id,
+      nome: file.fileName,
+      tipo: 'Documento',
+      dataUpload: file.createdAt ?? '',
+      tamanho: file.size,
+      url: file.urlS3,
+    }));
+    customersService.saveDocuments(id, documentos);
+    const response = await apiClient.get<unknown>(`${CUSTOMERS_ENDPOINT}/${id}`);
+    return {
+      ...normalizeCustomer(response),
+      documentos,
+    };
+  },
   saveDocuments(customerId: string, documentos: Documento[]) {
     updateCustomerEnhancement(customerId, (current) => ({
       ...current,
@@ -163,13 +193,8 @@ export const customersService = {
 
   async getAll(): Promise<Customer[]> {
     return customersListCache.get(async () => {
-      const response = await apiClient.get<unknown[] | { data?: unknown[] }>(CUSTOMERS_ENDPOINT);
-      if (Array.isArray(response)) {
-        return response.map(normalizeCustomer).map(mergeCustomerEnhancement);
-      }
-
-      const data = isRecord(response) && Array.isArray(response.data) ? response.data : [];
-      return data.map(normalizeCustomer).map(mergeCustomerEnhancement);
+      const response = await getAllPages<unknown>(CUSTOMERS_ENDPOINT);
+      return response.map(normalizeCustomer).map(mergeCustomerEnhancement);
     });
   },
 

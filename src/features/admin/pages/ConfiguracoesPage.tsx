@@ -18,6 +18,7 @@ import { NotificationsSettingsSection } from '@/features/admin/components/settin
 import { PrecosSettingsSection } from '@/features/admin/components/settings/PrecosSettingsSection';
 import { SistemaSettingsSection } from '@/features/admin/components/settings/SistemaSettingsSection';
 import { UserProfileReadonlySection } from '@/features/admin/components/settings/UserProfileReadonlySection';
+import { ResourceManagementSection } from '@/features/admin/components/settings/ResourceManagementSection';
 
 type AbaConfiguracoes =
   | 'geral'
@@ -25,7 +26,8 @@ type AbaConfiguracoes =
   | 'cupons'
   | 'concessionarias'
   | 'notificacoes'
-  | 'sistema';
+  | 'sistema'
+  | 'cadastros';
 
 const tabs: Array<{
   id: AbaConfiguracoes;
@@ -38,6 +40,7 @@ const tabs: Array<{
   { id: 'concessionarias', label: 'Concessionarias', icon: Buildings },
   { id: 'notificacoes', label: 'Notificações', icon: Bell },
   { id: 'sistema', label: 'Sistema', icon: Gear },
+  { id: 'cadastros', label: 'Gerenciar cadastros', icon: Gear },
 ];
 
 export const ConfiguracoesPage: React.FC = () => {
@@ -51,6 +54,8 @@ export const ConfiguracoesPage: React.FC = () => {
   }
 
   const renderActiveTab = () => {
+    if (activeTab === 'cadastros')
+      return <ResourceManagementSection onTablesChanged={configuracoes.reload} />;
     if (activeTab === 'geral') {
       return (
         <GeralSettingsSection
@@ -124,7 +129,7 @@ export const ConfiguracoesPage: React.FC = () => {
           {configuracoes.saveMessage && (
             <p className="text-sm text-emerald-300">{configuracoes.saveMessage}</p>
           )}
-          <Button onClick={configuracoes.handleSalvar}>
+          <Button disabled={activeTab === 'cadastros'} onClick={configuracoes.handleSalvar}>
             <FloppyDisk className="mr-2 h-4 w-4" />
             Salvar Alterações
           </Button>

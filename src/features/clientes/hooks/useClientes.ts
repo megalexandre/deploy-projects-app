@@ -104,16 +104,7 @@ export const useClientes = () => {
     setError(null);
     try {
       const response = await customersService.getAll();
-      const detailedCustomers = await Promise.all(
-        response.map(async (customer) => {
-          try {
-            return await customersService.getById(customer.id);
-          } catch {
-            return customer;
-          }
-        }),
-      );
-      setClientes(detailedCustomers);
+      setClientes(response);
     } catch (loadError) {
       console.error('Erro ao carregar clientes:', loadError);
       setError('Não foi possível carregar os clientes cadastrados.');
@@ -281,7 +272,7 @@ export const useClientes = () => {
     setError(null);
 
     try {
-      const detailedCustomer = await customersService.getById(customer.id);
+      const detailedCustomer = await customersService.refreshDocuments(customer.id);
       setSelectedDocumentsCustomerId(detailedCustomer.id);
       setClientes((current) =>
         current.map((item) => (item.id === detailedCustomer.id ? detailedCustomer : item)),
@@ -379,6 +370,16 @@ export const useClientes = () => {
   };
 
   return {
+    async removeCustomer(customer: Customer) {
+      await customersService.remove(customer.id);
+      setClientes((items) => items.filter((item) => item.id !== customer.id));
+      if (selectedDocumentsCustomerId === customer.id) setSelectedDocumentsCustomerId(null);
+    },
+    async refreshDocuments() {
+      if (!selectedDocumentsCustomerId) return;
+      const customer = await customersService.refreshDocuments(selectedDocumentsCustomerId);
+      setClientes((items) => items.map((item) => (item.id === customer.id ? customer : item)));
+    },
     clientesFiltrados,
     clienteComDocumentosAbertos,
     loading,

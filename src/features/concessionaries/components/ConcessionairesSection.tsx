@@ -9,6 +9,8 @@ import { MagnifyingGlass, PencilSimple, PlusCircle } from '@phosphor-icons/react
 import React, { useMemo, useState } from 'react';
 import { ConcessionaireFormModal } from './ConcessionaireFormModal';
 import { useConcessionaires } from '../hooks/useConcessionaires';
+import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
+import { ConfirmActionButton } from '@/shared/components/ConfirmActionButton';
 
 interface ConcessionairesSectionProps {
   compactHeader?: boolean;
@@ -18,6 +20,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
   compactHeader = false,
 }) => {
   const ITEMS_PER_PAGE = 10;
+  const user = useCurrentUser();
   const {
     form,
     setField,
@@ -33,6 +36,7 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
     handleEdit,
     handleOpenCreateModal,
     handleCancelEdit,
+    remove,
   } = useConcessionaires();
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -137,6 +141,13 @@ export const ConcessionairesSection: React.FC<ConcessionairesSectionProps> = ({
                         <PencilSimple className="mr-2 h-4 w-4" />
                         Editar
                       </Button>
+                      {(user?.isAdmin || item.createdBy === user?.id) && (
+                        <ConfirmActionButton
+                          label="Excluir concessionária"
+                          description={`Excluir definitivamente ${item.name}? Registros vinculados podem impedir a exclusão.`}
+                          onConfirm={() => remove(item)}
+                        />
+                      )}
                     </td>
                   </tr>
                 ))}
