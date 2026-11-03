@@ -7,10 +7,11 @@ Funcionalidade: Concessionárias
     E que estou na pagina de concessionarias
 
   Cenario: Cadastrar uma nova concessionaria
-    Quando eu preencho o campo "Nome *" com "CEMIG Teste"
+    Quando eu clico em "Nova concessionária"
+    E eu preencho o campo "Nome *" com "CEMIG Teste"
     E eu preencho o campo "Sigla" com "CMG"
     E eu preencho o campo "Código" com "MG01"
-    E eu preencho o campo "Região" com "Sudeste"
+    E eu preencho o campo "Regiao" com "Sudeste"
     E eu clico em "Cadastrar Concessionária"
     Entao devo ver "CEMIG Teste" na tabela de concessionarias
 

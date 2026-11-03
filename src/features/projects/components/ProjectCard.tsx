@@ -118,7 +118,15 @@ export const ProjetoCard: React.FC<ProjetoCardProps> = ({
         </div>
 
         <div>
-          <p className="text-base font-semibold text-slate-100">{projeto.cliente.nome}</p>
+          <p className="text-sm font-semibold text-cyan-200">
+            Integrador: {projeto.dadosProjeto.integrador || 'não informado'}
+          </p>
+          <p
+            className="line-clamp-2 break-words text-base font-semibold leading-snug text-slate-100"
+            title={projeto.cliente.nome}
+          >
+            {projeto.cliente.nome}
+          </p>
           {projeto.protocoloConcessionaria && (
             <p className="mt-1 text-xs text-cyan-200">
               Protocolo da concessionária: {projeto.protocoloConcessionaria}

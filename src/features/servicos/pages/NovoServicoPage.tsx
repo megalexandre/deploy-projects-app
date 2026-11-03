@@ -6,15 +6,25 @@ import { Button } from '@/shared/components/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
+  addressService,
   concessionairesService,
   customersService,
   filesService,
   servicosService,
+  usersService,
   viaCepService,
   type Concessionaire,
   type Customer,
+  type User,
 } from '@/services';
 import type { DivisaoCreditos, Documento, Endereco, PadraoEntradaItem, TipoServico } from '@/types';
+import type {
+  ClienteForm,
+  ModoCliente,
+  Passo,
+  TipoDocumento,
+} from '@/features/projects/domain/types';
+import { Passo1Cliente } from '@/features/projects/components/form/passo1/Passo1Cliente';
 import {
   getCuponsDescontoServicosAtivos,
   loadConfiguracoesSistema,
@@ -72,12 +82,12 @@ interface DocumentoSelecionado {
 
 interface ServicoForm {
   tipo: TipoServico;
-  clienteId: string;
-  clienteNomeManual: string;
   concessionaria: string;
   dataAbertura: string;
   valor: string;
   cupomDescontoPct: string;
+  integradorId: string;
+  subsequencia: string;
   observacoes: string;
   enderecoObra: AddressForm;
   tensaoFornecimento: '' | '127/220V' | '380/220V';
@@ -143,12 +153,12 @@ const buildRateio = (): RateioForm => ({
 
 const createEmptyForm = (): ServicoForm => ({
   tipo: 'ligacao_nova',
-  clienteId: '',
-  clienteNomeManual: '',
   concessionaria: '',
   dataAbertura: new Date().toISOString().slice(0, 10),
   valor: '',
   cupomDescontoPct: '0',
+  integradorId: '',
+  subsequencia: '',
   observacoes: '',
   enderecoObra: emptyAddress(),
   tensaoFornecimento: '',
@@ -253,11 +263,39 @@ const buildSelectedDocumentFiles = (
     })),
   );
 
+const StepIndicator: React.FC<{ current: number; total: number }> = ({ current, total }) => (
+  <div className="flex items-center gap-2 pt-1">
+    {Array.from({ length: total }, (_, index) => index + 1).map((step) => (
+      <div
+        key={step}
+        className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+          current >= step ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
+        }`}
+      >
+        {step}
+      </div>
+    ))}
+  </div>
+);
+
 export const NovoServicoPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
+  const [passoAtual, setPassoAtual] = useState<Passo>(1);
+  const [modoCliente, setModoCliente] = useState<ModoCliente | null>(null);
+  const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('cpf');
+  const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
+  const [buscaCliente, setBuscaCliente] = useState('');
+  const [clienteForm, setClienteForm] = useState<ClienteForm>({
+    nome: '',
+    cpfCnpj: '',
+    telefone: '',
+    email: '',
+    endereco: emptyAddress(),
+  });
   const [clientes, setClientes] = useState<Customer[]>([]);
   const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
+  const [integradores, setIntegradores] = useState<Array<Pick<User, 'id' | 'name'>>>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -300,11 +338,54 @@ export const NovoServicoPage: React.FC = () => {
     void load();
   }, []);
 
+  useEffect(() => {
+    const loadIntegradores = async () => {
+      if (!currentUser) return;
+
+      if (!currentUser.isAdmin) {
+        const integradorAtual = {
+          id: currentUser.id,
+          name: currentUser.name.trim() || currentUser.email,
+        };
+        setIntegradores([integradorAtual]);
+        setForm((prev) => ({ ...prev, integradorId: integradorAtual.id }));
+        return;
+      }
+
+      try {
+        const users = await usersService.getAll();
+        setIntegradores(
+          users
+            .map((user) => ({ id: user.id, name: user.name.trim() || user.email }))
+            .filter((user) => user.id && user.name)
+            .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR')),
+        );
+      } catch (loadError) {
+        console.error('Erro ao carregar integradores:', loadError);
+      }
+    };
+
+    void loadIntegradores();
+  }, [currentUser]);
+
   const selectedCustomer = useMemo(
-    () => clientes.find((item) => item.id === form.clienteId) ?? null,
-    [clientes, form.clienteId],
+    () => clientes.find((item) => item.id === clienteSelecionadoId) ?? null,
+    [clienteSelecionadoId, clientes],
   );
-  const personType = useMemo(() => getPersonType(selectedCustomer), [selectedCustomer]);
+  const clientesFiltrados = useMemo(() => {
+    const query = buscaCliente.trim().toLocaleLowerCase('pt-BR');
+    if (!query) return clientes;
+
+    return clientes.filter((cliente) =>
+      [cliente.nome, cliente.cpfCnpj, cliente.telefone, cliente.email].some((value) =>
+        value.toLocaleLowerCase('pt-BR').includes(query),
+      ),
+    );
+  }, [buscaCliente, clientes]);
+  const personType = useMemo(
+    () => (modoCliente === 'novo' ? tipoDocumento : getPersonType(selectedCustomer)),
+    [modoCliente, selectedCustomer, tipoDocumento],
+  );
   const documentCategories = useMemo(
     () => buildDocumentCategories(form.tipo, personType),
     [form.tipo, personType],
@@ -343,7 +424,7 @@ export const NovoServicoPage: React.FC = () => {
 
   useEffect(() => {
     setSelectedCustomerDocumentIds([]);
-  }, [form.clienteId]);
+  }, [clienteSelecionadoId]);
 
   const fillAddressFromCep = async (
     cep: string,
@@ -372,8 +453,21 @@ export const NovoServicoPage: React.FC = () => {
     }
   };
 
+  const validarPasso1 = () => {
+    if (modoCliente === 'existente') return Boolean(clienteSelecionadoId);
+    if (modoCliente !== 'novo') return false;
+
+    const documentLength = tipoDocumento === 'cpf' ? 11 : 14;
+    return (
+      clienteForm.nome.trim().length >= 2 &&
+      onlyDigits(clienteForm.cpfCnpj).length === documentLength &&
+      onlyDigits(clienteForm.telefone).length >= 10 &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteForm.email.trim()) &&
+      isAddressValid(clienteForm.endereco)
+    );
+  };
+
   const validateForm = () => {
-    const clienteValido = form.clienteId !== '' || form.clienteNomeManual.trim().length >= 2;
     const coordenadasValidas =
       !isTechnicalType(form.tipo) ||
       (parseCoordinate(form.latitude) !== null && parseCoordinate(form.longitude) !== null);
@@ -386,7 +480,8 @@ export const NovoServicoPage: React.FC = () => {
         (item) => item.uc.trim() && item.endereco.trim() && Number(item.percentual) > 0,
       );
     return (
-      clienteValido &&
+      validarPasso1() &&
+      form.integradorId.trim() !== '' &&
       form.concessionaria.trim() !== '' &&
       form.dataAbertura.trim() !== '' &&
       valor > 0 &&
@@ -399,9 +494,9 @@ export const NovoServicoPage: React.FC = () => {
 
   const getMissingFields = () => {
     const missing: string[] = [];
-    const clienteValido = form.clienteId !== '' || form.clienteNomeManual.trim().length >= 2;
 
-    if (!clienteValido) missing.push('cliente');
+    if (!validarPasso1()) missing.push('cliente');
+    if (!form.integradorId.trim()) missing.push('integrador');
     if (!form.concessionaria.trim()) missing.push('concessionária');
     if (!form.dataAbertura.trim()) missing.push('data de abertura');
     if (valor <= 0) missing.push('valor do serviço');
@@ -456,10 +551,46 @@ export const NovoServicoPage: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
+      let clienteId = clienteSelecionadoId;
+      let clienteNome = selectedCustomer?.nome ?? '';
+
+      if (modoCliente === 'novo') {
+        const enderecoCliente = await addressService.create({
+          cep: onlyDigits(clienteForm.endereco.cep),
+          place: clienteForm.endereco.logradouro.trim(),
+          number: clienteForm.endereco.numero.trim(),
+          address: clienteForm.endereco.logradouro.trim(),
+          complement: clienteForm.endereco.complemento.trim(),
+          neighborhood: clienteForm.endereco.bairro.trim(),
+          city: clienteForm.endereco.cidade.trim(),
+          state: clienteForm.endereco.estado.trim().toLowerCase(),
+        });
+        const novoCliente = await customersService.create({
+          nome: clienteForm.nome.trim(),
+          addressId: enderecoCliente.id,
+          cpfCnpj: onlyDigits(clienteForm.cpfCnpj),
+          telefone: onlyDigits(clienteForm.telefone),
+          email: clienteForm.email.trim(),
+        });
+        clienteId = novoCliente.id;
+        clienteNome = novoCliente.nome;
+      }
+
+      if (!clienteId) {
+        setPassoAtual(1);
+        throw new Error('Selecione ou cadastre um cliente para continuar.');
+      }
+
+      const integradorSelecionado = integradores.find(
+        (integrador) => integrador.id === form.integradorId,
+      );
       const servicoCriado = await servicosService.create({
         tipo: form.tipo,
-        clienteId: form.clienteId || undefined,
-        cliente: form.clienteId ? (selectedCustomer?.nome ?? '') : form.clienteNomeManual.trim(),
+        clienteId,
+        cliente: clienteNome,
+        integradorId: form.integradorId,
+        subsequencia: form.subsequencia,
+        integradorNome: integradorSelecionado?.name,
         concessionaria: form.concessionaria,
         dataAbertura: form.dataAbertura,
         valor,
@@ -556,11 +687,10 @@ export const NovoServicoPage: React.FC = () => {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-100">Novo Serviço</h1>
-            <p className="mt-1 text-gray-400">
-              Fluxo dedicado de criação, separado da listagem, no mesmo padrão de projetos.
-            </p>
+            <p className="mt-1 text-xl text-gray-400">Passo {passoAtual} de 3</p>
           </div>
         </div>
+        <StepIndicator current={passoAtual} total={3} />
       </div>
 
       {error && (
@@ -569,119 +699,150 @@ export const NovoServicoPage: React.FC = () => {
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Etapa 1 • Dados Básicos</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Tipo de Serviço</label>
-            <select
-              value={form.tipo}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, tipo: event.target.value as TipoServico }))
-              }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
-            >
-              {tipoServicoOptions.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs text-slate-400">
-              {tipoServicoOptions.find((item) => item.value === form.tipo)?.description}
-            </p>
-          </div>
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Cliente cadastrado</label>
-            <select
-              value={form.clienteId}
-              onChange={(event) => setForm((prev) => ({ ...prev, clienteId: event.target.value }))}
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
-            >
-              <option value="">Selecionar depois / nome manual</option>
-              {clientes.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Nome do cliente</label>
-            <input
-              value={form.clienteId ? (selectedCustomer?.nome ?? '') : form.clienteNomeManual}
-              disabled={form.clienteId !== ''}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, clienteNomeManual: event.target.value }))
-              }
-              className={`${inputClass(
-                submitAttempted &&
-                  form.clienteId === '' &&
-                  form.clienteNomeManual.trim().length < 2,
-              )} disabled:opacity-60`}
+      {passoAtual === 1 && (
+        <Card>
+          <CardContent className="p-6">
+            <Passo1Cliente
+              entityLabel="Serviço"
+              modoCliente={modoCliente}
+              setModoCliente={setModoCliente}
+              tipoDocumento={tipoDocumento}
+              setTipoDocumento={setTipoDocumento}
+              clienteForm={clienteForm}
+              setClienteForm={setClienteForm}
+              clientesFiltrados={clientesFiltrados}
+              clientesLoading={false}
+              clienteSelecionadoId={clienteSelecionadoId}
+              setClienteSelecionadoId={setClienteSelecionadoId}
+              buscaCliente={buscaCliente}
+              setBuscaCliente={setBuscaCliente}
+              fillAddressFromCep={fillAddressFromCep}
+              validarPasso1={validarPasso1}
+              setPassoAtual={setPassoAtual}
+              setErro={setError}
             />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Concessionária</label>
-            <ConcessionaireSelect
-              value={form.concessionaria}
-              onChange={(value) => setForm((prev) => ({ ...prev, concessionaria: value }))}
-              concessionarias={concessionarias}
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Data de Abertura</label>
-            <input
-              type="date"
-              value={form.dataAbertura}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, dataAbertura: event.target.value }))
-              }
-              className={inputClass(submitAttempted && !form.dataAbertura.trim())}
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Custo do Serviço</label>
-            <input
-              value={form.valor}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, valor: event.target.value.replace(/[^0-9.,]/g, '') }))
-              }
-              className={inputClass(submitAttempted && valor <= 0)}
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Cupom</label>
-            <select
-              value={form.cupomDescontoPct}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, cupomDescontoPct: event.target.value }))
-              }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
-            >
-              <option value="0">Sem desconto</option>
-              {cupons.map((item) => (
-                <option key={item.id} value={String(item.percentual)}>
-                  {item.nome} ({item.percentual}%)
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3">
-            <div className="text-xs uppercase tracking-wide text-emerald-200/80">Valor final</div>
-            <div className="mt-1 text-xl font-semibold text-emerald-100">
-              {formatCurrencyBRL(valorFinal)}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {(isTechnicalType(form.tipo) || canUseRateioType(form.tipo)) && (
+      {passoAtual === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Etapa 2 • Dados Especificos</CardTitle>
+            <CardTitle>Informações Básicas do Serviço</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Tipo de Serviço</label>
+              <select
+                value={form.tipo}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, tipo: event.target.value as TipoServico }))
+                }
+                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+              >
+                {tipoServicoOptions.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-slate-400">
+                {tipoServicoOptions.find((item) => item.value === form.tipo)?.description}
+              </p>
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Integrador</label>
+              <select
+                value={form.integradorId}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, integradorId: event.target.value }))
+                }
+                disabled={currentUser?.isAdmin === false}
+                className={inputClass(submitAttempted && !form.integradorId.trim())}
+              >
+                <option value="">Selecione...</option>
+                {integradores.map((integrador) => (
+                  <option key={integrador.id} value={integrador.id}>
+                    {integrador.name}
+                  </option>
+                ))}
+              </select>
+              <label className="mt-3 block text-sm text-slate-300">
+                Subsequência (opcional)
+                <input
+                  aria-label="Subsequência"
+                  maxLength={50}
+                  value={form.subsequencia}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, subsequencia: event.target.value }))
+                  }
+                  className={inputClass(false)}
+                />
+              </label>
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Concessionária</label>
+              <ConcessionaireSelect
+                value={form.concessionaria}
+                onChange={(value) => setForm((prev) => ({ ...prev, concessionaria: value }))}
+                concessionarias={concessionarias}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Data de Abertura</label>
+              <input
+                type="date"
+                value={form.dataAbertura}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, dataAbertura: event.target.value }))
+                }
+                className={inputClass(submitAttempted && !form.dataAbertura.trim())}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Custo do Serviço</label>
+              <input
+                value={form.valor}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    valor: event.target.value.replace(/[^0-9.,]/g, ''),
+                  }))
+                }
+                className={inputClass(submitAttempted && valor <= 0)}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Cupom</label>
+              <select
+                value={form.cupomDescontoPct}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, cupomDescontoPct: event.target.value }))
+                }
+                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+              >
+                <option value="0">Sem desconto</option>
+                {cupons.map((item) => (
+                  <option key={item.id} value={String(item.percentual)}>
+                    {item.nome} ({item.percentual}%)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3">
+              <div className="text-xs uppercase tracking-wide text-emerald-200/80">Valor final</div>
+              <div className="mt-1 text-xl font-semibold text-emerald-100">
+                {formatCurrencyBRL(valorFinal)}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {passoAtual === 2 && (isTechnicalType(form.tipo) || canUseRateioType(form.tipo)) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Dados Específicos</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {isTechnicalType(form.tipo) && (
@@ -695,7 +856,10 @@ export const NovoServicoPage: React.FC = () => {
                     onClick={() =>
                       setForm((prev) => ({
                         ...prev,
-                        enderecoObra: normalizeAddressFromCustomer(selectedCustomer),
+                        enderecoObra:
+                          modoCliente === 'novo'
+                            ? { ...clienteForm.endereco }
+                            : normalizeAddressFromCustomer(selectedCustomer),
                       }))
                     }
                   >
@@ -1229,105 +1393,128 @@ export const NovoServicoPage: React.FC = () => {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Etapa 3 • Observações e Uploads</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Observações / Comentários</label>
-            <textarea
-              value={form.observacoes}
-              rows={4}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, observacoes: event.target.value }))
+      {passoAtual === 2 && (
+        <div className="flex items-center justify-between">
+          <Button type="button" variant="outline" onClick={() => setPassoAtual(1)}>
+            Voltar
+          </Button>
+          <Button
+            type="button"
+            onClick={() => {
+              setSubmitAttempted(true);
+              const missingFields = getMissingFields();
+              if (missingFields.length > 0 || !validateForm()) {
+                setError(`Preencha os campos obrigatórios: ${missingFields.join(', ')}.`);
+                return;
               }
-              className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
-            />
-          </div>
-          {selectedCustomer && selectedCustomer.documentos.length > 0 && (
-            <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-100">
-                    Reaproveitar documentos do cliente
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {selectedCustomer.nome} já possui {selectedCustomer.documentos.length}{' '}
-                    documento(s) cadastrado(s).
-                  </p>
-                </div>
-                <span className="rounded-full bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-200">
-                  {reusedDocuments.length} selecionado(s)
-                </span>
-              </div>
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                {selectedCustomer.documentos.map((documento) => (
-                  <label
-                    key={documento.id}
-                    className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCustomerDocumentIds.includes(documento.id)}
-                      onChange={(event) =>
-                        setSelectedCustomerDocumentIds((current) =>
-                          event.target.checked
-                            ? [...current, documento.id]
-                            : current.filter((id) => id !== documento.id),
-                        )
-                      }
-                      className="mt-1"
-                    />
-                    <span>
-                      <strong className="block text-slate-100">{documento.nome}</strong>
-                      <span className="block text-xs text-slate-400">{documento.tipo}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
+              setError(null);
+              setPassoAtual(3);
+            }}
+          >
+            Próximo Passo
+          </Button>
+        </div>
+      )}
+
+      {passoAtual === 3 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Observações e Uploads</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <label className="mb-2 block text-sm text-slate-300">Observações / Comentários</label>
+              <textarea
+                value={form.observacoes}
+                rows={4}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, observacoes: event.target.value }))
+                }
+                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+              />
             </div>
-          )}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {documentCategories.map((item) => (
-              <label
-                key={item.key}
-                className="cursor-pointer rounded-xl border border-dashed border-white/20 bg-slate-900/40 px-4 py-5 text-center hover:border-cyan-300/50"
-              >
-                <div className="text-sm font-medium text-slate-100">{item.label}</div>
-                <div className="mt-2 text-xs text-slate-400">
-                  {(uploadedFiles[item.key] ?? []).length > 0
-                    ? `${(uploadedFiles[item.key] ?? []).length} arquivo(s) selecionado(s)`
-                    : item.maxFiles
-                      ? `Selecionar até ${item.maxFiles} arquivos`
-                      : 'Selecionar arquivo'}
+            {selectedCustomer && selectedCustomer.documentos.length > 0 && (
+              <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-100">
+                      Reaproveitar documentos do cliente
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {selectedCustomer.nome} já possui {selectedCustomer.documentos.length}{' '}
+                      documento(s) cadastrado(s).
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-200">
+                    {reusedDocuments.length} selecionado(s)
+                  </span>
                 </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  multiple={Boolean(item.maxFiles && item.maxFiles > 1)}
-                  onChange={(event) => handleFilesChange(item.key, event.target.files)}
-                />
-              </label>
-            ))}
-          </div>
-          <div className="flex justify-end gap-3">
-            <Link to="/servicos">
-              <Button type="button" variant="outline">
-                Cancelar
+                <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {selectedCustomer.documentos.map((documento) => (
+                    <label
+                      key={documento.id}
+                      className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCustomerDocumentIds.includes(documento.id)}
+                        onChange={(event) =>
+                          setSelectedCustomerDocumentIds((current) =>
+                            event.target.checked
+                              ? [...current, documento.id]
+                              : current.filter((id) => id !== documento.id),
+                          )
+                        }
+                        className="mt-1"
+                      />
+                      <span>
+                        <strong className="block text-slate-100">{documento.nome}</strong>
+                        <span className="block text-xs text-slate-400">{documento.tipo}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {documentCategories.map((item) => (
+                <label
+                  key={item.key}
+                  className="cursor-pointer rounded-xl border border-dashed border-white/20 bg-slate-900/40 px-4 py-5 text-center hover:border-cyan-300/50"
+                >
+                  <div className="text-sm font-medium text-slate-100">{item.label}</div>
+                  <div className="mt-2 text-xs text-slate-400">
+                    {(uploadedFiles[item.key] ?? []).length > 0
+                      ? `${(uploadedFiles[item.key] ?? []).length} arquivo(s) selecionado(s)`
+                      : item.maxFiles
+                        ? `Selecionar até ${item.maxFiles} arquivos`
+                        : 'Selecionar arquivo'}
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    multiple={Boolean(item.maxFiles && item.maxFiles > 1)}
+                    onChange={(event) => handleFilesChange(item.key, event.target.files)}
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-between gap-3">
+              <Button type="button" variant="outline" onClick={() => setPassoAtual(2)}>
+                Voltar
               </Button>
-            </Link>
-            <Button
-              type="button"
-              loading={saving}
-              onClick={(event) => void handleSubmit(event as unknown as React.FormEvent)}
-            >
-              <FloppyDisk className="mr-2 h-4 w-4" />
-              Criar serviço
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <Button
+                type="button"
+                loading={saving}
+                onClick={(event) => void handleSubmit(event as unknown as React.FormEvent)}
+              >
+                <FloppyDisk className="mr-2 h-4 w-4" />
+                Criar serviço
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

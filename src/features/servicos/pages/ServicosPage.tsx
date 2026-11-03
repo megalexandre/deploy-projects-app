@@ -62,6 +62,7 @@ interface RateioForm {
 }
 
 interface ServicoForm {
+  subsequencia: string;
   tipo: TipoServico;
   clienteId: string;
   clienteNomeManual: string;
@@ -120,6 +121,7 @@ const buildRateio = (): RateioForm => ({
 });
 
 const createEmptyForm = (): ServicoForm => ({
+  subsequencia: '',
   tipo: 'ligacao_nova',
   clienteId: '',
   clienteNomeManual: '',
@@ -364,6 +366,7 @@ export const ServicosPage: React.FC = () => {
         ? (kanban.servicos.find((item) => item.id === editingId)?.documentos ?? [])
         : [];
       const payload = {
+        subsequencia: form.subsequencia,
         tipo: form.tipo,
         clienteId: form.clienteId || undefined,
         cliente: form.clienteId ? (selectedCustomer?.nome ?? '') : form.clienteNomeManual.trim(),

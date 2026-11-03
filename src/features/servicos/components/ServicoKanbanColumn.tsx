@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Buildings, MapPinLine } from '@phosphor-icons/react';
 import { formatCurrencyBRL } from '@/core/utils/masks';
 import { Card, CardContent } from '@/shared/components/Card';
+import { LogoAvatar } from '@/shared/components/LogoAvatar';
 import { ViewButton } from '@/shared/components/ViewButton';
-import type { Endereco, Servico, StatusServico } from '@/types';
+import type { Endereco, StatusServico } from '@/types';
+import { serviceIdentifier } from '../domain/serviceIdentifier';
 import { servicosService } from '../services/servicosService';
+import type { ServicoKanbanCard } from '../hooks/useServicosKanban';
 import {
   DEFAULT_VISIBLE_SERVICES,
   getTipoLabel,
@@ -14,7 +17,7 @@ import {
 type ServiceColumn = { status: StatusServico; etapa: string };
 
 type ServicoCardProps = {
-  servico: Servico;
+  servico: ServicoKanbanCard;
   draggedId: string | null;
   canManageStatus: boolean;
   onDragStart: (id: string, event: React.DragEvent<HTMLDivElement>) => void;
@@ -24,7 +27,7 @@ type ServicoCardProps = {
 
 type ServicoKanbanColumnProps = {
   column: ServiceColumn;
-  servicos: Servico[];
+  servicos: ServicoKanbanCard[];
   draggedId: string | null;
   canManageStatus: boolean;
   onDragStart: (id: string, event: React.DragEvent<HTMLDivElement>) => void;
@@ -80,6 +83,7 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
   onDragEnd,
   onStatusChange,
 }) => {
+  const identifier = serviceIdentifier(servico);
   const detailValue =
     servico.tipo === 'alteracao_compartilhamento_credito'
       ? `UC Geradora: ${servico.ucGeradora || '-'}`
@@ -106,16 +110,21 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#a9c7ff]">
-              ID {servico.protocolo}
+              ID {identifier}
             </div>
-            <h4 className="mt-1 text-xl font-bold leading-tight text-slate-100">{servico.nome}</h4>
+            <h4 className="mt-1 text-xl font-bold leading-tight text-slate-100">
+              {getTipoLabel(servico.tipo)}
+            </h4>
           </div>
-          <div className="shrink-0 rounded-lg border border-white/10 bg-slate-950/45 px-2.5 py-2 text-xs font-semibold uppercase tracking-wide text-cyan-200">
-            {getTipoLabel(servico.tipo)}
+          <div className="shrink-0 rounded-lg border border-white/10 bg-slate-950/45 p-2">
+            <LogoAvatar src={servico.concessionariaLogo} name={servico.concessionaria} size="lg" />
           </div>
         </div>
 
         <div>
+          <p className="text-sm font-semibold text-cyan-200">
+            Integrador: {servico.integradorNome || 'não informado'}
+          </p>
           <p className="text-base font-semibold text-slate-100">{servico.cliente}</p>
         </div>
 

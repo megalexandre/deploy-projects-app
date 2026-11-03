@@ -37,6 +37,7 @@ export type StatusAprovacaoServico = 'pending' | 'approved' | 'rejected' | 'not_
 export interface Servico {
   id: string;
   protocolo: string;
+  subsequencia?: string;
   tipo: TipoServico;
   nome: string;
   clienteId?: string;
@@ -65,6 +66,8 @@ export interface Servico {
   precisaAprovacao?: boolean;
   documentos: Documento[];
   timeline: TimelineItem[];
+  integradorId?: string;
+  integradorNome?: string;
   createdBy?: string;
   updatedBy?: string;
   dataCriacao: string;

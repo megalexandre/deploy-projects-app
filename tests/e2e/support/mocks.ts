@@ -55,6 +55,21 @@ const MOCK_CONCESSIONAIRES = [
 ];
 
 export const setupAuthMocks = async (page: Page) => {
+  await page.addInitScript(() => {
+    (globalThis as unknown as { __APP_ENV__: Record<string, string> }).__APP_ENV__ = {
+      VITE_API_BASE_URL: '/api',
+      VITE_AUTH_TOKEN_STORAGE_KEY: 'auth_token',
+    };
+  });
+  for (const resource of ['customers', 'services', 'price_tables', 'concessionaires']) {
+    await page.route(`**/api/${resource}/paginate*`, (route) =>
+      route.fulfill({
+        json: { content: [], totalPages: 1, totalElements: 0, number: 0, size: 100, last: true },
+      }),
+    );
+  }
+  await page.route('**/api/auth/users', (route) => route.fulfill({ json: [ADMIN_USER] }));
+
   await page.route('**/api/auth/login', (route) =>
     route.fulfill({ json: { token: 'mock-token', type: 'Bearer' } }),
   );
@@ -74,6 +89,21 @@ export const setupConcessionnaireMocks = async (page: Page) => {
     const method = route.request().method();
 
     if (method === 'GET') {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith('/paginate')) {
+        const limit = Number(url.searchParams.get('limit') || 20);
+        const page = Number(url.searchParams.get('page') || 1);
+        return route.fulfill({
+          json: {
+            content: list.slice((page - 1) * limit, page * limit),
+            totalElements: list.length,
+            totalPages: Math.max(1, Math.ceil(list.length / limit)),
+            size: limit,
+            number: page - 1,
+            last: page * limit >= list.length,
+          },
+        });
+      }
       return route.fulfill({ json: list });
     }
 

@@ -46,6 +46,7 @@ type RateioForm = {
 };
 
 type ServicoForm = {
+  subsequencia: string;
   tipo: TipoServico;
   clienteId: string;
   clienteNomeManual: string;
@@ -233,6 +234,18 @@ export const ServicoFormCard: React.FC<ServicoFormCardProps> = ({
           </div>
           <div>
             <label className="mb-2 block text-sm text-slate-300">Data de Abertura</label>
+            <label className="mb-2 block text-sm text-slate-300">
+              Subsequência (opcional)
+              <input
+                aria-label="Subsequência"
+                maxLength={50}
+                value={form.subsequencia}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, subsequencia: event.target.value }))
+                }
+                className="block w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+              />
+            </label>
             <input
               type="date"
               value={form.dataAbertura}

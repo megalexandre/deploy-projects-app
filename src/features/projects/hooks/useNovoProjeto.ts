@@ -1002,6 +1002,10 @@ export const useNovoProjeto = (options: UseNovoProjetoOptions = {}) => {
           tipo,
           clienteId: projectData.clientId,
           cliente: projectData.nomeCliente ?? '',
+          integradorId: projectData.integrator,
+          integradorNome:
+            usuariosIntegradores.find((usuario) => usuario.id === projectData.integrator)?.name ||
+            projetoSalvo.dadosProjeto.integrador,
           concessionaria: projectData.utilityCompany,
           dataAbertura: projectData.dataAbertura ?? dataAtualIso,
           valor: valorServico,

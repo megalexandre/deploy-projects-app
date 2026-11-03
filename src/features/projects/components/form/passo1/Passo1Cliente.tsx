@@ -13,6 +13,7 @@ import { NovoClienteForm } from './NovoClienteForm';
 import { SelectionCard } from '../SelectionCard';
 
 interface Passo1ClienteProps {
+  entityLabel?: string;
   modoCliente: ModoCliente | null;
   setModoCliente: (v: ModoCliente) => void;
   tipoDocumento: TipoDocumento;
@@ -35,6 +36,7 @@ interface Passo1ClienteProps {
 }
 
 export const Passo1Cliente: React.FC<Passo1ClienteProps> = ({
+  entityLabel = 'Projeto',
   modoCliente,
   setModoCliente,
   tipoDocumento,
@@ -53,7 +55,7 @@ export const Passo1Cliente: React.FC<Passo1ClienteProps> = ({
   setErro,
 }) => (
   <div className="space-y-6 page-enter">
-    <h2 className="text-2xl font-bold text-gray-100">Cliente do Projeto</h2>
+    <h2 className="text-2xl font-bold text-gray-100">Cliente do {entityLabel}</h2>
 
     <div className="rounded-lg border border-gray-700 p-4 space-y-4">
       <h3 className="text-lg font-semibold text-gray-100">Tipo de cliente</h3>
@@ -67,7 +69,7 @@ export const Passo1Cliente: React.FC<Passo1ClienteProps> = ({
             setErro(null);
           }}
           title="Novo cliente"
-          description="Cadastrar cliente e criar projeto em seguida."
+          description={`Cadastrar cliente e criar ${entityLabel.toLocaleLowerCase('pt-BR')} em seguida.`}
         />
         <SelectionCard
           active={modoCliente === 'existente'}

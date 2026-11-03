@@ -20,11 +20,16 @@ import { filesService } from '@/shared/api/filesService';
 import { concessionairesService } from '@/features/concessionaries/services/concessionairesService';
 import { customersService } from '@/features/clientes/services/customersService';
 import { getSessionUser } from '@/shared/session/sessionUser';
+import { getAllPages } from '@/shared/api/pagination';
+import { clearAllRequestCaches } from '@/shared/api/requestCache';
 
 export interface CreateServicoPayload {
+  subsequencia?: string;
   tipo: TipoServico;
   cliente: string;
   clienteId?: string;
+  integradorId?: string;
+  integradorNome?: string;
   concessionaria: string;
   dataAbertura: string;
   valor: number;
@@ -62,6 +67,8 @@ type ServiceEnhancement = {
   clienteNome?: string;
   concessionariaNome?: string;
   precisaAprovacao?: boolean;
+  integradorId?: string;
+  integradorNome?: string;
 };
 
 type DocumentCategories = Record<string, string>;
@@ -117,6 +124,28 @@ const SERVICE_TYPE_LABELS: Record<TipoServico, string> = {
 };
 
 const normalizeText = (value?: string) => value?.trim() ?? '';
+
+const normalizeServiceType = (value: unknown): TipoServico => {
+  const normalized = asString(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+
+  const aliases: Record<string, TipoServico> = {
+    ligacao_nova: 'ligacao_nova',
+    aumento_carga: 'aumento_carga',
+    aumento_de_carga: 'aumento_carga',
+    troca_titularidade: 'troca_titularidade',
+    troca_de_titularidade: 'troca_titularidade',
+    alteracao_compartilhamento_credito: 'alteracao_compartilhamento_credito',
+    alteracao_no_compartilhamento_de_credito: 'alteracao_compartilhamento_credito',
+  };
+
+  return aliases[normalized] ?? 'ligacao_nova';
+};
 
 const cloneEndereco = (endereco?: Endereco | null): Endereco | undefined =>
   endereco
@@ -351,8 +380,10 @@ const normalizeCoordinates = (value: unknown): Servico['coordenadas'] | undefine
     return undefined;
   }
 
-  const latitude = asString(value.latitude);
-  const longitude = asString(value.longitude);
+  const latitude =
+    typeof value.latitude === 'number' ? String(value.latitude) : asString(value.latitude);
+  const longitude =
+    typeof value.longitude === 'number' ? String(value.longitude) : asString(value.longitude);
   if (!latitude || !longitude) {
     return undefined;
   }
@@ -388,6 +419,8 @@ const buildServiceEnhancement = (
     pontoReferencia: normalizeText(payload.pontoReferencia) || undefined,
     clienteNome: normalizeText(payload.cliente) || undefined,
     concessionariaNome: normalizeText(payload.concessionaria) || undefined,
+    integradorId: normalizeText(payload.integradorId) || undefined,
+    integradorNome: normalizeText(payload.integradorNome) || undefined,
     precisaAprovacao,
   };
 };
@@ -413,9 +446,11 @@ const normalizeServiceFromApi = (
   const valorFinal = Math.max(valor - valor * (cupomDescontoPct / 100), 0);
   const customerId = asString(service.customer_id) || undefined;
   const concessionariaId = asString(service.concessionaire_id) || undefined;
+  const createdBy = asString(service.created_by) || undefined;
   const protocolo =
     asString(service.protocol) || enhancement?.protocolo || buildStableProtocol(id, dataCriacao);
   const documentCategories = parseJson<DocumentCategories>(service.document_category, {});
+  const tipo = normalizeServiceType(service.service_type);
   const documentos = (
     refs.documentsByServiceId?.get(id) ?? normalizeDocumentos(enhancement?.documentos)
   ).map((documento) => ({
@@ -426,8 +461,9 @@ const normalizeServiceFromApi = (
   return {
     id,
     protocolo,
-    tipo: (asString(service.service_type) as TipoServico) || 'ligacao_nova',
-    nome: SERVICE_TYPE_LABELS[(asString(service.service_type) as TipoServico) || 'ligacao_nova'],
+    subsequencia: asString(service.subsequence) || undefined,
+    tipo,
+    nome: SERVICE_TYPE_LABELS[tipo],
     clienteId: customerId,
     concessionariaId: concessionariaId,
     cliente:
@@ -505,7 +541,14 @@ const normalizeServiceFromApi = (
         service.approval_status,
         enhancement?.precisaAprovacao ? 'pending' : 'not_required',
       ) === 'pending',
-    createdBy: asString(service.created_by) || undefined,
+    integradorId:
+      asString(service.integrator_id) ||
+      asString(service.integrator) ||
+      enhancement?.integradorId ||
+      createdBy ||
+      undefined,
+    integradorNome: asString(service.integrator_name) || enhancement?.integradorNome || undefined,
+    createdBy,
     updatedBy: asString(service.updated_by) || undefined,
     dataCriacao,
     dataAtualizacao,
@@ -688,6 +731,11 @@ const buildApiPayload = async (
 
   return {
     service_type: payload.tipo ?? asString(current?.service_type),
+    subsequence:
+      payload.subsequencia !== undefined
+        ? payload.subsequencia.trim() || null
+        : current?.subsequence,
+    integrator: payload.integradorId ?? current?.integrator,
     customer_id: customerId,
     concessionaire_id: concessionaireId,
     opening_date: payload.dataAbertura ?? asString(current?.opening_date),
@@ -737,6 +785,37 @@ const getServiceRaw = async (id: string): Promise<RawServiceRecord> => {
 };
 
 export const servicosService = {
+  async remove(id: string): Promise<void> {
+    await apiClient.delete(`/services/${id}`);
+    const enhancements = serviceEnhancementStorage.read();
+    delete enhancements[id];
+    serviceEnhancementStorage.write(enhancements);
+    clearAllRequestCaches();
+  },
+
+  async removeDirectDocuments(id: string): Promise<Servico> {
+    const service = await servicosService.getById(id);
+    const direct = await filesService.listByItem(id);
+    await filesService.removeByItem(id);
+    const remaining = await filesService.listByItem(id);
+    const removed = new Set(
+      direct
+        .filter((file) => !remaining.some((item) => item.id === file.id))
+        .map((file) => file.id),
+    );
+    return servicosService.saveDocuments(
+      id,
+      service.documentos.filter((doc) => !removed.has(doc.fileId || doc.id)),
+    );
+  },
+
+  async removeDocument(id: string, fileId: string): Promise<Servico> {
+    const service = await servicosService.getById(id);
+    const direct = await filesService.listByItem(id);
+    if (direct.some((file) => file.id === fileId)) await filesService.remove(fileId);
+    const remaining = service.documentos.filter((doc) => (doc.fileId || doc.id) !== fileId);
+    return servicosService.saveDocuments(id, remaining);
+  },
   statusFlow: SERVICE_STATUS_FLOW,
   typeLabels: SERVICE_TYPE_LABELS,
 
@@ -767,7 +846,7 @@ export const servicosService = {
       options.includeAddresses === false ? lightweightServicesListCache : fullServicesListCache;
 
     return cache.get(async () => {
-      const response = await apiClient.get<unknown[]>('/services');
+      const response = await getAllPages<unknown>('/services');
       const records = Array.isArray(response)
         ? response.map((item) => (isRecord(item) ? item : {}))
         : [];

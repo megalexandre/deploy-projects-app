@@ -9,6 +9,9 @@ import {
   UploadSimple,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
+import { ConfirmActionButton } from '@/shared/components/ConfirmActionButton';
+import { DocumentRemoveButton } from '@/shared/components/DocumentRemoveButton';
+import { serviceIdentifier } from '../domain/serviceIdentifier';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
@@ -16,10 +19,12 @@ import {
   customersService,
   filesService,
   servicosService,
+  usersService,
   type Concessionaire,
   type Customer,
+  type User,
 } from '@/services';
-import type { Documento, Servico, StatusServico } from '@/types';
+import type { Documento, Endereco, Servico, StatusServico } from '@/types';
 import {
   getCuponsDescontoServicosAtivos,
   loadConfiguracoesSistema,
@@ -40,6 +45,7 @@ const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
 };
 
 interface EditForm {
+  subsequencia: string;
   clienteId: string;
   clienteNomeManual: string;
   concessionaria: string;
@@ -71,6 +77,16 @@ const formatDate = (value?: string) => {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('pt-BR');
 };
 
+const formatAddress = (address?: Endereco) => {
+  if (!address) return '-';
+
+  const street = [address.logradouro, address.numero].filter(Boolean).join(', ');
+  const city = [address.cidade, address.estado].filter(Boolean).join('/');
+  return [street, address.complemento, address.bairro, city, address.cep]
+    .filter(Boolean)
+    .join(' - ');
+};
+
 const handleDownload = async (fileId?: string) => {
   if (!fileId) {
     return;
@@ -87,6 +103,7 @@ const getStatusLabel = (status: StatusServico) =>
   servicosService.statusFlow.find((item) => item.status === status)?.etapa ?? status;
 
 const buildForm = (servico: Servico): EditForm => ({
+  subsequencia: servico.subsequencia ?? '',
   clienteId: servico.clienteId ?? '',
   clienteNomeManual: servico.clienteId ? '' : servico.cliente,
   concessionaria: servico.concessionaria,
@@ -111,6 +128,7 @@ export const ServicoDetailPage: React.FC = () => {
   const [servico, setServico] = useState<Servico | null>(null);
   const [clientes, setClientes] = useState<Customer[]>([]);
   const [concessionarias, setConcessionarias] = useState<Concessionaire[]>([]);
+  const [users, setUsers] = useState<Array<Pick<User, 'id' | 'name'>>>([]);
   const [form, setForm] = useState<EditForm | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -139,14 +157,16 @@ export const ServicoDetailPage: React.FC = () => {
     const load = async () => {
       setLoading(true);
       try {
-        const [serviceData, customersData, utilitiesData] = await Promise.all([
+        const [serviceData, customersData, utilitiesData, usersData] = await Promise.all([
           servicosService.getById(id),
           customersService.getAll().catch(() => []),
           concessionairesService.getAll().catch(() => []),
+          currentUser?.isAdmin ? usersService.getAll().catch(() => []) : Promise.resolve([]),
         ]);
         setServico(serviceData);
         setClientes(customersData);
         setConcessionarias(utilitiesData);
+        setUsers(usersData);
         setForm(buildForm(serviceData));
       } catch (loadError) {
         console.error('Erro ao carregar serviço:', loadError);
@@ -156,7 +176,7 @@ export const ServicoDetailPage: React.FC = () => {
       }
     };
     void load();
-  }, [id]);
+  }, [currentUser?.isAdmin, id]);
 
   const selectedCustomer = useMemo(
     () => clientes.find((item) => item.id === form?.clienteId) ?? null,
@@ -169,6 +189,17 @@ export const ServicoDetailPage: React.FC = () => {
       ),
     [selectedCustomer?.documentos, selectedCustomerDocumentIds],
   );
+  const integradorNome = useMemo(() => {
+    if (!servico) return 'Não informado';
+    if (servico.integradorNome) return servico.integradorNome;
+
+    const integradorId = servico.integradorId || servico.createdBy;
+    if (currentUser?.id === integradorId) {
+      return currentUser?.name || currentUser?.email || 'Não informado';
+    }
+
+    return users.find((user) => user.id === integradorId)?.name || 'Não informado';
+  }, [currentUser, servico, users]);
 
   useEffect(() => {
     if (
@@ -195,6 +226,7 @@ export const ServicoDetailPage: React.FC = () => {
     try {
       const valor = Number(form.valor.replace(',', '.')) || 0;
       const updated = await servicosService.update(servico.id, {
+        subsequencia: form.subsequencia,
         clienteId: form.clienteId || undefined,
         cliente: form.clienteId
           ? (selectedCustomer?.nome ?? servico.cliente)
@@ -290,7 +322,17 @@ export const ServicoDetailPage: React.FC = () => {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">{servico.protocolo}</h1>
+            <h1 className="text-3xl font-bold text-gray-100">{serviceIdentifier(servico)}</h1>
+            {(currentUser?.isAdmin || servico.createdBy === currentUser?.id) && (
+              <ConfirmActionButton
+                label="Excluir serviço"
+                description={`Excluir definitivamente o serviço ${serviceIdentifier(servico)}? Registros vinculados podem impedir a exclusão.`}
+                onConfirm={async () => {
+                  await servicosService.remove(servico.id);
+                  navigate('/servicos');
+                }}
+              />
+            )}
             <p className="mt-1 text-gray-400">
               {servico.nome} • {servico.cliente}
             </p>
@@ -335,6 +377,14 @@ export const ServicoDetailPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
+                <label className="text-sm font-medium text-gray-400">Tipo de Serviço</label>
+                <p className="text-gray-100">{servico.nome}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-400">Integrador</label>
+                <p className="text-gray-100">{integradorNome}</p>
+              </div>
+              <div>
                 <label className="text-sm font-medium text-gray-400">Cliente</label>
                 <p className="text-gray-100">{servico.cliente}</p>
               </div>
@@ -345,6 +395,14 @@ export const ServicoDetailPage: React.FC = () => {
               <div>
                 <label className="text-sm font-medium text-gray-400">Data de Abertura</label>
                 <p className="text-gray-100">{formatDate(servico.dataAbertura)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-400">Valor do serviço</label>
+                <p className="text-gray-100">{formatCurrencyBRL(servico.valor)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-400">Desconto</label>
+                <p className="text-gray-100">{servico.cupomDescontoPct}%</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-400">Valor final</label>
@@ -364,6 +422,10 @@ export const ServicoDetailPage: React.FC = () => {
               {isTechnicalType(servico.tipo) && (
                 <>
                   <div>
+                    <label className="text-sm font-medium text-gray-400">Endereço da obra</label>
+                    <p className="text-gray-100">{formatAddress(servico.enderecoObra)}</p>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium text-gray-400">Tensão</label>
                     <p className="text-gray-100">{servico.tensaoFornecimento || '-'}</p>
                   </div>
@@ -379,13 +441,27 @@ export const ServicoDetailPage: React.FC = () => {
                     <label className="text-sm font-medium text-gray-400">Ponto de Referência</label>
                     <p className="text-gray-100">{servico.pontoReferencia || '-'}</p>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-400">Distância do padrão</label>
+                    <p className="text-gray-100">
+                      {servico.padraoMaisDe30m === 'sim' ? 'Acima de 30 metros' : 'Até 30 metros'}
+                    </p>
+                  </div>
                 </>
               )}
               {isRateioType(servico.tipo) && (
-                <div>
-                  <label className="text-sm font-medium text-gray-400">UC Geradora</label>
-                  <p className="text-gray-100">{servico.ucGeradora || '-'}</p>
-                </div>
+                <>
+                  <div>
+                    <label className="text-sm font-medium text-gray-400">UC Geradora</label>
+                    <p className="text-gray-100">{servico.ucGeradora || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-400">
+                      Endereço da geradora
+                    </label>
+                    <p className="text-gray-100">{formatAddress(servico.enderecoGeradora)}</p>
+                  </div>
+                </>
               )}
               <div>
                 <label className="text-sm font-medium text-gray-400">Última Atualização</label>
@@ -393,6 +469,78 @@ export const ServicoDetailPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
+          {isTechnicalType(servico.tipo) && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Itens do Padrão de Entrada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(servico.padraoEntradaItens ?? []).length === 0 ? (
+                  <p className="text-gray-400">Nenhum item cadastrado.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                      <thead>
+                        <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
+                          <th className="px-4 py-3">Ligação</th>
+                          <th className="px-4 py-3">Classificação</th>
+                          <th className="px-4 py-3">Quantidade</th>
+                          <th className="px-4 py-3">Disjuntor</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {(servico.padraoEntradaItens ?? []).map((item) => (
+                          <tr key={item.id} className="text-sm text-gray-200">
+                            <td className="px-4 py-3">{item.tipoLigacao || '-'}</td>
+                            <td className="px-4 py-3">{item.classificacao || '-'}</td>
+                            <td className="px-4 py-3">{item.quantidade}</td>
+                            <td className="px-4 py-3">{item.disjuntor || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {isRateioType(servico.tipo) && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Rateio das Beneficiárias</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(servico.rateios ?? []).length === 0 ? (
+                  <p className="text-gray-400">Nenhum rateio cadastrado.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                      <thead>
+                        <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
+                          <th className="px-4 py-3">UC</th>
+                          <th className="px-4 py-3">Endereço</th>
+                          <th className="px-4 py-3">Classe</th>
+                          <th className="px-4 py-3">Percentual</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {(servico.rateios ?? []).map((item, index) => (
+                          <tr key={`${item.uc}-${index}`} className="text-sm text-gray-200">
+                            <td className="px-4 py-3">{item.uc || '-'}</td>
+                            <td className="px-4 py-3">{item.endereco || '-'}</td>
+                            <td className="px-4 py-3">{item.classe || '-'}</td>
+                            <td className="px-4 py-3">{item.percentual}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
@@ -433,6 +581,16 @@ export const ServicoDetailPage: React.FC = () => {
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
               <CardTitle>Documentos</CardTitle>
+              {currentUser?.isAdmin && servico.documentos.length > 0 && (
+                <ConfirmActionButton
+                  label="Excluir arquivos enviados"
+                  description="Excluir definitivamente os arquivos enviados diretamente para este serviço? Os arquivos reaproveitados do cliente serão preservados."
+                  onConfirm={async () => {
+                    setServico(await servicosService.removeDirectDocuments(servico.id));
+                    setSelectedCustomerDocumentIds([]);
+                  }}
+                />
+              )}
               <label className="inline-flex cursor-pointer items-center rounded-lg border border-white/15 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-cyan-300/50">
                 <UploadSimple className="mr-2 h-4 w-4" />
                 {savingDocuments ? 'Enviando...' : 'Adicionar documentos'}
@@ -542,6 +700,20 @@ export const ServicoDetailPage: React.FC = () => {
                           >
                             Download
                           </Button>
+                          <DocumentRemoveButton
+                            itemId={servico.id}
+                            document={documento}
+                            canUnlink={
+                              currentUser?.isAdmin || servico.createdBy === currentUser?.id
+                            }
+                            onRemove={(fileId) =>
+                              servicosService.removeDocument(servico.id, fileId)
+                            }
+                            onRemoved={async () => {
+                              setSelectedCustomerDocumentIds([]);
+                              setServico(await servicosService.getById(servico.id));
+                            }}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -560,6 +732,16 @@ export const ServicoDetailPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-6">
+              <label className="block text-sm text-slate-300">
+                Subsequência
+                <input
+                  aria-label="Subsequência"
+                  maxLength={50}
+                  value={form.subsequencia}
+                  onChange={(event) => setForm({ ...form, subsequencia: event.target.value })}
+                  className="mt-2 block rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                />
+              </label>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div>
                   <label className="mb-2 block text-sm text-slate-300">Cliente cadastrado</label>
