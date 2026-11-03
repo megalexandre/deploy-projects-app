@@ -1,4 +1,5 @@
 import { ApiError, apiClient, resolveErrorMessage } from './apiClient';
+import { createKeyedRequestCache } from './requestCache';
 
 export interface UploadedFileResponse {
   id: string;
@@ -6,6 +7,8 @@ export interface UploadedFileResponse {
   urlS3: string;
   size: number;
   createdAt?: string;
+  createdBy?: string;
+  itemId?: string;
 }
 
 type BackendUploadResponse = {
@@ -14,9 +17,12 @@ type BackendUploadResponse = {
   url_s3?: string;
   size?: number;
   created_at?: string;
+  created_by?: string;
+  item_id?: string;
 };
 
 const FILES_ENDPOINT = '/uploads';
+const listCache = createKeyedRequestCache<UploadedFileResponse[]>(5_000);
 
 const normalizeUpload = (payload: BackendUploadResponse): UploadedFileResponse => ({
   id: payload.id ?? crypto.randomUUID(),
@@ -24,9 +30,23 @@ const normalizeUpload = (payload: BackendUploadResponse): UploadedFileResponse =
   urlS3: payload.url_s3 ?? '',
   size: typeof payload.size === 'number' ? payload.size : 0,
   createdAt: payload.created_at,
+  createdBy: payload.created_by,
+  itemId: payload.item_id,
 });
 
 export const filesService = {
+  async remove(id: string): Promise<void> {
+    await apiClient.delete(`${FILES_ENDPOINT}/${id}`);
+    listCache.invalidate();
+  },
+
+  async removeByItem(itemId: string) {
+    const result = await apiClient.delete<{ deleted: number }>(
+      `${FILES_ENDPOINT}/by_item/${itemId}`,
+    );
+    listCache.invalidate(itemId);
+    return result;
+  },
   async uploadFiles(itemId: string, files: File[]): Promise<UploadedFileResponse[]> {
     if (files.length === 0) {
       return [];
@@ -38,6 +58,7 @@ export const filesService = {
     files.forEach((file) => formData.append('files[]', file));
 
     const payload = await apiClient.post<BackendUploadResponse[]>(FILES_ENDPOINT, formData);
+    listCache.invalidate(itemId);
 
     return Array.isArray(payload)
       ? payload.map((item) => normalizeUpload(item as BackendUploadResponse))
@@ -45,13 +66,12 @@ export const filesService = {
   },
 
   async listByItem(itemId: string): Promise<UploadedFileResponse[]> {
-    const payload = await apiClient.get<BackendUploadResponse[]>(FILES_ENDPOINT, {
-      query: { item_id: itemId },
+    return listCache.get(itemId, async () => {
+      const payload = await apiClient.get<BackendUploadResponse[]>(FILES_ENDPOINT, {
+        query: { item_id: itemId },
+      });
+      return Array.isArray(payload) ? payload.map(normalizeUpload) : [];
     });
-
-    return Array.isArray(payload)
-      ? payload.map((item) => normalizeUpload(item as BackendUploadResponse))
-      : [];
   },
 
   async downloadFile(fileId: string) {
