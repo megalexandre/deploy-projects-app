@@ -100,6 +100,24 @@ const backendService = {
 };
 
 describe('servicosService', () => {
+  it('salva somente identificador e subsequente e os recupera do backend', async () => {
+    let persisted = { ...backendService, subsequence: 'A' as string | null };
+    vi.mocked(apiClient.get).mockImplementation(async () => persisted);
+    vi.mocked(apiClient.patch).mockImplementation(async (_url, payload) => {
+      persisted = { ...persisted, ...(payload as typeof persisted) };
+      return persisted;
+    });
+    const updated = await servicosService.updateIdentifier('service-1', '123', 'AB');
+    expect(apiClient.patch).toHaveBeenCalledWith('/services/service-1', {
+      protocol: '123',
+      subsequence: 'AB',
+    });
+    expect(updated.protocolo).toBe('123');
+    expect(updated.subsequencia).toBe('AB');
+    await servicosService.updateIdentifier('service-1', '123', '');
+    expect(persisted.subsequence).toBeNull();
+    expect((await servicosService.getById('service-1')).subsequencia).toBeUndefined();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();

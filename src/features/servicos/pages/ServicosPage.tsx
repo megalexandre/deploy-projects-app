@@ -607,6 +607,13 @@ export const ServicosPage: React.FC = () => {
         <div className="flex min-w-max snap-x snap-mandatory items-start gap-4">
           {kanban.visibleStatusColumns.map((column) => (
             <ServicoKanbanColumn
+              onServiceUpdated={(updated) =>
+                kanban.setServicos((current) =>
+                  current.map((service) =>
+                    service.id === updated.id ? { ...service, ...updated } : service,
+                  ),
+                )
+              }
               key={column.status}
               column={column}
               servicos={kanban.groupedServicos[column.status]}

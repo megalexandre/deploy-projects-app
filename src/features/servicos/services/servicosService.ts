@@ -785,6 +785,15 @@ const getServiceRaw = async (id: string): Promise<RawServiceRecord> => {
 };
 
 export const servicosService = {
+  async updateIdentifier(id: string, protocol: string, subsequence: string): Promise<Servico> {
+    await apiClient.patch(`/services/${id}`, {
+      protocol: protocol.trim(),
+      subsequence: subsequence || null,
+    });
+    invalidateServicesListCaches();
+    updateServiceEnhancement(id, (current) => ({ ...current, protocolo: protocol.trim() }));
+    return servicosService.getById(id);
+  },
   async remove(id: string): Promise<void> {
     await apiClient.delete(`/services/${id}`);
     const enhancements = serviceEnhancementStorage.read();

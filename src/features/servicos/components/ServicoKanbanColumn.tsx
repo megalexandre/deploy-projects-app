@@ -4,7 +4,8 @@ import { formatCurrencyBRL } from '@/core/utils/masks';
 import { Card, CardContent } from '@/shared/components/Card';
 import { LogoAvatar } from '@/shared/components/LogoAvatar';
 import { ViewButton } from '@/shared/components/ViewButton';
-import type { Endereco, StatusServico } from '@/types';
+import type { Endereco, Servico, StatusServico } from '@/types';
+import { EditServiceIdentifierDialog } from './EditServiceIdentifierDialog';
 import { serviceIdentifier } from '../domain/serviceIdentifier';
 import { servicosService } from '../services/servicosService';
 import type { ServicoKanbanCard } from '../hooks/useServicosKanban';
@@ -17,6 +18,7 @@ import {
 type ServiceColumn = { status: StatusServico; etapa: string };
 
 type ServicoCardProps = {
+  onServiceUpdated: (service: Servico) => void;
   servico: ServicoKanbanCard;
   draggedId: string | null;
   canManageStatus: boolean;
@@ -26,6 +28,7 @@ type ServicoCardProps = {
 };
 
 type ServicoKanbanColumnProps = {
+  onServiceUpdated: (service: Servico) => void;
   column: ServiceColumn;
   servicos: ServicoKanbanCard[];
   draggedId: string | null;
@@ -82,7 +85,9 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
   onDragStart,
   onDragEnd,
   onStatusChange,
+  onServiceUpdated,
 }) => {
+  const [editingIdentifier, setEditingIdentifier] = useState(false);
   const identifier = serviceIdentifier(servico);
   const detailValue =
     servico.tipo === 'alteracao_compartilhamento_credito'
@@ -92,7 +97,7 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
   return (
     <div
       data-no-drag-scroll="true"
-      draggable={canManageStatus}
+      draggable={canManageStatus && !editingIdentifier}
       onDragStart={(event) => {
         if (!canManageStatus) return;
         onDragStart(servico.id, event);
@@ -109,9 +114,31 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
       <div className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#a9c7ff]">
-              ID {identifier}
-            </div>
+            {canManageStatus ? (
+              <button
+                type="button"
+                aria-label={`Editar identificador do serviço ${identifier}`}
+                title="Editar identificador"
+                data-no-drag-scroll="true"
+                className="text-left text-xs font-bold uppercase tracking-[0.2em] text-[#a9c7ff] transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-cyan-300"
+                onPointerDown={(event) => event.stopPropagation()}
+                onMouseDown={(event) => event.stopPropagation()}
+                onDragStart={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setEditingIdentifier(true);
+                }}
+              >
+                ID {identifier}
+              </button>
+            ) : (
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#a9c7ff]">
+                ID {identifier}
+              </div>
+            )}
             <h4 className="mt-1 text-xl font-bold leading-tight text-slate-100">
               {getTipoLabel(servico.tipo)}
             </h4>
@@ -143,6 +170,17 @@ const ServicoCard: React.FC<ServicoCardProps> = ({
         </p>
       </div>
 
+      {editingIdentifier && (
+        <EditServiceIdentifierDialog
+          service={servico}
+          onClose={() => setEditingIdentifier(false)}
+          onSaved={(updated) => {
+            onServiceUpdated(updated);
+            setEditingIdentifier(false);
+          }}
+        />
+      )}
+
       <div className="mt-auto flex items-center gap-2 border-t border-white/10 bg-black/10 p-3">
         <ServicoStatusSelect
           serviceId={servico.id}
@@ -166,6 +204,7 @@ export const ServicoKanbanColumn: React.FC<ServicoKanbanColumnProps> = ({
   onDragEnd,
   onDrop,
   onStatusChange,
+  onServiceUpdated,
 }) => {
   const [showAll, setShowAll] = useState(false);
   const visibleServicos = showAll ? servicos : servicos.slice(0, DEFAULT_VISIBLE_SERVICES);
@@ -204,6 +243,7 @@ export const ServicoKanbanColumn: React.FC<ServicoKanbanColumnProps> = ({
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onStatusChange={onStatusChange}
+              onServiceUpdated={onServiceUpdated}
             />
           ))}
 
