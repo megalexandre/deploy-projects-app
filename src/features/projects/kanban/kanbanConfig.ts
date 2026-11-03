@@ -59,13 +59,13 @@ export const columns: Array<{ id: KanbanStatus; label: string; className: string
     className: 'border-white/10 bg-sky-900/20',
   },
   {
-    id: 'obras_concessionaria',
-    label: 'Obras da Concessionária',
+    id: 'projeto_aprovado',
+    label: 'Projeto Aprovado',
     className: 'border-white/10 bg-sky-900/20',
   },
   {
-    id: 'projeto_aprovado',
-    label: 'Projeto Aprovado',
+    id: 'obras_concessionaria',
+    label: 'Obras da Concessionária',
     className: 'border-white/10 bg-sky-900/20',
   },
   {
