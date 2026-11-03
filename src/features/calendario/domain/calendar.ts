@@ -12,6 +12,9 @@ export type FiltroAgenda = 'todos' | OrigemAgenda;
 export interface EventoManual {
   id: string;
   projectId?: string;
+  serviceId?: string;
+  status?: string;
+  updatedAt?: string;
   titulo: string;
   data: string;
   hora: string;
@@ -24,6 +27,7 @@ export interface EventoManual {
 export interface AgendaItem {
   id: string;
   projectId?: string;
+  serviceId?: string;
   origem: OrigemAgenda;
   subtipo?: TipoEventoManual;
   titulo: string;
@@ -97,123 +101,126 @@ export const getLocalServico = (servico: Servico) => {
   return servico.concessionaria || 'Local não informado';
 };
 
+export const isTerminalAgendaStatus = (status: string) =>
+  ['projeto_encerrado', 'projeto_cancelado', 'servico_encerrado', 'servico_cancelado'].includes(
+    status,
+  );
+
+export const localDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+export const getAgendaRange = (
+  date: Date,
+  mode: 'mes' | 'semana' | 'dia',
+  day: number | null,
+  today = new Date(),
+) => {
+  if (mode === 'mes')
+    return {
+      from: localDateKey(new Date(date.getFullYear(), date.getMonth(), 1)),
+      to: localDateKey(new Date(date.getFullYear(), date.getMonth() + 1, 0)),
+    };
+  const focus = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    day ??
+      (date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth()
+        ? today.getDate()
+        : 1),
+  );
+  if (mode === 'dia') return { from: localDateKey(focus), to: localDateKey(focus) };
+  const start = new Date(focus);
+  start.setDate(start.getDate() - start.getDay());
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return { from: localDateKey(start), to: localDateKey(end) };
+};
+
+export const filterAgendaPeriod = (
+  items: AgendaItem[],
+  range: { from: string; to: string },
+  origin: FiltroAgenda,
+) =>
+  items
+    .filter(
+      (item) =>
+        item.data >= range.from &&
+        item.data <= range.to &&
+        (origin === 'todos' || item.origem === origin),
+    )
+    .sort(
+      (left, right) =>
+        `${left.data}T${left.hora}`.localeCompare(`${right.data}T${right.hora}`) ||
+        left.id.localeCompare(right.id),
+    );
+
 export const buildAgendaItems = (
   eventosManuais: EventoManual[],
   projetos: Projeto[],
   servicos: Servico[],
 ): AgendaItem[] => {
-  const eventos = eventosManuais.map((item) => ({
-    id: item.id,
-    projectId: item.projectId,
-    origem: 'evento' as const,
-    subtipo: item.tipo,
-    titulo: item.titulo,
-    data: item.data,
-    hora: item.hora,
-    local: item.local,
-    descricao: item.descricao,
-    participantes: item.participantes,
-  }));
+  const projectsById = new Map(projetos.map((project) => [project.id, project]));
+  const servicesById = new Map(servicos.map((service) => [service.id, service]));
+  const latestDeadline = new Map<string, EventoManual>();
+  const key = (event: EventoManual) =>
+    event.projectId
+      ? `projeto:${event.projectId}`
+      : event.serviceId
+        ? `servico:${event.serviceId}`
+        : '';
+  for (const event of eventosManuais) {
+    if (event.tipo !== 'status_deadline' || !key(event)) continue;
+    const previous = latestDeadline.get(key(event));
+    const updated = Date.parse(event.updatedAt ?? '') || 0;
+    const previousUpdated = Date.parse(previous?.updatedAt ?? '') || 0;
+    if (
+      !previous ||
+      updated > previousUpdated ||
+      (updated === previousUpdated && event.id > previous.id)
+    )
+      latestDeadline.set(key(event), event);
+  }
 
-  const projetosAgenda = projetos.flatMap((projeto) => {
-    const baseTitulo = `Projeto ${projeto.protocolo} - ${projeto.cliente.nome}`;
-    const local = getLocalProjeto(projeto);
-    const timeline = Array.isArray(projeto.timeline) ? projeto.timeline : [];
-
-    const itensTimeline: AgendaItem[] = timeline
-      .map<AgendaItem | null>((item) => {
-        const parsed = extractDateAndTime(item.data);
-        if (!parsed) {
-          return null;
-        }
-
-        return {
-          id: `projeto-${projeto.id}-timeline-${item.id}`,
-          projectId: projeto.id,
-          origem: 'projeto' as const,
-          titulo: `${baseTitulo} - ${item.etapa}`,
-          data: parsed.data,
-          hora: parsed.hora,
-          local,
-          descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-          participantes: ['Equipe de Projetos'],
-        };
-      })
-      .filter((item): item is AgendaItem => item !== null);
-
-    if (itensTimeline.length > 0) {
-      return itensTimeline;
+  // Status histories remain on the entity's timeline, never as appointments.
+  return eventosManuais.flatMap<AgendaItem>((event) => {
+    let origem: OrigemAgenda = 'evento';
+    if (event.tipo === 'status_deadline') {
+      if (latestDeadline.get(key(event)) !== event) return [];
+      const entity = event.projectId
+        ? projectsById.get(event.projectId)
+        : servicesById.get(event.serviceId ?? '');
+      if (!entity || isTerminalAgendaStatus(entity.status) || event.status !== entity.status)
+        return [];
+      const lastTransition = Math.max(
+        0,
+        ...(entity.timeline ?? []).map((item) => Date.parse(item.data) || 0),
+      );
+      // A return to the same status must not resurrect a deadline from an older visit.
+      if (
+        lastTransition &&
+        (!event.updatedAt ||
+          Date.parse(event.updatedAt) < lastTransition ||
+          !Number.isFinite(Date.parse(event.updatedAt)))
+      )
+        return [];
+      origem = event.projectId ? 'projeto' : 'servico';
     }
-
-    const parsedCriacao = extractDateAndTime(projeto.dataCriacao);
-    if (!parsedCriacao) {
-      return [];
-    }
-
     return [
       {
-        id: `projeto-${projeto.id}-criacao`,
-        projectId: projeto.id,
-        origem: 'projeto' as const,
-        titulo: `${baseTitulo} - Cadastro do projeto`,
-        data: parsedCriacao.data,
-        hora: parsedCriacao.hora,
-        local,
-        descricao: 'Projeto cadastrado no sistema.',
-        participantes: ['Equipe de Projetos'],
+        id: event.id,
+        projectId: event.projectId,
+        serviceId: event.serviceId,
+        origem,
+        subtipo: event.tipo,
+        titulo: event.titulo,
+        data: event.data,
+        hora: event.hora,
+        local: event.local,
+        descricao: event.descricao,
+        participantes: event.participantes,
       },
     ];
   });
-
-  const servicosAgenda = servicos.flatMap((servico) => {
-    const baseTitulo = `${servico.nome} - ${servico.cliente}`;
-    const local = getLocalServico(servico);
-    const timeline = Array.isArray(servico.timeline) ? servico.timeline : [];
-
-    const itensTimeline: AgendaItem[] = timeline
-      .map<AgendaItem | null>((item) => {
-        const parsed = extractDateAndTime(item.data);
-        if (!parsed) {
-          return null;
-        }
-
-        return {
-          id: `servico-${servico.id}-timeline-${item.id}`,
-          origem: 'servico' as const,
-          titulo: `${baseTitulo} - ${item.etapa}`,
-          data: parsed.data,
-          hora: parsed.hora,
-          local,
-          descricao: item.descricao || `Etapa ${item.etapa} (${item.status})`,
-          participantes: ['Equipe de Serviços'],
-        };
-      })
-      .filter((item): item is AgendaItem => item !== null);
-
-    if (itensTimeline.length > 0) {
-      return itensTimeline;
-    }
-
-    const parsedAbertura = extractDateAndTime(servico.dataAbertura || servico.dataCriacao);
-    if (!parsedAbertura) {
-      return [];
-    }
-
-    return [
-      {
-        id: `servico-${servico.id}-abertura`,
-        origem: 'servico' as const,
-        titulo: `${baseTitulo} - Abertura do serviço`,
-        data: parsedAbertura.data,
-        hora: parsedAbertura.hora,
-        local,
-        descricao: servico.observacoes || 'Serviço cadastrado no sistema.',
-        participantes: ['Equipe de Serviços'],
-      },
-    ];
-  });
-
-  return [...eventos, ...projetosAgenda, ...servicosAgenda];
 };
 
 export const getDaysInMonth = (date: Date) => {
@@ -237,8 +244,6 @@ export const formatDateBR = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR');
 
 export const getTipoColor = (item: AgendaItem) => {
-  if (item.origem === 'projeto') return 'bg-blue-900/50 text-blue-300 border-blue-700';
-  if (item.origem === 'servico') return 'bg-green-900/50 text-green-300 border-green-700';
   if (item.subtipo === 'status_deadline') {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -248,6 +253,8 @@ export const getTipoColor = (item: AgendaItem) => {
     if (daysRemaining <= 3) return 'bg-yellow-900/50 text-yellow-200 border-yellow-700';
     return 'bg-cyan-900/50 text-cyan-200 border-cyan-700';
   }
+  if (item.origem === 'projeto') return 'bg-blue-900/50 text-blue-300 border-blue-700';
+  if (item.origem === 'servico') return 'bg-green-900/50 text-green-300 border-green-700';
   if (item.subtipo === 'manutencao') return 'bg-yellow-900/50 text-yellow-300 border-yellow-700';
   if (item.subtipo === 'reuniao') return 'bg-purple-900/50 text-purple-300 border-purple-700';
   if (item.subtipo === 'vistoria') return 'bg-cyan-900/50 text-cyan-300 border-cyan-700';
@@ -255,12 +262,12 @@ export const getTipoColor = (item: AgendaItem) => {
 };
 
 export const getTipoIcon = (item: AgendaItem) => {
+  if (item.subtipo === 'status_deadline') return 'PZ';
   if (item.origem === 'projeto') return 'PR';
   if (item.origem === 'servico') return 'SV';
   if (item.subtipo === 'manutencao') return 'MN';
   if (item.subtipo === 'reuniao') return 'RE';
   if (item.subtipo === 'vistoria') return 'VS';
-  if (item.subtipo === 'status_deadline') return 'PZ';
   return 'IN';
 };
 

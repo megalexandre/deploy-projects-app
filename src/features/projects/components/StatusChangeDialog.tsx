@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/shared/components/Button';
 import { getStatusLabel, type KanbanStatus } from '../kanban/kanbanConfig';
+import { isTerminalAgendaStatus } from '@/features/calendario/domain/calendar';
 
 type PendingStatusChange = {
   projectId: string;
@@ -34,6 +35,7 @@ export const StatusChangeDialog: React.FC<Props> = ({
 }) => {
   const cancellation = pendingStatusChange.nextStatus === 'projeto_cancelado';
   const reasonMissing = cancellation && !statusComment.trim();
+  const needsDeadline = !isTerminalAgendaStatus(pendingStatusChange.nextStatus);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
@@ -61,30 +63,32 @@ export const StatusChangeDialog: React.FC<Props> = ({
           />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="block text-sm text-slate-300">
-            <span className="mb-2 block font-medium">Data inicial do status</span>
-            <input
-              type="date"
-              value={statusStartDate}
-              onChange={(event) => onStartDateChange(event.target.value)}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
-              required
-            />
-          </label>
-          <label className="block text-sm text-slate-300">
-            <span className="mb-2 block font-medium">Prazo em dias</span>
-            <input
-              type="number"
-              min={1}
-              value={statusDurationDays}
-              onChange={(event) => onDurationDaysChange(Number(event.target.value))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
-              required
-            />
-          </label>
-        </div>
-        {statusStartDate && statusDurationDays > 0 && (
+        {needsDeadline && (
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="block text-sm text-slate-300">
+              <span className="mb-2 block font-medium">Data inicial do status</span>
+              <input
+                type="date"
+                value={statusStartDate}
+                onChange={(event) => onStartDateChange(event.target.value)}
+                className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
+                required
+              />
+            </label>
+            <label className="block text-sm text-slate-300">
+              <span className="mb-2 block font-medium">Prazo em dias</span>
+              <input
+                type="number"
+                min={1}
+                value={statusDurationDays}
+                onChange={(event) => onDurationDaysChange(Number(event.target.value))}
+                className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
+                required
+              />
+            </label>
+          </div>
+        )}
+        {needsDeadline && statusStartDate && statusDurationDays > 0 && (
           <p className="mt-3 text-sm text-cyan-200">
             Vencimento:{' '}
             {new Date(
@@ -110,9 +114,10 @@ export const StatusChangeDialog: React.FC<Props> = ({
             loading={updatingStatus}
             disabled={
               reasonMissing ||
-              !statusStartDate ||
-              !Number.isInteger(statusDurationDays) ||
-              statusDurationDays < 1
+              (needsDeadline &&
+                (!statusStartDate ||
+                  !Number.isInteger(statusDurationDays) ||
+                  statusDurationDays < 1))
             }
             onClick={onConfirm}
           >

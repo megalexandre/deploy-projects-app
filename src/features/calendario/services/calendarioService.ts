@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/apiClient';
-import type { TipoEventoManual } from '../domain/calendar';
+import { isTerminalAgendaStatus, localDateKey, type TipoEventoManual } from '../domain/calendar';
 
 export interface CalendarEventContent {
   title: string;
@@ -9,6 +9,7 @@ export interface CalendarEventContent {
   description?: string;
   type?: TipoEventoManual | 'status_deadline';
   status?: string;
+  service_id?: string;
   start_date?: string;
   duration_days?: number;
 }
@@ -52,12 +53,13 @@ export const calendarioService = {
     startDate: string,
     durationDays: number,
   ) => {
+    if (isTerminalAgendaStatus(status)) return null;
     const deadline = new Date(`${startDate}T00:00:00`);
     deadline.setDate(deadline.getDate() + durationDays);
 
     const payload: CalendarEventPayload = {
       project_id: projectId,
-      date: deadline.toISOString().slice(0, 10),
+      date: localDateKey(deadline),
       content: {
         title: `Vencimento: ${statusLabel} — ${projectLabel}`,
         time: '09:00',
@@ -72,12 +74,7 @@ export const calendarioService = {
     };
     const events = await calendarioService.list();
     const existing = events
-      .filter(
-        (event) =>
-          event.project_id === projectId &&
-          event.content.type === 'status_deadline' &&
-          event.content.status === status,
-      )
+      .filter((event) => event.project_id === projectId && event.content.type === 'status_deadline')
       .sort((left, right) => right.updated_at.localeCompare(left.updated_at))[0];
 
     return existing

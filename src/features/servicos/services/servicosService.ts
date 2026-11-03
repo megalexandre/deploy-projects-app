@@ -55,6 +55,7 @@ export interface UpdateServicoPayload extends Partial<CreateServicoPayload> {
 type RawServiceRecord = Record<string, unknown>;
 
 export interface ServiceListOptions {
+  forceRefresh?: boolean;
   includeAddresses?: boolean;
 }
 
@@ -862,7 +863,7 @@ export const servicosService = {
       const refs = await loadReferenceData(records, options);
 
       return sortByDate(records.map((record) => normalizeServiceFromApi(record, refs)));
-    });
+    }, options.forceRefresh);
   },
 
   async getById(id: string): Promise<Servico> {

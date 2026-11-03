@@ -21,6 +21,7 @@ const PROJECTS_ENDPOINT = '/projects';
 const projectsBaseCache = createRequestCache<Project[]>(30_000);
 
 type ProjectListOptions = {
+  forceRefresh?: boolean;
   includeProjectAddresses?: boolean;
 };
 
@@ -316,7 +317,7 @@ export const projectsService = {
     const projects = await projectsBaseCache.get(async () => {
       const response = await apiClient.get<unknown[]>(PROJECTS_ENDPOINT);
       return extractDataFromList(response).map(normalizeProjeto).map(mergeProjectEnhancement);
-    });
+    }, options.forceRefresh);
     const projectsWithAddresses =
       options.includeProjectAddresses !== false
         ? await enrichProjectsWithProjectAddresses(projects)

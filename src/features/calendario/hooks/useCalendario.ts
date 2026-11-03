@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { projectsService, servicosService } from '@/services';
 import type { Projeto, Servico } from '@/types';
 import {
@@ -7,6 +7,9 @@ import {
   CURRENT_MONTH,
   CURRENT_YEAR,
   formatDateBR,
+  filterAgendaPeriod,
+  getAgendaRange,
+  localDateKey,
   type AgendaItem,
   type EventoManual,
   type FiltroAgenda,
@@ -16,6 +19,9 @@ import { calendarioService, type CalendarEvent } from '../services/calendarioSer
 const calendarEventToManual = (event: CalendarEvent): EventoManual => ({
   id: event.id,
   projectId: event.project_id ?? undefined,
+  serviceId: event.content.service_id,
+  status: event.content.status,
+  updatedAt: event.updated_at,
   titulo: event.content.title || 'Evento',
   tipo: event.content.type || 'reuniao',
   data: event.date,
@@ -24,16 +30,6 @@ const calendarEventToManual = (event: CalendarEvent): EventoManual => ({
   participantes: event.content.participants || [],
   descricao: event.content.description || '',
 });
-
-const getMonthRange = (date: Date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const from = new Date(year, month, 1);
-  const to = new Date(year, month + 1, 0);
-  const format = (value: Date) =>
-    `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
-  return { from: format(from), to: format(to) };
-};
 
 export const useCalendario = () => {
   const [projetos, setProjetos] = useState<Projeto[]>([]);
@@ -49,42 +45,53 @@ export const useCalendario = () => {
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [savingEvent, setSavingEvent] = useState(false);
   const [novoEvento, setNovoEvento] = useState(createEmptyEventoForm());
+  const revision = useRef(0);
+  const { from, to } = getAgendaRange(selectedDate, viewMode, selectedDayFilter);
 
   useEffect(() => {
+    let disposed = false;
+    let running = false;
     const loadAgenda = async () => {
+      if (running || disposed) return;
+      running = true;
+      const requestRevision = revision.current;
       setLoadingProjetos(true);
       try {
-        const [projectsData, servicesData] = await Promise.all([
-          projectsService.getProjetos(),
-          servicosService.list(),
+        const [projectsData, servicesData, events] = await Promise.all([
+          projectsService.getProjetos({ forceRefresh: true, includeProjectAddresses: false }),
+          servicosService.list({ forceRefresh: true, includeAddresses: false }),
+          // Read all persisted events so an old deadline cannot reappear when
+          // the newest deadline for that entity was moved to another month.
+          calendarioService.list(),
         ]);
+        if (disposed || requestRevision !== revision.current) return;
         setProjetos(projectsData);
         setServicos(servicesData);
+        setEventosManuais(events.map(calendarEventToManual));
         setErroProjetos(null);
       } catch (error) {
         console.error('Erro ao carregar agenda para o calendario:', error);
-        setErroProjetos('Não foi possível carregar projetos e serviços.');
+        if (!disposed) setErroProjetos('Não foi possível atualizar os dados do calendário.');
       } finally {
-        setLoadingProjetos(false);
+        running = false;
+        if (!disposed) setLoadingProjetos(false);
       }
     };
 
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void loadAgenda();
+    };
     void loadAgenda();
-  }, []);
-
-  useEffect(() => {
-    const loadCalendarEvents = async () => {
-      try {
-        const events = await calendarioService.list(getMonthRange(selectedDate));
-        setEventosManuais(events.map(calendarEventToManual));
-      } catch (error) {
-        console.error('Erro ao carregar eventos persistidos:', error);
-        setErroProjetos('Não foi possível carregar os eventos do calendário.');
-      }
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    const timer = window.setInterval(refreshWhenVisible, 60_000);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
-
-    void loadCalendarEvents();
-  }, [selectedDate]);
+  }, [from, to]);
 
   const agendaItems = useMemo<AgendaItem[]>(
     () => buildAgendaItems(eventosManuais, projetos, servicos),
@@ -95,6 +102,7 @@ export const useCalendario = () => {
     const nextDate = new Date(selectedDate);
     if (direction === 'prev') nextDate.setMonth(nextDate.getMonth() - 1);
     else nextDate.setMonth(nextDate.getMonth() + 1);
+    setSelectedDayFilter(null);
     setSelectedDate(nextDate);
   };
 
@@ -167,6 +175,7 @@ export const useCalendario = () => {
       const saved = editingEventId
         ? await calendarioService.update(editingEventId, payload)
         : await calendarioService.create(payload);
+      revision.current += 1;
       const normalized = calendarEventToManual(saved);
       setEventosManuais((current) =>
         editingEventId
@@ -188,6 +197,7 @@ export const useCalendario = () => {
     setSavingEvent(true);
     try {
       await calendarioService.remove(eventId);
+      revision.current += 1;
       setEventosManuais((current) => current.filter((item) => item.id !== eventId));
       if (editingEventId === eventId) {
         resetNovoEvento();
@@ -205,20 +215,23 @@ export const useCalendario = () => {
   };
 
   const agendaFiltradaOrdenada = useMemo(
+    () => filterAgendaPeriod(agendaItems, { from, to }, filtroAgenda),
+    [agendaItems, filtroAgenda, from, to],
+  );
+  const today = localDateKey(new Date());
+  const selectedDay =
+    selectedDayFilter === null
+      ? null
+      : localDateKey(
+          new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDayFilter),
+        );
+  const agendaLista = useMemo(
     () =>
-      [...agendaItems]
-        .filter((item) => filtroAgenda === 'todos' || item.origem === filtroAgenda)
-        .filter((item) => {
-          if (selectedDayFilter === null) return true;
-          const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDayFilter).padStart(2, '0')}`;
-          return item.data === dateStr;
-        })
-        .sort(
-          (left, right) =>
-            new Date(`${left.data}T${left.hora}`).getTime() -
-            new Date(`${right.data}T${right.hora}`).getTime(),
-        ),
-    [agendaItems, filtroAgenda, selectedDate, selectedDayFilter],
+      agendaFiltradaOrdenada.filter((item) => {
+        if (viewMode !== 'mes') return true;
+        return selectedDay ? item.data === selectedDay : item.data >= today;
+      }),
+    [agendaFiltradaOrdenada, viewMode, selectedDay, today],
   );
 
   return {
@@ -234,6 +247,7 @@ export const useCalendario = () => {
     editingEventId,
     savingEvent,
     agendaFiltradaOrdenada,
+    agendaLista,
     setViewMode,
     setFiltroAgenda,
     setSelectedDayFilter,

@@ -43,6 +43,7 @@ export const CalendarioPage: React.FC = () => {
     editingEventId,
     savingEvent,
     agendaFiltradaOrdenada,
+    agendaLista,
     setViewMode,
     setFiltroAgenda,
     setSelectedDayFilter,
@@ -404,63 +405,80 @@ export const CalendarioPage: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            {selectedDayFilter !== null
-              ? `Agenda do dia ${formatDateFromDay(selectedDayFilter)}`
-              : 'Proximos Itens da Agenda'}
+            {viewMode === 'semana'
+              ? 'Itens da semana'
+              : viewMode === 'dia'
+                ? 'Itens do dia'
+                : selectedDayFilter !== null
+                  ? `Agenda do dia ${formatDateFromDay(selectedDayFilter)}`
+                  : 'Próximos itens do mês'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {agendaFiltradaOrdenada.slice(0, selectedDayFilter !== null ? 50 : 8).map((item) => (
-              <div key={item.id} className="flex items-start space-x-4 p-4 bg-gray-800 rounded-lg">
-                <div className={`p-2 rounded-lg ${getTipoColor(item)}`}>
-                  <span className="text-xs font-semibold">{getTipoIcon(item)}</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-100">{item.titulo}</h3>
-                  <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-400">
-                    <div className="flex items-center">
-                      <CalendarIcon className="h-4 w-4 mr-1" />
-                      {formatDateBR(item.data)}
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {item.hora}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {item.local}
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {item.participantes.length} participantes
-                    </div>
-                    <span className="px-2 py-1 rounded-full text-xs border border-gray-600 text-gray-300">
-                      {getOrigemLabel(item.origem)}
-                    </span>
+            {agendaLista
+              .slice(0, selectedDayFilter !== null || viewMode !== 'mes' ? 50 : 8)
+              .map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start space-x-4 p-4 bg-gray-800 rounded-lg"
+                >
+                  <div className={`p-2 rounded-lg ${getTipoColor(item)}`}>
+                    <span className="text-xs font-semibold">{getTipoIcon(item)}</span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">{item.descricao || 'Sem descrição.'}</p>
-                </div>
-                {item.projectId ? (
-                  <Link to={`/projetos/${item.projectId}`}>
-                    <Button variant="outline" size="sm">
-                      Ver projeto
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-100">{item.titulo}</h3>
+                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-400">
+                      <div className="flex items-center">
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        {formatDateBR(item.data)}
+                      </div>
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {item.hora}
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {item.local}
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1" />
+                        {item.participantes.length} participantes
+                      </div>
+                      <span className="px-2 py-1 rounded-full text-xs border border-gray-600 text-gray-300">
+                        {getOrigemLabel(item.origem)}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-300">
+                      {item.descricao || 'Sem descrição.'}
+                    </p>
+                  </div>
+                  {item.projectId ? (
+                    <Link to={`/projetos/${item.projectId}`}>
+                      <Button variant="outline" size="sm">
+                        Ver projeto
+                      </Button>
+                    </Link>
+                  ) : item.serviceId ? (
+                    <Link to={`/servicos/${item.serviceId}`}>
+                      <Button variant="outline" size="sm">
+                        Ver serviço
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button variant="outline" size="sm" disabled>
+                      Evento
                     </Button>
-                  </Link>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    Evento
-                  </Button>
-                )}
-                {item.origem === 'evento' && item.subtipo !== 'status_deadline' && (
-                  <Button variant="outline" size="sm" onClick={() => openEventForEdit(item)}>
-                    <PencilSimple className="mr-2 h-4 w-4" />
-                    Editar
-                  </Button>
-                )}
-              </div>
-            ))}
-            {agendaFiltradaOrdenada.length === 0 && (
+                  )}
+                  {item.origem === 'evento' && item.subtipo !== 'status_deadline' && (
+                    <Button variant="outline" size="sm" onClick={() => openEventForEdit(item)}>
+                      <PencilSimple className="mr-2 h-4 w-4" />
+                      Editar
+                    </Button>
+                  )}
+                </div>
+              ))}
+            {agendaLista.length === 0 && (
               <div className="p-4 bg-gray-800 rounded-lg text-gray-400">
                 Nenhum item encontrado para o filtro selecionado.
               </div>

@@ -105,4 +105,45 @@ describe('calendarioService', () => {
       expect.objectContaining({ date: '2027-01-04' }),
     );
   });
+
+  it('reutiliza prazo da etapa anterior sem criar outro evento ou apagar compromissos', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue([
+      {
+        id: 'old-deadline',
+        project_id: 'project-1',
+        updated_at: '2026-11-01T12:00:00Z',
+        content: { type: 'status_deadline', status: 'em_analise_concessionaria' },
+      },
+      {
+        id: 'manual',
+        project_id: 'project-1',
+        updated_at: '2026-11-02T12:00:00Z',
+        content: { type: 'reuniao' },
+      },
+    ]);
+    vi.mocked(apiClient.patch).mockResolvedValue({});
+    await calendarioService.saveStatusDeadline(
+      'project-1',
+      '123',
+      'projeto_aprovado',
+      'Projeto aprovado',
+      '2026-11-03',
+      5,
+    );
+    expect(apiClient.patch).toHaveBeenCalledWith(
+      '/calendar_events/old-deadline',
+      expect.objectContaining({ content: expect.objectContaining({ status: 'projeto_aprovado' }) }),
+    );
+    expect(apiClient.post).not.toHaveBeenCalled();
+    expect(apiClient.delete).not.toHaveBeenCalled();
+  });
+
+  it.each(['projeto_cancelado', 'projeto_encerrado'])('não cria prazo para %s', async (status) => {
+    expect(
+      await calendarioService.saveStatusDeadline('project-1', '123', status, status, '', 0),
+    ).toBeNull();
+    expect(apiClient.get).not.toHaveBeenCalled();
+    expect(apiClient.post).not.toHaveBeenCalled();
+    expect(apiClient.patch).not.toHaveBeenCalled();
+  });
 });
