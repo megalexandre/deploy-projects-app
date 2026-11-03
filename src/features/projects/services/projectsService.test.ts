@@ -187,21 +187,24 @@ describe('projectsService project address enrichment', () => {
         };
       }
 
-      if (url === '/customers') {
-        return [
-          {
-            id: 'client-1',
-            name: 'Cliente Teste',
-            address: {
-              cep: '01310-100',
-              address: 'Av. do Cliente',
-              number: '1000',
-              neighborhood: 'Bela Vista',
-              city: 'Sao Paulo',
-              state: 'SP',
+      if (url === '/customers/paginate') {
+        return {
+          totalPages: 1,
+          content: [
+            {
+              id: 'client-1',
+              name: 'Cliente Teste',
+              address: {
+                cep: '01310-100',
+                address: 'Av. do Cliente',
+                number: '1000',
+                neighborhood: 'Bela Vista',
+                city: 'Sao Paulo',
+                state: 'SP',
+              },
             },
-          },
-        ];
+          ],
+        };
       }
 
       throw new Error(`Unexpected URL: ${url}`);
@@ -230,21 +233,24 @@ describe('projectsService project address enrichment', () => {
         throw new Error('Forbidden');
       }
 
-      if (url === '/customers') {
-        return [
-          {
-            id: 'client-1',
-            name: 'Cliente Teste',
-            address: {
-              cep: '01310-100',
-              address: 'Av. do Cliente',
-              number: '1000',
-              neighborhood: 'Bela Vista',
-              city: 'Sao Paulo',
-              state: 'SP',
+      if (url === '/customers/paginate') {
+        return {
+          totalPages: 1,
+          content: [
+            {
+              id: 'client-1',
+              name: 'Cliente Teste',
+              address: {
+                cep: '01310-100',
+                address: 'Av. do Cliente',
+                number: '1000',
+                neighborhood: 'Bela Vista',
+                city: 'Sao Paulo',
+                state: 'SP',
+              },
             },
-          },
-        ];
+          ],
+        };
       }
 
       throw new Error(`Unexpected URL: ${url}`);
@@ -295,6 +301,33 @@ describe('projectsService project lifecycle', () => {
     await projectsService.delete('project-1');
 
     expect(apiClient.delete).toHaveBeenCalledWith('/projects/project-1');
+  });
+
+  it('edita e exclui comentários usando o status e comentário corretos', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue(projectResponse);
+    const reload = vi
+      .spyOn(projectsService, 'getById')
+      .mockResolvedValue({ id: 'project-1' } as Awaited<
+        ReturnType<typeof projectsService.getById>
+      >);
+    try {
+      await projectsService.updateTimelineComment(
+        'project-1',
+        'status-1',
+        'comment-1',
+        'Texto atualizado',
+      );
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/projects/project-1/statuses/status-1/comments/comment-1',
+        { body: 'Texto atualizado' },
+      );
+      await projectsService.removeTimelineComment('project-1', 'status-1', 'comment-1');
+      expect(apiClient.delete).toHaveBeenCalledWith(
+        '/projects/project-1/statuses/status-1/comments/comment-1',
+      );
+    } finally {
+      reload.mockRestore();
+    }
   });
 });
 

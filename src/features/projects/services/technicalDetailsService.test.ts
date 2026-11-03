@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from '@/shared/api/apiClient';
 import { technicalDetailsService, type TechnicalDetailResponse } from './technicalDetailsService';
 import type { Projeto } from '@/types';
+import { mergeProjectEnhancement, saveProjectEnhancement } from './projectEnhancements';
 
 vi.mock('@/shared/api/apiClient', () => ({
   apiClient: {
     get: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -114,5 +116,31 @@ describe('technicalDetailsService', () => {
         modules: detail.modules,
       }),
     );
+  });
+
+  it('exclui o registro técnico e limpa seu fallback local sem excluir o projeto', async () => {
+    localStorage.clear();
+    saveProjectEnhancement('project-1', {
+      modulos: [
+        {
+          id: 'old',
+          fabricante: 'Antigo',
+          modelo: '',
+          potencia: 1,
+          quantidade: 1,
+          potenciaPico: 1,
+        },
+      ],
+      observacoes: 'Preservar',
+    });
+    await technicalDetailsService.remove('project-1', 'detail-1');
+    expect(apiClient.delete).toHaveBeenCalledWith('/projects/project-1/technical_details/detail-1');
+    const restored = mergeProjectEnhancement({
+      ...project,
+      modulos: [],
+      observacoes: '',
+    } as Projeto);
+    expect(restored.modulos).toEqual([]);
+    expect(restored.observacoes).toBe('Preservar');
   });
 });

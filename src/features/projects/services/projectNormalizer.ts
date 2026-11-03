@@ -224,6 +224,7 @@ const normalizeTimelineItem = (item: unknown): Projeto['timeline'][number] | nul
         texto,
         data: asString(comment.data) || asString(comment.created_at) || new Date().toISOString(),
         autor: asString(comment.autor) || asString(comment.created_by) || undefined,
+        createdBy: asString(comment.created_by) || undefined,
       };
     })
     .filter((comment): comment is NonNullable<typeof comment> => comment !== null);
@@ -262,6 +263,7 @@ const normalizeTimelineFromStatuses = (
             data:
               asString(comment.data) || asString(comment.created_at) || new Date().toISOString(),
             autor: asString(comment.autor) || asString(comment.created_by) || undefined,
+            createdBy: asString(comment.created_by) || undefined,
           };
         })
         .filter((comment): comment is NonNullable<typeof comment> => comment !== null);

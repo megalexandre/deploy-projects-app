@@ -3,6 +3,8 @@ import { apiClient } from '@/shared/api/apiClient';
 import type { Projeto } from '@/types';
 import type { CreateProjectData, UpdateProjectData } from './projectTypes';
 import { applyDerivedDadosTecnicos } from './projectNormalizer';
+import { updateProjectEnhancement } from './projectEnhancements';
+import { clearAllRequestCaches } from '@/shared/api/requestCache';
 
 export interface TechnicalDetailResponse {
   id: string;
@@ -120,6 +122,15 @@ const applyTechnicalDetail = (project: Projeto, detail?: TechnicalDetailResponse
 const endpoint = (projectId: string) => `/projects/${projectId}/technical_details`;
 
 export const technicalDetailsService = {
+  async remove(projectId: string, detailId: string): Promise<void> {
+    await apiClient.delete(`${endpoint(projectId)}/${detailId}`);
+    updateProjectEnhancement(projectId, (current) => {
+      const next = { ...current };
+      for (const field of TECHNICAL_FIELDS) delete next[field];
+      return next;
+    });
+    clearAllRequestCaches();
+  },
   hasData(projectData: UpdateProjectData | Record<string, unknown>): boolean {
     return TECHNICAL_FIELDS.some((field) =>
       Object.prototype.hasOwnProperty.call(projectData, field),

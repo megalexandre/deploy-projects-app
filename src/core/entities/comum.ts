@@ -48,6 +48,7 @@ export interface Documento {
 }
 
 export interface TimelineComment {
+  createdBy?: string;
   id: string;
   texto: string;
   data: string;

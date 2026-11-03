@@ -236,6 +236,31 @@ const enrichProjectsWithProjectAddresses = async (projects: Projeto[]): Promise<
 };
 
 export const projectsService = {
+  async updateTimelineComment(
+    projectId: string,
+    statusId: string,
+    commentId: string,
+    body: string,
+  ): Promise<Project> {
+    await apiClient.patch(
+      `${PROJECTS_ENDPOINT}/${projectId}/statuses/${statusId}/comments/${commentId}`,
+      { body },
+    );
+    projectsBaseCache.invalidate();
+    return projectsService.getById(projectId);
+  },
+
+  async removeTimelineComment(
+    projectId: string,
+    statusId: string,
+    commentId: string,
+  ): Promise<Project> {
+    await apiClient.delete(
+      `${PROJECTS_ENDPOINT}/${projectId}/statuses/${statusId}/comments/${commentId}`,
+    );
+    projectsBaseCache.invalidate();
+    return projectsService.getById(projectId);
+  },
   saveDocuments(projectId: string, documentos: Documento[]) {
     void projectId;
     void documentos;

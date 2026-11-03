@@ -18,6 +18,10 @@ import {
   XCircle,
 } from '@phosphor-icons/react';
 import { Button } from '@/shared/components/Button';
+import {
+  DocumentRemoveButton,
+  RemoveAllDocumentsButton,
+} from '@/shared/components/DocumentRemoveButton';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
@@ -32,6 +36,7 @@ import type { Documento, Projeto } from '@/types';
 import { maskCpfOrCnpj, maskPhoneBR, onlyDigits } from '@/core/utils/masks';
 import { EntityFinanceTab } from '@/features/financeiro/components/EntityFinanceTab';
 import { TimelineCommentsDialog } from '../components/TimelineCommentsDialog';
+import { TechnicalDetailsManagement } from '../components/TechnicalDetailsManagement';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
 
 const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
@@ -1268,6 +1273,12 @@ export const ProjetoDetailPage: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Dados Técnicos</CardTitle>
+              <TechnicalDetailsManagement
+                projectId={projeto.id}
+                onChanged={async () => {
+                  setProjeto(await projectsService.getById(projeto.id));
+                }}
+              />
             </CardHeader>
             <CardContent className="space-y-6">
               {projeto.padraoEntradaItens && projeto.padraoEntradaItens.length > 0 && (
@@ -1619,6 +1630,14 @@ export const ProjetoDetailPage: React.FC = () => {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle>Documentos</CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
+                  {projeto.documentos.length > 0 && (
+                    <RemoveAllDocumentsButton
+                      itemId={projeto.id}
+                      onRemoved={async () => {
+                        setProjeto(await projectsService.getById(projeto.id));
+                      }}
+                    />
+                  )}
                   {procuracaoTemplate && (
                     <Button
                       type="button"
@@ -1756,6 +1775,13 @@ export const ProjetoDetailPage: React.FC = () => {
                             >
                               Download
                             </Button>
+                            <DocumentRemoveButton
+                              itemId={projeto.id}
+                              document={documento}
+                              onRemoved={async () => {
+                                setProjeto(await projectsService.getById(projeto.id));
+                              }}
+                            />
                           </td>
                         </tr>
                       ))}
@@ -1770,6 +1796,31 @@ export const ProjetoDetailPage: React.FC = () => {
 
       {timelineDialogItem && (
         <TimelineCommentsDialog
+          onEdit={async (commentId, text) => {
+            if (!projeto) return;
+            const updated = await projectsService.updateTimelineComment(
+              projeto.id,
+              timelineDialogItem.id,
+              commentId,
+              text,
+            );
+            setProjeto(updated);
+            setTimelineDialogItem(
+              updated.timeline.find((item) => item.id === timelineDialogItem.id) ?? null,
+            );
+          }}
+          onRemove={async (commentId) => {
+            if (!projeto) return;
+            const updated = await projectsService.removeTimelineComment(
+              projeto.id,
+              timelineDialogItem.id,
+              commentId,
+            );
+            setProjeto(updated);
+            setTimelineDialogItem(
+              updated.timeline.find((item) => item.id === timelineDialogItem.id) ?? null,
+            );
+          }}
           item={timelineDialogItem}
           mode={timelineDialogMode}
           commentText={timelineComment}
