@@ -46,6 +46,7 @@ const mergeDocuments = (current: Documento[], incoming: Documento[]) => {
 
 interface EditForm {
   subsequencia: string;
+  integradorId: string;
   clienteId: string;
   clienteNomeManual: string;
   concessionaria: string;
@@ -104,6 +105,7 @@ const getStatusLabel = (status: StatusServico) =>
 
 const buildForm = (servico: Servico): EditForm => ({
   subsequencia: servico.subsequencia ?? '',
+  integradorId: servico.integradorId || servico.createdBy || '',
   clienteId: servico.clienteId ?? '',
   clienteNomeManual: servico.clienteId ? '' : servico.cliente,
   concessionaria: servico.concessionaria,
@@ -201,6 +203,17 @@ export const ServicoDetailPage: React.FC = () => {
     return users.find((user) => user.id === integradorId)?.name || 'Não informado';
   }, [currentUser, servico, users]);
 
+  const integradores = useMemo(() => {
+    const options = new Map(users.map((user) => [user.id, user.name]));
+    const currentIntegratorId = servico?.integradorId || servico?.createdBy;
+    if (currentIntegratorId && !options.has(currentIntegratorId)) {
+      options.set(currentIntegratorId, integradorNome);
+    }
+    return [...options.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
+  }, [integradorNome, servico?.createdBy, servico?.integradorId, users]);
+
   useEffect(() => {
     if (
       form?.cupomDescontoPct &&
@@ -225,8 +238,13 @@ export const ServicoDetailPage: React.FC = () => {
     setError(null);
     try {
       const valor = Number(form.valor.replace(',', '.')) || 0;
+      const integradorSelecionado = integradores.find(
+        (integrador) => integrador.id === form.integradorId,
+      );
       const updated = await servicosService.update(servico.id, {
         subsequencia: form.subsequencia,
+        integradorId: form.integradorId,
+        integradorNome: integradorSelecionado?.name,
         clienteId: form.clienteId || undefined,
         cliente: form.clienteId
           ? (selectedCustomer?.nome ?? servico.cliente)
@@ -743,6 +761,26 @@ export const ServicoDetailPage: React.FC = () => {
                 />
               </label>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div>
+                  <label className="mb-2 block text-sm text-slate-300">Integrador</label>
+                  <select
+                    value={form.integradorId}
+                    onChange={(event) =>
+                      setForm((prev) =>
+                        prev ? { ...prev, integradorId: event.target.value } : prev,
+                      )
+                    }
+                    disabled={!currentUser?.isAdmin}
+                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <option value="">Selecione...</option>
+                    {integradores.map((integrador) => (
+                      <option key={integrador.id} value={integrador.id}>
+                        {integrador.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="mb-2 block text-sm text-slate-300">Cliente cadastrado</label>
                   <select

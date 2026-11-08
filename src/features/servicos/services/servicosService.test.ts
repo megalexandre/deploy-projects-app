@@ -224,6 +224,31 @@ describe('servicosService', () => {
     );
   });
 
+  it('permite trocar o integrador ao atualizar o serviço', async () => {
+    let persisted = { ...backendService };
+    vi.mocked(apiClient.get).mockImplementation(async () => persisted);
+    vi.mocked(apiClient.put).mockImplementation(async (_path, payload) => {
+      persisted = { ...persisted, ...(payload as typeof persisted) };
+      return persisted;
+    });
+
+    const updated = await servicosService.update('service-1', {
+      integradorId: 'integrador-2',
+      integradorNome: 'Novo Integrador',
+    });
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/services/service-1',
+      expect.objectContaining({ integrator: 'integrador-2' }),
+    );
+    expect(updated).toEqual(
+      expect.objectContaining({
+        integradorId: 'integrador-2',
+        integradorNome: 'Novo Integrador',
+      }),
+    );
+  });
+
   it('lê os campos de acompanhamento persistidos pelo backend', async () => {
     vi.mocked(apiClient.get).mockResolvedValue(backendService);
 

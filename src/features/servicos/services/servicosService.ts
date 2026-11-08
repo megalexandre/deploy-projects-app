@@ -1036,6 +1036,14 @@ export const servicosService = {
         payload.concessionaria !== undefined
           ? normalizeText(payload.concessionaria) || undefined
           : current?.concessionariaNome,
+      integradorId:
+        payload.integradorId !== undefined
+          ? normalizeText(payload.integradorId) || undefined
+          : current?.integradorId,
+      integradorNome:
+        payload.integradorNome !== undefined
+          ? normalizeText(payload.integradorNome) || undefined
+          : current?.integradorNome,
     }));
 
     return servicosService.getById(id);

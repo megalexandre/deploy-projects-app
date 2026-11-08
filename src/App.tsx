@@ -36,6 +36,12 @@ const AdminOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const FinanceiroRoute: React.FC = () => {
+  const currentUser = useCurrentUser();
+
+  return currentUser?.isAdmin ? <AdminFinanceiroV2Page /> : <FinanceiroPage />;
+};
+
 const AppRoutes: React.FC = () => {
   useAuthInterceptor();
 
@@ -63,15 +69,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/servicos" element={<ServicosPage />} />
         <Route path="/servicos/novo" element={<NovoServicoPage />} />
         <Route path="/servicos/:id" element={<ServicoDetailPage />} />
-        <Route path="/financeiro" element={<FinanceiroPage />} />
-        <Route
-          path="/financeiro/visao"
-          element={
-            <AdminOnlyRoute>
-              <AdminFinanceiroV2Page />
-            </AdminOnlyRoute>
-          }
-        />
+        <Route path="/financeiro" element={<FinanceiroRoute />} />
+        <Route path="/financeiro/visao" element={<Navigate to="/financeiro" replace />} />
         <Route path="/financeiro/pagamentos" element={<PagamentosPage />} />
         <Route path="/financeiro/recebimentos" element={<RecebimentosPage />} />
         <Route path="/financeiro/faturas" element={<FaturasPage />} />
