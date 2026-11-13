@@ -1,6 +1,5 @@
 /** Pagina 'FinanceiroPage': dashboard financeiro baseado nos lancamentos da API. */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowUp,
@@ -16,12 +15,23 @@ import {
   Wallet,
   X,
 } from '@phosphor-icons/react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Button } from '@/shared/components/Button';
 import { ConfirmActionButton } from '@/shared/components/ConfirmActionButton';
 import { Input } from '@/shared/components/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { formatCurrencyBRL, maskCurrencyBRL, parseCurrencyBRL } from '@/core/utils/masks';
 import { projectsService } from '@/features/projects/services/projectsService';
+import { getStatusLabel, toKanbanStatus } from '@/features/projects/kanban/kanbanConfig';
 import { servicosService } from '@/features/servicos/services/servicosService';
 import { usersService } from '@/features/admin/services/usersService';
 import { useCurrentUser } from '@/shared/hooks/useCurrentUser';
@@ -36,6 +46,7 @@ import {
   resolveProjectPaymentStatus,
   type ProjectPaymentStatus,
 } from '../domain/projectFinance';
+import { getDailyChartLabels } from '../domain/integratorFinance';
 
 type TransactionFormState = {
   projectId: string;
@@ -92,7 +103,6 @@ const monthLabels = [
   'Dez',
 ];
 const ROWS_PER_PAGE = 8;
-const DAILY_CHART_LIMIT = 14;
 
 const toDateOnly = (date?: string | null) => {
   if (!date) return '';
@@ -146,6 +156,27 @@ const parseDateOnly = (date: string) => {
 };
 
 const toDateKey = (date: Date) => date.toISOString().slice(0, 10);
+
+const toLocalDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate(),
+  ).padStart(2, '0')}`;
+
+const clampDateToBounds = (value: string, min: string, max: string) => {
+  if (!value) return '';
+
+  const match = value.match(/^(\d{4,})-(\d{2})-(\d{2})$/);
+  if (!match) return '';
+
+  const year = Number(match[1]);
+  const minYear = Number(min.slice(0, 4));
+  const maxYear = Number(max.slice(0, 4));
+  if (year < minYear) return min;
+  if (year > maxYear) return max;
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+};
 
 const toMonthKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -428,12 +459,6 @@ const buildProjectFinanceRows = (projetos: Projeto[], transacoes: TransacaoFinan
   });
 };
 
-const getDailyChartLabels = (rows: Array<{ dataReceita: string; dataPrevista: string }>) =>
-  Array.from(new Set(rows.flatMap((row) => [row.dataReceita, row.dataPrevista])))
-    .filter(Boolean)
-    .sort((left, right) => left.localeCompare(right))
-    .slice(-DAILY_CHART_LIMIT);
-
 const UsuarioFinanceiroPage: React.FC = () => {
   const currentUser = useCurrentUser();
   const [transacoes, setTransacoes] = useState<TransacaoFinanceira[]>([]);
@@ -525,36 +550,49 @@ const UsuarioFinanceiroPage: React.FC = () => {
     const initial = labels.map((date) => ({
       date,
       label: formatDateBR(date),
-      receita: 0,
-      prevista: 0,
+      pago: 0,
+      aReceber: 0,
     }));
 
     filteredProjectRows.forEach((row) => {
       const receitaItem = initial.find((item) => item.date === row.dataReceita);
-      if (receitaItem) receitaItem.receita += row.receitaPaga;
+      if (receitaItem) receitaItem.pago += row.receitaPaga;
 
       const previstaItem = initial.find((item) => item.date === row.dataPrevista);
-      if (previstaItem) previstaItem.prevista += row.receitaPrevista;
+      if (previstaItem) previstaItem.aReceber += row.receitaPrevista;
     });
 
-    const maxValue = Math.max(...initial.flatMap((item) => [item.receita, item.prevista]), 1);
-
-    return initial.map((item) => ({
-      ...item,
-      receitaHeight: Math.max((item.receita / maxValue) * 100, item.receita > 0 ? 12 : 4),
-      previstaHeight: Math.max((item.prevista / maxValue) * 100, item.prevista > 0 ? 12 : 4),
-    }));
+    return initial;
   }, [filteredProjectRows]);
 
-  const dailyMaxValue = useMemo(
-    () => Math.max(...dailyChartData.flatMap((item) => [item.receita, item.prevista]), 1),
-    [dailyChartData],
-  );
+  const customDateBounds = useMemo(() => {
+    const availableDates = projectRows
+      .flatMap((row) => [row.dataReceita, row.dataPrevista])
+      .map(toDateOnly)
+      .filter(Boolean)
+      .sort((left, right) => left.localeCompare(right));
+    const today = toLocalDateKey(new Date());
+    const fallbackMin = `${new Date().getFullYear() - 5}-01-01`;
 
-  const dailyTicks = useMemo(
-    () => [dailyMaxValue, dailyMaxValue * 0.66, dailyMaxValue * 0.33, 0],
-    [dailyMaxValue],
-  );
+    return {
+      min: availableDates[0] || fallbackMin,
+      max: [today, availableDates.at(-1) || today].sort().at(-1) as string,
+    };
+  }, [projectRows]);
+
+  const chartWidth = Math.max(760, dailyChartData.length * 58);
+
+  const handleCustomFromChange = (value: string) => {
+    const nextFrom = clampDateToBounds(value, customDateBounds.min, customDateBounds.max);
+    setCustomFrom(nextFrom);
+    if (nextFrom && customTo && nextFrom > customTo) setCustomTo(nextFrom);
+  };
+
+  const handleCustomToChange = (value: string) => {
+    const nextTo = clampDateToBounds(value, customDateBounds.min, customDateBounds.max);
+    setCustomTo(nextTo);
+    if (nextTo && customFrom && nextTo < customFrom) setCustomFrom(nextTo);
+  };
 
   const hasFilters =
     searchTerm ||
@@ -631,22 +669,33 @@ const UsuarioFinanceiroPage: React.FC = () => {
             )}
           </div>
           {selectedPeriod === 'personalizado' && (
-            <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-2">
-              <Input
-                type="date"
-                value={customFrom}
-                onChange={(event) => setCustomFrom(event.target.value)}
-                className="py-2 text-xs"
-                aria-label="Data inicial"
-              />
-              <span className="text-xs text-slate-500">até</span>
-              <Input
-                type="date"
-                value={customTo}
-                onChange={(event) => setCustomTo(event.target.value)}
-                className="py-2 text-xs"
-                aria-label="Data final"
-              />
+            <div className="border-t border-white/10 pt-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  label="De"
+                  type="date"
+                  value={customFrom}
+                  min={customDateBounds.min}
+                  max={customDateBounds.max}
+                  onChange={(event) => handleCustomFromChange(event.target.value)}
+                  className="py-2 text-xs"
+                  aria-label="Data inicial"
+                />
+                <Input
+                  label="Até"
+                  type="date"
+                  value={customTo}
+                  min={customDateBounds.min}
+                  max={customDateBounds.max}
+                  onChange={(event) => handleCustomToChange(event.target.value)}
+                  className="py-2 text-xs"
+                  aria-label="Data final"
+                />
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Período disponível: {formatDateBR(customDateBounds.min)} até{' '}
+                {formatDateBR(customDateBounds.max)}.
+              </p>
             </div>
           )}
         </div>
@@ -655,7 +704,7 @@ const UsuarioFinanceiroPage: React.FC = () => {
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className={`${glassCardClass} flex items-center justify-between p-5`}>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Valores recebidos</p>
+            <p className="mb-2 text-xs font-bold uppercase text-slate-400">Valores pagos</p>
             <h3 className="text-2xl font-semibold text-emerald-300">
               {formatCurrencyBRL(userTotals.totalReceita)}
             </h3>
@@ -686,71 +735,117 @@ const UsuarioFinanceiroPage: React.FC = () => {
         </div>
       </section>
 
-      <section className={`${glassCardClass} flex min-h-[360px] flex-col p-5`}>
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-slate-100">Receitas por Dia</h3>
-          <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-              Valor recebido
+      <section className={`${glassCardClass} flex min-h-[400px] flex-col p-5 sm:p-6`}>
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-100">Valores por data</h3>
+            <p className="mt-1 text-sm text-slate-400">
+              Compare rapidamente o que já foi pago e o que ainda está a receber.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5 text-emerald-200">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              Pago · {formatCurrencyBRL(userTotals.totalReceita)}
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-cyan-300" />
-              Projeto em aberto
+            <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1.5 text-cyan-100">
+              <span className="h-2.5 w-2.5 rounded-full bg-cyan-300" />A receber ·{' '}
+              {formatCurrencyBRL(userTotals.receitaPrevista)}
             </span>
           </div>
         </div>
-        <div className="grid flex-1 grid-cols-[72px_1fr] gap-3">
-          <div className="relative h-full min-h-[260px] border-r border-white/10 pr-3">
-            {dailyTicks.map((tick, index) => (
-              <div
-                key={`${tick}-${index}`}
-                className="absolute right-3 text-right text-[10px] text-slate-500"
-                style={{ top: `${index * 31}%` }}
-              >
-                {formatCompactCurrency(tick)}
-              </div>
-            ))}
-          </div>
-          <div className="relative h-full min-h-[260px] overflow-x-auto border-b border-white/10 pb-9">
-            {dailyTicks.map((tick, index) => (
-              <div
-                key={`${tick}-${index}`}
-                className="absolute left-0 right-0 border-t border-white/10"
-                style={{ top: `${index * 31}%` }}
-              />
-            ))}
-            <div className="absolute inset-x-0 bottom-9 top-0 flex min-w-[620px] items-end justify-between gap-4 px-2">
-              {dailyChartData.map((item) => (
-                <div
-                  key={item.date}
-                  className="relative flex h-full min-w-[42px] flex-1 flex-col items-center justify-end"
+
+        {dailyChartData.length > 0 ? (
+          <div className="w-full flex-1 overflow-x-auto pb-1">
+            <div className="h-[300px] w-full" style={{ minWidth: chartWidth }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={dailyChartData}
+                  barGap={3}
+                  margin={{ top: 28, right: 10, left: 4, bottom: 0 }}
                 >
-                  <div className="flex h-full items-end gap-1.5">
-                    <div
-                      className="w-5 rounded-t-sm bg-emerald-300 transition-all"
-                      style={{ height: `${item.receitaHeight}%` }}
-                      title={`Valor recebido ${formatCurrencyBRL(item.receita)}`}
+                  <defs>
+                    <linearGradient id="integratorPaidGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6ee7b7" />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity={0.65} />
+                    </linearGradient>
+                    <linearGradient id="integratorReceivableGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#67e8f9" />
+                      <stop offset="100%" stopColor="#0891b2" stopOpacity={0.65} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    stroke="#64748b"
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={11}
+                    tickFormatter={(label: string) => label.slice(0, 5)}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={11}
+                    tickFormatter={(value: number) => formatCompactCurrency(value)}
+                    width={74}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(148,163,184,0.08)' }}
+                    contentStyle={{
+                      background: '#0f172a',
+                      border: '1px solid rgba(148,163,184,.25)',
+                      borderRadius: 12,
+                      color: '#e2e8f0',
+                      boxShadow: '0 16px 36px rgba(2,6,23,.45)',
+                    }}
+                    labelStyle={{ color: '#cbd5e1', marginBottom: 6 }}
+                    formatter={(value, name) => [formatCurrencyBRL(Number(value)), name]}
+                  />
+                  <Bar
+                    dataKey="pago"
+                    name="Pago"
+                    fill="url(#integratorPaidGradient)"
+                    radius={[7, 7, 2, 2]}
+                    maxBarSize={18}
+                  >
+                    <LabelList
+                      dataKey="pago"
+                      position="top"
+                      fill="#a7f3d0"
+                      fontSize={9}
+                      formatter={(value: unknown) =>
+                        Number(value) > 0 ? formatCompactCurrency(Number(value)) : ''
+                      }
                     />
-                    <div
-                      className="w-5 rounded-t-sm bg-cyan-300/80 transition-all"
-                      style={{ height: `${item.previstaHeight}%` }}
-                      title={`Projeto em aberto ${formatCurrencyBRL(item.prevista)}`}
+                  </Bar>
+                  <Bar
+                    dataKey="aReceber"
+                    name="A receber"
+                    fill="url(#integratorReceivableGradient)"
+                    radius={[7, 7, 2, 2]}
+                    maxBarSize={18}
+                  >
+                    <LabelList
+                      dataKey="aReceber"
+                      position="top"
+                      fill="#a5f3fc"
+                      fontSize={9}
+                      formatter={(value: unknown) =>
+                        Number(value) > 0 ? formatCompactCurrency(Number(value)) : ''
+                      }
                     />
-                  </div>
-                  <span className="absolute -bottom-8 whitespace-nowrap text-[10px] text-slate-400">
-                    {item.label.slice(0, 5)}
-                  </span>
-                </div>
-              ))}
-              {dailyChartData.length === 0 && (
-                <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">
-                  Nenhum projeto financeiro encontrado para os filtros selecionados.
-                </div>
-              )}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex min-h-[280px] flex-1 items-center justify-center rounded-xl border border-dashed border-white/10 text-sm text-slate-400">
+            Nenhum projeto financeiro encontrado para os filtros selecionados.
+          </div>
+        )}
       </section>
 
       <section className={`${glassCardClass} overflow-hidden`}>
@@ -794,8 +889,10 @@ const UsuarioFinanceiroPage: React.FC = () => {
             <table className="min-w-full divide-y divide-white/10">
               <thead className="bg-slate-950/30">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Projeto</th>
                   <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">Cliente</th>
+                  <th className="px-5 py-3 text-left text-xs uppercase text-slate-400">
+                    Status do projeto
+                  </th>
                   <th className="px-5 py-3 text-right text-xs uppercase text-slate-400">
                     Valor total
                   </th>
@@ -811,12 +908,10 @@ const UsuarioFinanceiroPage: React.FC = () => {
               <tbody className="divide-y divide-white/5">
                 {filteredProjectRows.map((row) => (
                   <tr key={row.projeto.id} className="transition hover:bg-white/[0.03]">
-                    <td className="px-5 py-4 text-sm font-semibold text-cyan-100">
-                      <Link to={`/projetos/${row.projeto.id}`} className="hover:text-cyan-300">
-                        {formatProjectIdentifier(row.projeto)}
-                      </Link>
-                    </td>
                     <td className="px-5 py-4 text-sm text-slate-300">{row.projeto.cliente.nome}</td>
+                    <td className="px-5 py-4 text-sm text-slate-300">
+                      {getStatusLabel(toKanbanStatus(row.projeto.status))}
+                    </td>
                     <td className="px-5 py-4 text-right text-sm text-slate-200">
                       {formatCurrencyBRL(row.projeto.valor)}
                     </td>
