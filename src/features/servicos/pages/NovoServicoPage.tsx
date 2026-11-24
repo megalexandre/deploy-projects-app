@@ -242,6 +242,23 @@ const toEnderecoPayload = (address: AddressForm): Endereco => ({
 const isTechnicalType = (tipo: TipoServico) =>
   tipo === 'ligacao_nova' || tipo === 'aumento_carga' || tipo === 'troca_titularidade';
 const canUseRateioType = (tipo: TipoServico) => tipo === 'alteracao_compartilhamento_credito';
+const isRateioStarted = (item: RateioForm) =>
+  Boolean(item.uc.trim() || item.endereco.trim() || item.percentual.trim());
+const isRateioComplete = (item: RateioForm) =>
+  Boolean(
+    item.uc.trim() && item.endereco.trim() && item.classe.trim() && Number(item.percentual) > 0,
+  );
+const getActiveRateios = (rateios: RateioForm[]) => rateios.filter(isRateioStarted);
+const getRateioTotal = (rateios: RateioForm[]) =>
+  getActiveRateios(rateios).reduce((total, item) => total + Number(item.percentual), 0);
+const areRateiosValid = (rateios: RateioForm[]) => {
+  const activeRateios = getActiveRateios(rateios);
+  return (
+    activeRateios.length > 0 &&
+    activeRateios.every(isRateioComplete) &&
+    Math.abs(getRateioTotal(activeRateios) - 100) < 0.01
+  );
+};
 const getPersonType = (customer?: Customer | null): PersonType =>
   (customer?.cpfCnpj.replace(/\D/g, '').length ?? 0) > 11 ? 'cnpj' : 'cpf';
 const buildDocumentCategories = (
@@ -474,11 +491,8 @@ export const NovoServicoPage: React.FC = () => {
     const enderecoObraValido = !isTechnicalType(form.tipo) || isAddressValid(form.enderecoObra);
     const enderecoGeradoraValido =
       !canUseRateioType(form.tipo) || isAddressValid(form.enderecoGeradora);
-    const rateioValido =
-      !canUseRateioType(form.tipo) ||
-      form.rateios.some(
-        (item) => item.uc.trim() && item.endereco.trim() && Number(item.percentual) > 0,
-      );
+    const rateioValido = !canUseRateioType(form.tipo) || areRateiosValid(form.rateios);
+    const ucGeradoraValida = !canUseRateioType(form.tipo) || form.ucGeradora.trim() !== '';
     return (
       validarPasso1() &&
       form.integradorId.trim() !== '' &&
@@ -488,6 +502,7 @@ export const NovoServicoPage: React.FC = () => {
       coordenadasValidas &&
       enderecoObraValido &&
       enderecoGeradoraValido &&
+      ucGeradoraValida &&
       rateioValido
     );
   };
@@ -508,13 +523,15 @@ export const NovoServicoPage: React.FC = () => {
     }
 
     if (canUseRateioType(form.tipo)) {
+      if (!form.ucGeradora.trim()) missing.push('UC geradora');
       if (!isAddressValid(form.enderecoGeradora)) missing.push('endereço da geradora completo');
-      if (
-        !form.rateios.some(
-          (item) => item.uc.trim() && item.endereco.trim() && Number(item.percentual) > 0,
-        )
-      ) {
-        missing.push('ao menos um rateio válido');
+      const activeRateios = getActiveRateios(form.rateios);
+      if (activeRateios.length === 0) {
+        missing.push('ao menos um rateio');
+      } else if (!activeRateios.every(isRateioComplete)) {
+        missing.push('todos os campos dos rateios iniciados');
+      } else if (Math.abs(getRateioTotal(activeRateios) - 100) >= 0.01) {
+        missing.push('soma dos rateios igual a 100%');
       }
     }
 
@@ -665,7 +682,11 @@ export const NovoServicoPage: React.FC = () => {
       navigate('/servicos');
     } catch (saveError) {
       console.error('Erro ao criar serviço:', saveError);
-      setError('Não foi possível criar o serviço.');
+      setError(
+        saveError instanceof Error && saveError.message.trim()
+          ? saveError.message
+          : 'Não foi possível criar o serviço.',
+      );
     } finally {
       setSaving(false);
     }
@@ -1191,7 +1212,9 @@ export const NovoServicoPage: React.FC = () => {
                       }))
                     }
                     placeholder="UC Geradora"
-                    className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                    className={inputClass(
+                      submitAttempted && canUseRateioType(form.tipo) && !form.ucGeradora.trim(),
+                    )}
                   />
                   <Button
                     type="button"
@@ -1242,6 +1265,24 @@ export const NovoServicoPage: React.FC = () => {
                     )}
                   />
                   <input
+                    value={form.enderecoGeradora.numero}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        enderecoGeradora: {
+                          ...prev.enderecoGeradora,
+                          numero: event.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Número da geradora"
+                    className={inputClass(
+                      submitAttempted &&
+                        canUseRateioType(form.tipo) &&
+                        !form.enderecoGeradora.numero.trim(),
+                    )}
+                  />
+                  <input
                     value={form.enderecoGeradora.logradouro}
                     onChange={(event) =>
                       setForm((prev) => ({
@@ -1252,11 +1293,81 @@ export const NovoServicoPage: React.FC = () => {
                         },
                       }))
                     }
-                    placeholder="Endereço da geradora"
+                    placeholder="Logradouro da geradora"
                     className={inputClass(
                       submitAttempted &&
                         canUseRateioType(form.tipo) &&
                         form.enderecoGeradora.logradouro.trim().length < 3,
+                      'md:col-span-2',
+                    )}
+                  />
+                  <input
+                    value={form.enderecoGeradora.complemento}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        enderecoGeradora: {
+                          ...prev.enderecoGeradora,
+                          complemento: event.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Complemento"
+                    className="md:col-span-2 w-full rounded border border-gray-600 bg-gray-800 px-3 py-3 text-gray-100"
+                  />
+                  <input
+                    value={form.enderecoGeradora.bairro}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        enderecoGeradora: {
+                          ...prev.enderecoGeradora,
+                          bairro: event.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Bairro"
+                    className={inputClass(
+                      submitAttempted &&
+                        canUseRateioType(form.tipo) &&
+                        form.enderecoGeradora.bairro.trim().length < 2,
+                    )}
+                  />
+                  <input
+                    value={form.enderecoGeradora.cidade}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        enderecoGeradora: {
+                          ...prev.enderecoGeradora,
+                          cidade: event.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Cidade"
+                    className={inputClass(
+                      submitAttempted &&
+                        canUseRateioType(form.tipo) &&
+                        form.enderecoGeradora.cidade.trim().length < 2,
+                    )}
+                  />
+                  <input
+                    maxLength={2}
+                    value={form.enderecoGeradora.estado}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        enderecoGeradora: {
+                          ...prev.enderecoGeradora,
+                          estado: event.target.value.toUpperCase(),
+                        },
+                      }))
+                    }
+                    placeholder="UF"
+                    className={inputClass(
+                      submitAttempted &&
+                        canUseRateioType(form.tipo) &&
+                        form.enderecoGeradora.estado.trim().length !== 2,
                     )}
                   />
                 </div>
@@ -1386,6 +1497,17 @@ export const NovoServicoPage: React.FC = () => {
                       </tbody>
                     </table>
                   </div>
+                  <p
+                    className={`text-sm ${
+                      submitAttempted &&
+                      canUseRateioType(form.tipo) &&
+                      Math.abs(getRateioTotal(form.rateios) - 100) >= 0.01
+                        ? 'text-red-300'
+                        : 'text-slate-400'
+                    }`}
+                  >
+                    Total do rateio: {getRateioTotal(form.rateios)}% (deve totalizar 100%).
+                  </p>
                 </div>
               </>
             )}
